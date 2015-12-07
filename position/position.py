@@ -57,3 +57,4 @@ class Position(object):
     def close_position(self, fill):
         pass
     """
+    
