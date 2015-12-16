@@ -1,3 +1,4 @@
+import copy
 from decimal import Decimal, ROUND_HALF_DOWN
 
 
@@ -47,11 +48,25 @@ class Position(object):
             ).quantize(FIVEPLACES) * Decimal("100.00")
         ).quantize(TWOPLACES)
 
-    """
-    def add_shares(self, fill):
-        pass
+    def buy_shares(self, fill, bid, ask):
+        old_quantity = copy.deepcopy(self.quantity)
+        self.quantity += fill.quantity
+        old_cost_basis = self.avg_price * old_quantity
+        new_cost_basis = fill.price * fill.quantity + fill.commission
 
-    def remove_shares(self, fill):
+        # Update average price and cost basis
+        self.avg_price = (
+            (old_cost_basis + new_cost_basis)/self.quantity
+        ).quantize(TWOPLACES)
+        self.cost_basis = (
+            self.quantity * self.avg_price
+        ).quantize(TWOPLACES)
+
+        # Update market value and PnL
+        self.update_position_prices(bid, ask)
+
+    """
+    def sell_shares(self, fill, bid, ask):
         pass
 
     def close_position(self, fill):

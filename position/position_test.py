@@ -173,6 +173,86 @@ class TestLongRDSBPosition(unittest.TestCase):
         self.assertEqual(self.position.per_unrealized_pnl, Decimal("-11.72"))
 
 
+class TestLongGOOGPosition(unittest.TestCase):
+    """
+    GOOG longed at 100 shares at ask of $749.90
+    with brokerage commission of $1.00, then a further
+    200 shares longed at ask of $749.485, with brokerage
+    commission of $1.00
+    """
+    def setUp(self):
+        """
+        Set up the FillEvent and Position object
+        to reflect a LONG GOOG open position
+        """
+        init_bid = Decimal("748.57")
+        init_ask = Decimal("749.90")
+        init_fill = FillEventMock(
+            "GOOG", "LONG", 100, 
+            init_ask, Decimal("1.00")
+        )
+        self.position = Position(init_fill, init_bid, init_ask)
+
+    def test_calculate_initial_values(self):
+        """
+        Test the calculation of the initial values
+        of the Position object
+        """
+        self.assertEqual(self.position.ticker, "GOOG")
+        self.assertEqual(self.position.side, "LONG")
+        self.assertEqual(self.position.quantity, 100)
+        self.assertEqual(self.position.avg_price, Decimal("749.91"))
+        self.assertEqual(self.position.cost_basis, Decimal("74991.00"))
+        self.assertEqual(self.position.bid, Decimal("748.57"))
+        self.assertEqual(self.position.ask, Decimal("749.90"))
+        self.assertEqual(self.position.market_price, Decimal("748.57"))
+        self.assertEqual(self.position.market_value, Decimal("74857.00"))
+        self.assertEqual(self.position.abs_unrealized_pnl, Decimal("-134.00"))
+        self.assertEqual(self.position.per_unrealized_pnl, Decimal("-0.18"))
+
+    def test_buy_shares_and_price_updates(self):
+        """
+        Tests the ability to buy/long new shares for the Position.
+        Adds another 200 shares of GOOG to the Position at a new
+        market price. Then test for a new bid/ask price and updated
+        market value.
+        """
+        new_bid = Decimal("748.887")
+        new_ask = Decimal("749.485")
+        new_fill = FillEventMock(
+            "GOOG", "LONG", 200,
+            new_ask, Decimal("1.00")
+        )
+        self.position.buy_shares(new_fill, new_bid, new_ask)
+
+        # Test the properties subsequent to the 
+        # "buy_shares" method call
+        self.assertEqual(self.position.ticker, "GOOG")
+        self.assertEqual(self.position.side, "LONG")
+        self.assertEqual(self.position.quantity, 300)
+        self.assertEqual(self.position.avg_price, Decimal("749.63"))
+        self.assertEqual(self.position.cost_basis, Decimal("224889.00"))
+        self.assertEqual(self.position.bid, Decimal("748.887"))
+        self.assertEqual(self.position.ask, Decimal("749.485"))
+        self.assertEqual(self.position.market_price, Decimal("748.887"))
+        self.assertEqual(self.position.market_value, Decimal("224666.10"))
+        self.assertEqual(self.position.abs_unrealized_pnl, Decimal("-222.90"))
+        self.assertEqual(self.position.per_unrealized_pnl, Decimal("-0.10"))
+
+        # Update the bid and ask prices
+        bid = Decimal("750.95")
+        ask = Decimal("751.57")
+        self.position.update_position_prices(bid, ask)
+        self.assertEqual(self.position.bid, Decimal("750.95"))
+        self.assertEqual(self.position.ask, Decimal("751.57"))
+        # Last Price (used by IB to calculate market price)
+        bid = Decimal("751.57")
+        self.position.update_position_prices(bid, ask)
+        self.assertEqual(self.position.market_price, Decimal("751.57"))
+        self.assertEqual(self.position.market_value, Decimal("225471.00"))
+        self.assertEqual(self.position.abs_unrealized_pnl, Decimal("582.00"))
+        self.assertEqual(self.position.per_unrealized_pnl, Decimal("0.26"))
+
+
 if __name__ == "__main__":
     unittest.main()
-    
