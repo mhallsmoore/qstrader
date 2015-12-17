@@ -5,7 +5,15 @@ from position import Position
 
 
 class TestRoundTripXOMPosition(unittest.TestCase):
+    """
+    Test a round-trip trade in Exxon-Mobil where the initial
+    trade is a buy/long of 100 shares of XOM, at a price of
+    $74.78, with $1.00 commission.
+    """
     def setUp(self):
+        """
+        Set up the Position object that will store the PnL.
+        """
         self.position = Position(
             "BOT", "XOM", Decimal('100'), 
             Decimal("74.78"), Decimal("1.00"), 
@@ -13,6 +21,13 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         )
 
     def test_calculate_round_trip(self):
+        """
+        After the subsequent purchase, carry out two more buys/longs
+        and then close the position out with two additional sells/shorts.
+
+        The following prices have been tested against those calculated
+        via Interactive Brokers' Trader Workstation (TWS).
+        """
         self.position.transact_shares(
             "BOT", Decimal('100'), Decimal('74.63'), Decimal('1.00')
         )
@@ -50,6 +65,11 @@ class TestRoundTripXOMPosition(unittest.TestCase):
 
 
 class TestRoundTripPGPosition(unittest.TestCase):
+    """
+    Test a round-trip trade in Proctor & Gamble where the initial
+    trade is a sell/short of 100 shares of PG, at a price of
+    $77.69, with $1.00 commission.
+    """
     def setUp(self):
         self.position = Position(
             "SLD", "PG", Decimal('100'), 
@@ -58,6 +78,13 @@ class TestRoundTripPGPosition(unittest.TestCase):
         )
 
     def test_calculate_round_trip(self):
+        """
+        After the subsequent sale, carry out two more sells/shorts
+        and then close the position out with two additional buys/longs.
+
+        The following prices have been tested against those calculated
+        via Interactive Brokers' Trader Workstation (TWS).
+        """
         self.position.transact_shares(
             "SLD", Decimal('100'), Decimal('77.68'), Decimal('1.00')
         )
