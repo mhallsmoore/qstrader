@@ -12,6 +12,14 @@ class Position(object):
         init_price, init_commission, 
         bid, ask
     ):
+        """
+        Set up the initial "account" of the Position to be
+        zero for most items, with the exception of the initial
+        purchase/sale. 
+
+        Then calculate the initial values and finally update the
+        market value of the transaction.
+        """
         self.action = action
         self.ticker = ticker
         self.quantity = init_quantity
@@ -33,6 +41,14 @@ class Position(object):
         self.update_market_value(bid, ask)
 
     def _calculate_initial_value(self):
+        """
+        Depending upon whether the action was a buy or sell ("BOT"
+        or "SLD") calculate the average bought cost, the total bought
+        cost, the average price and the cost basis.
+
+        Finally, calculate the net total with and without commission.
+        """
+
         if self.action == "BOT":
             self.buys = self.quantity
             self.avg_bot = self.init_price.quantize(FIVEPLACES)
@@ -58,6 +74,17 @@ class Position(object):
         self.net_incl_comm = (self.net_total - self.init_commission).quantize(TWOPLACES)
 
     def update_market_value(self, bid, ask):
+        """
+        The market value is tricky to calculate as we only have
+        access to the top of the order book through Interactive
+        Brokers, which means that the true redemption price is
+        unknown until executed.
+
+        However, it can be estimated via the mid-price of the 
+        bid-ask spread. Once the market value is calculated it
+        allows calculation of the unrealised and realised profit
+        and loss of any transactions.
+        """
         midpoint = (bid+ask)/Decimal("2.0")
         self.market_value = (
             self.quantity * midpoint
@@ -70,6 +97,14 @@ class Position(object):
         )
 
     def transact_shares(self, action, quantity, price, commission):
+        """
+        Calculates the adjustments to the Position that occur
+        once new shares are bought and sold.
+
+        Takes care to update the average bought/sold, total
+        bought/sold, the cost basis and PnL calculations,
+        as carried out through Interactive Brokers TWS.
+        """
         prev_quantity = self.quantity
         prev_commission = self.total_commission
 
@@ -107,7 +142,6 @@ class Position(object):
 
         # Adjust net values, including commissions
         self.net = self.buys - self.sells
-        
         self.quantity = self.net
         self.net_total = (
             self.total_sld - self.total_bot
