@@ -1,5 +1,4 @@
-import copy
-from decimal import Decimal, ROUND_HALF_DOWN
+from decimal import Decimal
 
 
 TWOPLACES = Decimal("0.01")
@@ -8,14 +7,14 @@ FIVEPLACES = Decimal("0.00001")
 
 class Position(object):
     def __init__(
-        self, action, ticker, init_quantity, 
-        init_price, init_commission, 
+        self, action, ticker, init_quantity,
+        init_price, init_commission,
         bid, ask
     ):
         """
         Set up the initial "account" of the Position to be
         zero for most items, with the exception of the initial
-        purchase/sale. 
+        purchase/sale.
 
         Then calculate the initial values and finally update the
         market value of the transaction.
@@ -25,7 +24,7 @@ class Position(object):
         self.quantity = init_quantity
         self.init_price = init_price
         self.init_commission = init_commission
-        
+
         self.realised_pnl = Decimal("0.00")
         self.unrealised_pnl = Decimal("0.00")
 
@@ -80,7 +79,7 @@ class Position(object):
         Brokers, which means that the true redemption price is
         unknown until executed.
 
-        However, it can be estimated via the mid-price of the 
+        However, it can be estimated via the mid-price of the
         bid-ask spread. Once the market value is calculated it
         allows calculation of the unrealised and realised profit
         and loss of any transactions.
@@ -109,16 +108,16 @@ class Position(object):
         prev_commission = self.total_commission
 
         self.total_commission += commission
-        
+
         # Adjust total bought and sold
-        if action == "BOT":            
+        if action == "BOT":
             self.avg_bot = (
                 (self.avg_bot*self.buys + price*quantity)/(self.buys + quantity)
             ).quantize(FIVEPLACES)
             if self.action != "SLD":
                 self.avg_price = (
                     (
-                        self.avg_price*self.buys + 
+                        self.avg_price*self.buys +
                         price*quantity+commission
                     )/(self.buys + quantity)
                 ).quantize(FIVEPLACES)
@@ -126,14 +125,14 @@ class Position(object):
             self.total_bot = (self.buys * self.avg_bot).quantize(TWOPLACES)
 
         # action == "SLD"
-        else:  
+        else:
             self.avg_sld = (
                 (self.avg_sld*self.sells + price*quantity)/(self.sells + quantity)
             ).quantize(FIVEPLACES)
             if self.action != "BOT":
                 self.avg_price = (
                     (
-                        self.avg_price*self.sells + 
+                        self.avg_price*self.sells +
                         price*quantity-commission
                     )/(self.sells + quantity)
                 ).quantize(FIVEPLACES)
