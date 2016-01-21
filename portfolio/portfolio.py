@@ -21,14 +21,9 @@ class Portfolio(object):
             pt = self.positions[ticker]
             self.unrealised_pnl += pt.unrealised_pnl
             self.realised_pnl += pt.realised_pnl
-
-            print(ticker, self.cur_cash)
             self.cur_cash -= pt.cost_basis
-            print(ticker, self.cur_cash)
             pnl_diff = pt.realised_pnl - pt.unrealised_pnl
             self.cur_cash += pnl_diff
-            print(ticker, self.cur_cash)
-            print()
             self.equity += (
                 pt.market_value - pt.cost_basis + pnl_diff
             )
