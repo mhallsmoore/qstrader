@@ -49,7 +49,7 @@ class Portfolio(object):
                 pt.market_value - pt.cost_basis + pnl_diff
             )
 
-    def add_position(
+    def _add_position(
         self, action, ticker,
         quantity, price, commission
     ):
@@ -77,7 +77,7 @@ class Portfolio(object):
                 "Could not add a new position." % ticker
             )
 
-    def modify_position(
+    def _modify_position(
         self, action, ticker, 
         quantity, price, commission
     ):
@@ -103,3 +103,27 @@ class Portfolio(object):
                 "Ticker %s not in the current position list. " \
                 "Could not modify a current position." % ticker
             )
+
+    def transact_position(
+        self, action, ticker, 
+        quantity, price, commission
+    ):
+        """
+        Handles any new position or modification to 
+        a current position, by calling the respective
+        _add_position and _modify_position methods. 
+
+        Hence, this single method will be called by the 
+        PortfolioHandler to update the Portfolio itself.
+        """
+        if ticker not in self.positions:
+            self._add_position(
+                action, ticker, quantity, 
+                price, commission
+            )
+        else:
+            self._modify_position(
+                action, ticker, quantity, 
+                price, commission
+            )
+    

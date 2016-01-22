@@ -43,50 +43,50 @@ class TestAmazonGooglePortfolio(unittest.TestCase):
         arithmetic and cost handling.
         """
         # Buy 300 of AMZN over two transactions
-        self.portfolio.add_position(
+        self.portfolio.transact_position(
             "BOT", "AMZN", 100, 
             Decimal("566.56"), Decimal("1.00")
         )
-        self.portfolio.modify_position(
+        self.portfolio.transact_position(
             "BOT", "AMZN", 200, 
             Decimal("566.395"), Decimal("1.00")
         )
         # Buy 200 GOOG over one transaction
-        self.portfolio.add_position(
+        self.portfolio.transact_position(
             "BOT", "GOOG", 200, 
             Decimal("707.50"), Decimal("1.00")
         )
         # Add to the AMZN position by 100 shares
-        self.portfolio.modify_position(
+        self.portfolio.transact_position(
             "SLD", "AMZN", 100, 
             Decimal("565.83"), Decimal("1.00")
         )
         # Add to the GOOG position by 200 shares
-        self.portfolio.modify_position(
+        self.portfolio.transact_position(
             "BOT", "GOOG", 200, 
             Decimal("705.545"), Decimal("1.00")
         )
         # Sell 200 of the AMZN shares
-        self.portfolio.modify_position(
+        self.portfolio.transact_position(
             "SLD", "AMZN", 200, 
             Decimal("565.59"), Decimal("1.00")
         )
         # Multiple transactions bundled into one (in IB)
         # Sell 300 GOOG from the portfolio
-        self.portfolio.modify_position(
+        self.portfolio.transact_position(
             "SLD", "GOOG", 100, 
             Decimal("704.92"), Decimal("1.00")
         )
-        self.portfolio.modify_position(
+        self.portfolio.transact_position(
             "SLD", "GOOG", 100, 
             Decimal("704.90"), Decimal("0.00")
         )
-        self.portfolio.modify_position(
+        self.portfolio.transact_position(
             "SLD", "GOOG", 100, 
             Decimal("704.92"), Decimal("0.50")
         )
         # Finally, sell the remaining GOOG 100 shares
-        self.portfolio.modify_position(
+        self.portfolio.transact_position(
             "SLD", "GOOG", 100, 
             Decimal("704.78"), Decimal("1.00")
         )
