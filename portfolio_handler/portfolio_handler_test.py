@@ -44,9 +44,9 @@ class RiskManagerMock(object):
         OrderEvent object and adds it to a list.
         """
         order_event = OrderEvent(
-            self.sized_order.ticker,
-            self.sized_order.action,
-            self.sized_order.quantity
+            sized_order.ticker,
+            sized_order.action,
+            sized_order.quantity
         )
         return [order_event]
 
@@ -72,7 +72,7 @@ class TestSimpleSignalOrderFillCycleForPortfolioHandler(unittest.TestCase):
             position_sizer, risk_manager
         )
 
-    def test_create_order_from_signal(self):
+    def test_create_order_from_signal_basic_check(self):
         """
         Tests the "_create_order_from_signal" method 
         as a basic sanity check.
@@ -83,7 +83,7 @@ class TestSimpleSignalOrderFillCycleForPortfolioHandler(unittest.TestCase):
         self.assertEqual(order.action, "BOT")
         self.assertEqual(order.quantity, 0)
 
-    def test_place_orders_onto_queue(self):
+    def test_place_orders_onto_queue_basic_check(self):
         """
         Tests the "_place_orders_onto_queue" method 
         as a basic sanity check.
@@ -92,11 +92,11 @@ class TestSimpleSignalOrderFillCycleForPortfolioHandler(unittest.TestCase):
         order_list = [order]
         self.portfolio_handler._place_orders_onto_queue(order_list)
         ret_order = self.portfolio_handler.events_queue.get()
-        self.assertEqual(order.ticker, "MSFT")
-        self.assertEqual(order.action, "BOT")
-        self.assertEqual(order.quantity, 100)
+        self.assertEqual(ret_order.ticker, "MSFT")
+        self.assertEqual(ret_order.action, "BOT")
+        self.assertEqual(ret_order.quantity, 100)
 
-    def test_convert_fill_to_portfolio_update(self):
+    def test_convert_fill_to_portfolio_update_basic_check(self):
         """
         Tests the "_convert_fill_to_portfolio_update" method
         as a basic sanity check.
@@ -116,6 +116,17 @@ class TestSimpleSignalOrderFillCycleForPortfolioHandler(unittest.TestCase):
             100, "ARCA", Decimal("50.25"), Decimal("1.00")
         )
         self.portfolio_handler._convert_fill_to_portfolio_update(fill_event_sell)
+
+    def test_on_signal_basic_check(self):
+        """
+        Tests the "on_signal" method as a basic sanity check.
+        """
+        signal_event = SignalEvent("MSFT", "BOT")
+        self.portfolio_handler.on_signal(signal_event)
+        ret_order = self.portfolio_handler.events_queue.get()
+        self.assertEqual(ret_order.ticker, "MSFT")
+        self.assertEqual(ret_order.action, "BOT")
+        self.assertEqual(ret_order.quantity, 100)
 
 
 if __name__ == "__main__":

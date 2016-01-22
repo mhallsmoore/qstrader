@@ -92,11 +92,11 @@ class PortfolioHandler(object):
         initial_order = self._create_order_from_signal(signal_event)
         # Size the quantity of the initial order
         sized_order = self.position_sizer.size_order(
-            portfolio, initial_order
+            self.portfolio, initial_order
         )
         # Refine or eliminate the order via the risk manager overlay
         order_events = self.risk_manager.refine_orders(
-            portfolio, sized_order
+            self.portfolio, sized_order
         )
         # Place orders onto events queue
         self._place_orders_onto_queue(order_events)
