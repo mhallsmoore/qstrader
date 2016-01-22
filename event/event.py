@@ -101,7 +101,7 @@ class FillEvent(Event):
         commission - The brokerage commission for carrying out the trade.
         """
         self.type = 'FILL'
-        self.timeindex = timeindex
+        self.timestamp = timestamp
         self.ticker = ticker
         self.action = action
         self.quantity = quantity
