@@ -62,7 +62,7 @@ if __name__ == "__main__":
             
             # Create the random walk for the bid/ask prices
             # with fixed spread between them
-            for i in range(0, 10):
+            for i in range(0, 10000):
             #while True:
                 dt = abs(np.random.normal(mu_dt, sigma_dt))
                 current_time += datetime.timedelta(0, 0, 0, dt)

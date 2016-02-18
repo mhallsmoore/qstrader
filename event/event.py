@@ -106,8 +106,10 @@ class FillEvent(Event):
     """
 
     def __init__(
-        self, timestamp, ticker, action, quantity, 
-        exchange, price, commission
+        self, timestamp, ticker, 
+        action, quantity, 
+        exchange, price, 
+        commission
     ):
         """
         Initialises the FillEvent object. 

@@ -19,7 +19,7 @@ class Strategy(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def calculate_signals(self):
+    def calculate_signals(self, event):
         """
         Provides the mechanisms to calculate the list of signals.
         """
@@ -35,13 +35,14 @@ class TestStrategy(Strategy):
     It is used to test that the backtester/live trading system is
     behaving as expected.
     """
-    def __init__(self, ticker, events_queue):
+    def __init__(self, tickers, events_queue):
         self.tickers = tickers
         self.events_queue = events_queue
         self.ticks = 0
         self.invested = False
 
     def calculate_signals(self, event):
+        ticker = self.tickers[0]
         if event.type == 'TICK' and event.ticker == ticker:
             if self.ticks % 5 == 0:
                 if self.invested == False:
