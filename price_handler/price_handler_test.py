@@ -142,6 +142,51 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             Decimal("502.11985")
         )
 
+    def test_subscribe_unsubscribe(self):
+        """
+        Tests the 'subscribe_ticker' and 'unsubscribe_ticker'
+        methods, and check that they raise exceptions when
+        appropriate.
+        """
+
+        # Check unsubscribing a ticker that isn't 
+        # in the price handler list
+        self.assertRaises(
+            KeyError, self.price_handler.unsubscribe_ticker("PG")
+        )
+
+        # Check a ticker that is already subscribed
+        # to make sure that it doesn't raise an exception
+        try:
+            self.price_handler.subscribe_ticker("GOOG")
+        except Exception as E:
+            self.fail("subscribe_ticker() raised %s unexpectedly" % E)
+
+        # Subscribe a new ticker, without CSV
+        self.assertRaises(
+            OSError, self.price_handler.subscribe_ticker("XOM")
+        )
+
+        # Unsubscribe a current ticker
+        self.assertTrue("GOOG" in self.price_handler.tickers)
+        self.assertTrue("GOOG" in self.price_handler.tickers_data)
+        self.price_handler.unsubscribe_ticker("GOOG")
+        self.assertTrue("GOOG" not in self.price_handler.tickers)
+        self.assertTrue("GOOG" not in self.price_handler.tickers_data)
+
+    def test_get_best_bid_ask(self):
+        """
+        Tests that the 'get_best_bid_ask' method produces the
+        correct values depending upon validity of ticker.
+        """
+        bid, ask = self.price_handler.get_best_bid_ask("AMZN")
+        self.assertEqual(bid, Decimal("502.10001"))
+        self.assertEqual(ask, Decimal("502.11999"))
+
+        bid, ask = self.price_handler.get_best_bid_ask("C")
+        self.assertEqual(bid, None)
+        self.assertEqual(ask, None)
+
 
 if __name__ == "__main__":
     unittest.main()

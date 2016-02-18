@@ -106,18 +106,28 @@ class HistoricCSVPriceHandler(PriceHandler):
         Subscribes the price handler to a new ticker symbol.
         """
         if ticker not in self.tickers:
-            ticker_prices = {
-                "bid": None, "ask": None, "timestamp": None
-            }
-            self.tickers[ticker] = ticker_prices
-            self._open_ticker_price_csv(ticker)
+            try:
+                self._open_ticker_price_csv(ticker) 
+                dft = self.tickers_data[ticker]
+                row0 = dft.iloc[0]
+                ticker_prices = {
+                    "bid": Decimal(str(row0["Bid"])), 
+                    "ask": Decimal(str(row0["Ask"])), 
+                    "timestamp": dft.index[0]
+                }
+                self.tickers[ticker] = ticker_prices
+            except OSError:
+                print(
+                    "Could not subscribe ticker %s " \
+                    "as no data CSV found for pricing." % ticker
+                )
         else:
             print(
                 "Could not subscribe ticker %s " \
                 "as is already subscribed." % ticker
             )
 
-    def unbsubscribe_ticker(self, ticker):
+    def unsubscribe_ticker(self, ticker):
         """
         Unsubscribes the price handler from a current ticker symbol.
         """
@@ -135,8 +145,8 @@ class HistoricCSVPriceHandler(PriceHandler):
         Returns the most recent bid/ask price for a ticker.
         """
         if ticker in self.tickers:
-            bid = self.tickers[ticker].bid
-            ask = self.tickers[ticker].ask
+            bid = self.tickers[ticker]["bid"]
+            ask = self.tickers[ticker]["ask"]
             return bid, ask
         else:
             print(
