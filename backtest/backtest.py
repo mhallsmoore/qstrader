@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 from decimal import Decimal
+import os, os.path
 import pprint
 try:
     import Queue as queue
@@ -37,6 +38,11 @@ class Backtest(object):
         self.tickers = tickers
         self.events_queue = queue.Queue()
         self.csv_dir = settings.CSV_DATA_DIR
+        self.output_dir = settings.OUTPUT_DIR
+        self.equity_file = os.path.join(
+            self.output_dir, "equity.csv"
+        )
+
         self.price_handler = price_handler(
             self.csv_dir, self.events_queue, 
             init_tickers=self.tickers
@@ -59,6 +65,20 @@ class Backtest(object):
             self.events_queue, self.price_handler
         )
 
+        self.cur_time = None
+
+        # Open the equity file and clear it prior to append
+        open(self.equity_file, 'w').close()
+
+    def _append_equity_state(self):
+        cur_port_state = self.portfolio_handler.portfolio.create_portfolio_state_dict()
+        with open(self.equity_file, "a") as eqfile:
+            eqfile.write(
+                "%s,%s\n" % (
+                    self.cur_time, cur_port_state["equity"]
+                )
+            )
+
     def _run_backtest(self):
         """
         Carries out an infinite while loop that polls the 
@@ -79,7 +99,9 @@ class Backtest(object):
             else:
                 if event is not None:
                     if event.type == 'TICK':
-                        print("Tick %s..." % ticks)
+                        self.cur_time = event.time
+                        print("Tick %s, at %s" % (ticks, self.cur_time))
+                        self._append_equity_state()
                         self.strategy.calculate_signals(event)
                         ticks += 1
                     elif event.type == 'SIGNAL':
