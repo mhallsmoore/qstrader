@@ -30,7 +30,7 @@ The software is provided under a permissive "MIT" license (see below).
 
 # Installation and Usage
 
-QSTrader is is an extremely early alpha state at the moment and should only be used for exploratory backtesting research. 
+QSTrader is in an extremely early alpha state at the moment and should only be used for exploratory backtesting research. 
 
 In time this section will contain detailed installation instructions. At this point the best way to get started is to install an all-in-one platform-independent Python distribution such as Anaconda, that contains all of the necessary libraries, such as NumPy, SciPy, Pandas, Matplotlib and Seaborn.
 
