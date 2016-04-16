@@ -127,3 +127,16 @@ class Portfolio(object):
                 price, commission
             )
     
+    def create_portfolio_state_dict(self):
+        """
+        Creates a dictionary containing the best estimated
+        market value of all positions within the Portfolio,
+        along with the cash and equity amount.
+        """
+        state_dict = {
+            "cash": self.cur_cash,
+            "equity": self.equity
+        }
+        for ticker in self.positions:
+            state_dict[ticker] = self.positions[ticker].market_value
+        return state_dict
