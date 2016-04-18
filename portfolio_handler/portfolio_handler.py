@@ -113,3 +113,10 @@ class PortfolioHandler(object):
         Brokers).
         """
         self._convert_fill_to_portfolio_update(fill_event)
+
+    def update_portfolio_value(self):
+        """
+        Update the portfolio to reflect current market value as
+        based on last bid/ask of each ticker.
+        """
+        self.portfolio._update_portfolio()
