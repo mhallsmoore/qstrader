@@ -40,6 +40,8 @@ class Portfolio(object):
         """
         for ticker in self.positions:
             pt = self.positions[ticker]
+            bid, ask = self.price_handler.get_best_bid_ask(ticker)
+            pt.update_market_value(bid, ask)
             self.unrealised_pnl += pt.unrealised_pnl
             self.realised_pnl += pt.realised_pnl
             self.cur_cash -= pt.cost_basis
@@ -133,6 +135,8 @@ class Portfolio(object):
         market value of all positions within the Portfolio,
         along with the cash and equity amount.
         """
+        self._reset_values()
+        self._update_portfolio()
         state_dict = {
             "cash": self.cur_cash,
             "equity": self.equity
