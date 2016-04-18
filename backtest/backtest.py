@@ -3,6 +3,7 @@ from __future__ import print_function
 from decimal import Decimal
 import os, os.path
 import pprint
+from qstrader.statistics.statistics import Statistics
 try:
     import Queue as queue
 except ImportError:
@@ -113,9 +114,13 @@ class Backtest(object):
             time.sleep(self.heartbeat)
             iters += 1
 
+
     def simulate_trading(self):
         """
         Simulates the backtest and outputs portfolio performance.
         """
         self._run_backtest()
         print("Backtest complete.")
+        statistics = Statistics()
+        statistics.generate_results()
+        statistics.plot_results()
