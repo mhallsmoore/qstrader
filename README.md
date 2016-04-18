@@ -30,11 +30,11 @@ The software is provided under a permissive "MIT" license (see below).
 
 # Installation and Usage
 
-QSTrader is is an extremely early alpha state at the moment and should only be used for exploratory backtesting research. 
+QSTrader is in an extremely early alpha state at the moment and should only be used for exploratory backtesting research. 
 
 1) Clone this git repository into a suitable location on your machine using the following command in your terminal: ```git clone https://github.com/mhallsmoore/qstrader.git```.
 
-2) Create a virtual environment ("virtualenv") for the QSForex code and utilise pip to install the requirements. For instance in a Unix-based system (Mac or Linux) you might create such a directory as follows by entering the following commands in the terminal:
+2) Create a virtual environment ("virtualenv") for the QSTrader code and utilise pip to install the requirements. For instance in a Unix-based system (Mac or Linux) you might create such a directory as follows by entering the following commands in the terminal:
 
 ```
 mkdir -p ~/venv/qstrader
@@ -42,7 +42,7 @@ cd ~/venv/qstrader
 virtualenv .
 ```
 
-This will create a new virtual environment to install the packages into. Assuming you downloaded the QSTrader git repository into an example directory such as ```~/projects/qstrader/``` (change this directory below to wherever you installed QSForex), then in order to install the packages you will need to run the following commands:
+This will create a new virtual environment to install the packages into. Assuming you downloaded the QSTrader git repository into an example directory such as ```~/projects/qstrader/``` (change this directory below to wherever you installed QSTrader), then in order to install the packages you will need to run the following commands:
 
 ```
 source ~/venv/qstrader/bin/activate
@@ -54,10 +54,10 @@ This will take some time as NumPy, SciPy and Pandas must be compiled. There are 
 * https://www.quantstart.com/articles/Quick-Start-Python-Quantitative-Research-Environment-on-Ubuntu-14-04
 * https://www.quantstart.com/articles/Easy-Multi-Platform-Installation-of-a-Scientific-Python-Stack-Using-Anaconda
 
-3) You will also need to create a symbolic link from your ```site-packages``` directory to your QSTrader installation directory in order to be able to call ```import qstrader``` within the code. To do this you will need a command similar to the following:
+3) You will also need to create a symbolic link from your ```site-packages``` directory to your QSTrader installation directory in order to be able to call ```import qstrader``` within the code. To do this you will need a command similar to the following (make sure to change python3.5 to your specific Python version):
 
 ```
-ln -s ~/projects/qstrader/ ~/venv/qsforex/lib/python3.5/site-packages/qstrader
+ln -s ~/projects/qstrader/ ~/venv/qstrader/lib/python3.5/site-packages/qstrader
 ```
 
 Make sure to change ```~/projects/qstrader``` to your installation directory and ```~/venv/qstrader/lib/python3.5/site-packages/``` to your virtualenv site packages directory.
