@@ -30,6 +30,7 @@ class Backtest(object):
         strategy, portfolio_handler, 
         execution_handler, 
         position_sizer, risk_manager,
+        statistics,
         equity=Decimal("100000.00"), 
         heartbeat=0.0, max_iters=10000000000
     ):
@@ -65,6 +66,7 @@ class Backtest(object):
         self.execution_handler = execution_handler(
             self.events_queue, self.price_handler
         )
+        self.statistics = statistics(self.portfolio_handler)
 
         self.cur_time = None
 
@@ -104,6 +106,7 @@ class Backtest(object):
                         print("Tick %s, at %s" % (ticks, self.cur_time))
                         self._append_equity_state()
                         self.strategy.calculate_signals(event)
+                        self.statistics.update()
                         ticks += 1
                     elif event.type == 'SIGNAL':
                         self.portfolio_handler.on_signal(event)
@@ -121,6 +124,4 @@ class Backtest(object):
         """
         self._run_backtest()
         print("Backtest complete.")
-        statistics = Statistics()
-        statistics.generate_results()
-        statistics.plot_results()
+        self.statistics.plot_results()
