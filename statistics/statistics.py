@@ -74,18 +74,29 @@ class SimpleStatistics(Statistics):
         Takes in a portfolio handler.
         """
         self.portfolio_handler = portfolio_handler
-        self.statistics = {}
-        self.statistics["sharpe"] = {}
-        self.statistics["drawdown"] = {}
-        self.statistics["max_drawdown"] = 0
-        self.statistics["equity"] = {}
-        self.statistics["returms"] = {}
+        self.sharpe={}
+        self.drawdowns={}
+        self.max_drawdown=0
+        self.equity={}
+        self.returns={}
 
     def update(self):
         """
         Check time
         If now, update all self.statistics.
         """
+        import pdb; pdb.set_trace()
+
+    def get_statistics(self):
+        """
+        Return a dict with all statistics
+        """
+        statistics={}
+        statistics["sharpe"]=self.sharpe
+        statistics["drawdowns"]=self.drawdowns
+        statistics["max_drawdown"]=self.max_drawdown
+        statistics["equity"]=self.equity
+        statistics["returns"]=self.returns
 
     def plot_results(self):
         """
