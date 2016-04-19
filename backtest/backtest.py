@@ -120,6 +120,7 @@ class Backtest(object):
                         print("Tick %s, at %s" % (ticks, self.cur_time))
                         self._append_equity_state()
                         self.strategy.calculate_signals(event)
+                        self.portfolio_handler.update_portfolio_value()
                         self.statistics.update()
                         ticks += 1
                     elif event.type == 'SIGNAL':
