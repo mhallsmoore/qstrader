@@ -82,6 +82,20 @@ class Backtest(object):
                 )
             )
 
+        self.cur_time = None
+
+        # Open the equity file and clear it prior to append
+        open(self.equity_file, 'w').close()
+
+    def _append_equity_state(self):
+        cur_port_state = self.portfolio_handler.portfolio.create_portfolio_state_dict()
+        with open(self.equity_file, "a") as eqfile:
+            eqfile.write(
+                "%s,%s\n" % (
+                    self.cur_time, cur_port_state["equity"]
+                )
+            )
+
     def _run_backtest(self):
         """
         Carries out an infinite while loop that polls the 
