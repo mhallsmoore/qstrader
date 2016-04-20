@@ -58,14 +58,13 @@ class SimpleStatistics(Statistics):
     Simple Statistics provides a bare-bones example of statistics
     that can be collected through trading.
 
-    Update frequency is minute-ly, which reflects the time-frame it 
-    has been designed to trade with.
-
     Statistics included are Sharpe Ratio, Drawdown, Max Drawdown,
     Max Drawdown Duration, Total Profit Value and Total Return Pct.
 
     TODO think about Alpha/Beta, compare strategy of benchmark.
     TODO testing
+    TODO think about speed -- will be bad doing for every tick 
+    on anything that trades sub-minute.
     TODO think about slippage, fill rate, etc
     TODO remove equity_file references throughout QSTrader
     """
@@ -75,10 +74,11 @@ class SimpleStatistics(Statistics):
         """
         self.portfolio_handler = portfolio_handler
         self.sharpe={}
-        self.drawdowns={}
+        self.drawdowns=pd.Series()
         self.max_drawdown=0
         self.equity=pd.Series()
-        self.returns={}
+        self.equity_returns=pd.Series()
+        self.high_water_mark=[0]
 
     def update(self, timestamp):
         """
@@ -87,7 +87,18 @@ class SimpleStatistics(Statistics):
 
         TODO shares a lot of logic with portfolio._update_portfolio()!
         """
+        # Retrieve equity value of Portfolio
         self.equity.ix[timestamp]=float(self.portfolio_handler.portfolio.equity)
+
+        # Calculate percentage return between current and previous equity value.
+        # TODO change this to 'last'
+        current_index = self.equity.index.get_loc(timestamp)
+        previous_index = current_index-1
+        self.equity_returns.ix[timestamp] = (self.equity.ix[timestamp] - self.equity.ix[previous_index]) / self.equity.ix[previous_index]
+
+        # Calculate Drawdown
+        self.high_water_mark.append(max(self.high_water_mark[previous_index], self.equity.ix[timestamp]))
+        self.drawdowns.ix[timestamp]=self.high_water_mark[current_index]-self.equity.ix[timestamp]
 
     def get_statistics(self):
         """
@@ -98,7 +109,8 @@ class SimpleStatistics(Statistics):
         statistics["drawdowns"]=self.drawdowns
         statistics["max_drawdown"]=self.max_drawdown
         statistics["equity"]=self.equity
-        statistics["returns"]=self.returns
+        statistics["equity_returns"]=self.equity_returns
+        return statistics
 
     def plot_results(self):
         """
@@ -110,52 +122,25 @@ class SimpleStatistics(Statistics):
 
         # Plot two charts: Equity curve, period returns
         fig = plt.figure()
-        fig.patch.set_facecolor('white')     # Set the outer colour to white
+        fig.patch.set_facecolor('white')
 
         df = pd.DataFrame()
-        df["Equity"]=self.equity
+        df["equity"]=self.equity
+        df["equity_returns"]=self.equity_returns
+        df["drawdowns"]=self.drawdowns
         
         # Plot the equity curve
         ax1 = fig.add_subplot(311, ylabel='Equity Value')
-        df["Equity"].plot(ax=ax1, color=sns.color_palette()[0])
+        df["equity"].plot(ax=ax1, color=sns.color_palette()[0])
 
         # Plot the returns
-        df["Returns"]=df["Equity"].pct_change()
+        # df["Returns"]=df["Equity"].pct_change()
         ax2 = fig.add_subplot(312, ylabel='Equity Returns')
-        df['Returns'].plot(ax=ax2, color=sns.color_palette()[1])
+        df['equity_returns'].plot(ax=ax2, color=sns.color_palette()[1])
 
-        drawdown, max_dd, dd_duration = self.create_drawdowns(df["Equity"])
-        df["Drawdown"] = drawdown
-        
+        # drawdown, max_dd, dd_duration = self.create_drawdowns(df["Equity"])
         ax3 = fig.add_subplot(313, ylabel='Drawdowns')
-        df['Drawdown'].plot(ax=ax3, color=sns.color_palette()[2])
+        df['drawdowns'].plot(ax=ax3, color=sns.color_palette()[2])
 
         # Plot the figure
         plt.show()
-
-    def create_drawdowns(self, pnl):
-        """
-        Calculate the largest peak-to-trough drawdown of the PnL curve
-        as well as the duration of the drawdown. Requires that the 
-        pnl_returns is a pandas Series.
-        Parameters:
-        pnl - A pandas Series representing period percentage returns.
-        Returns:
-        drawdown, duration - Highest peak-to-trough drawdown and duration.
-        """
-
-        # Calculate the cumulative returns curve 
-        # and set up the High Water Mark
-        hwm = [0]
-
-        # Create the drawdown and duration series
-        idx = pnl.index
-        drawdown = pd.Series(index = idx)
-        duration = pd.Series(index = idx)
-
-        # Loop over the index range
-        for t in range(1, len(idx)):
-            hwm.append(max(hwm[t-1], pnl.ix[t]))
-            drawdown.ix[t]= (hwm[t]-pnl.ix[t])
-            duration.ix[t]= (0 if drawdown.ix[t] == 0 else duration.ix[t-1]+1)
-        return drawdown, drawdown.max(), duration.max()
