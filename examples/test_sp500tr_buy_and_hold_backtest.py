@@ -6,6 +6,7 @@ from qstrader.portfolio_handler.portfolio_handler import PortfolioHandler
 from qstrader.position_sizer.position_sizer import TestPositionSizer
 from qstrader.price_handler.price_handler import YahooDailyBarPriceHandler
 from qstrader.risk_manager.risk_manager import TestRiskManager
+from qstrader.statistics.statistics import SimpleStatistics
 from qstrader import settings
 from qstrader.strategy.strategy import BuyAndHoldStrategy
 
@@ -18,6 +19,7 @@ if __name__ == "__main__":
         BuyAndHoldStrategy, PortfolioHandler, 
         IBSimulatedExecutionHandler,
         TestPositionSizer, TestRiskManager, 
+        SimpleStatistics,
         equity=Decimal("500000.00")
     )
     backtest.simulate_trading()

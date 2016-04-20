@@ -112,7 +112,7 @@ class Backtest(object):
                         self._append_equity_state()
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
-                        self.statistics.update()
+                        self.statistics.update(event.time)
                         ticks += 1
                     elif event.type == 'SIGNAL':
                         self.portfolio_handler.on_signal(event)
