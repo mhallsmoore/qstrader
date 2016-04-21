@@ -67,7 +67,6 @@ class SimpleStatistics(Statistics):
     on anything that trades sub-minute.
     TODO think about slippage, fill rate, etc
     TODO brokerage costs?
-    TODO remove equity_file references throughout QSTrader
 
     TODO need some kind of trading-frequency parameter in setup.
     Sharpe calculations need to know if daily, hourly, minutely, etc.
