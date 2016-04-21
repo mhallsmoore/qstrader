@@ -78,7 +78,7 @@ class SimpleStatistics(Statistics):
         self.max_drawdown=0
         self.equity=pd.Series()
         self.equity_returns=pd.Series()
-        self.high_water_mark=[float(portfolio_handler.portfolio.equity)]
+        self.hwm=[float(self.portfolio_handler.portfolio.equity)]
 
     def update(self, timestamp):
         """
@@ -93,12 +93,12 @@ class SimpleStatistics(Statistics):
         # Calculate percentage return between current and previous equity value.
         # TODO change this to 'last'
         current_index = self.equity.index.get_loc(timestamp)
-        previous_index = current_index-1
+        previous_index = current_index-1 
         self.equity_returns.ix[timestamp] = (self.equity.ix[timestamp] - self.equity.ix[previous_index]) / self.equity.ix[previous_index]
 
-        # Calculate Drawdown
-        self.high_water_mark.append(max(self.high_water_mark[previous_index], self.equity.ix[timestamp]))
-        self.drawdowns.ix[timestamp]=self.high_water_mark[current_index]-self.equity.ix[timestamp]
+        # Calculate Drawdown. 
+        self.hwm.append(max(self.hwm[previous_index], self.equity.ix[timestamp]))
+        self.drawdowns.ix[timestamp]=self.hwm[current_index+1]-self.equity.ix[timestamp]
 
     def get_statistics(self):
         """

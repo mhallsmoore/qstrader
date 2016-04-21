@@ -105,45 +105,45 @@ class TestSimpleStatistics(unittest.TestCase):
 		# Perform transaction and test statistics at this tick
 		self.portfolio.transact_position(
 		    "SLD", "GOOG", 100, 
-		    Decimal("704.92"), Decimal("1.00")
+		    Decimal("707.92"), Decimal("1.00")
 		)
 		t="2000-01-07 00:00:00"
 		statistics.update(t)
-		self.assertEqual(statistics.equity[t], Decimal("499280.00"))
-		self.assertEqual(statistics.drawdowns[t], Decimal("720.00"))
+		self.assertEqual(statistics.equity[t], Decimal("499580.00"))
+		self.assertEqual(statistics.drawdowns[t], Decimal("420.00"))
 		
 
 		# Perform transaction and test statistics at this tick
 		self.portfolio.transact_position(
 		    "SLD", "GOOG", 100, 
-		    Decimal("704.90"), Decimal("0.00")
+		    Decimal("707.90"), Decimal("0.00")
 		)
 		t="2000-01-08 00:00:00"
 		statistics.update(t)
-		self.assertEqual(statistics.equity[t], Decimal("499224.00"))
-		self.assertEqual(statistics.drawdowns[t], Decimal("776.00"))
+		self.assertEqual(statistics.equity[t], Decimal("499824.00"))
+		self.assertEqual(statistics.drawdowns[t], Decimal("176.00"))
 		
 
 		# Perform transaction and test statistics at this tick
 		self.portfolio.transact_position(
 		    "SLD", "GOOG", 100, 
-		    Decimal("704.92"), Decimal("0.50")
+		    Decimal("707.92"), Decimal("0.50")
 		)
 		t="2000-01-09 00:00:00"
 		statistics.update(t)
-		self.assertEqual(statistics.equity[t], Decimal("499169.50"))
-		self.assertEqual(statistics.drawdowns[t], Decimal("830.50"))
+		self.assertEqual(statistics.equity[t], Decimal("500069.50"))
+		self.assertEqual(statistics.drawdowns[t], Decimal("00.00"))
 		
 
 		# Perform transaction and test statistics at this tick
 		self.portfolio.transact_position(
 		    "SLD", "GOOG", 100, 
-		    Decimal("704.78"), Decimal("1.00")
+		    Decimal("707.78"), Decimal("1.00")
 		)
 		t="2000-01-10 00:00:00"
 		statistics.update(t)
-		self.assertEqual(statistics.equity[t], Decimal("499100.50"))
-		self.assertEqual(statistics.drawdowns[t], Decimal("899.50"))
+		self.assertEqual(statistics.equity[t], Decimal("500300.50"))
+		self.assertEqual(statistics.drawdowns[t], Decimal("00.00"))
 
 
 if __name__ == "__main__":
