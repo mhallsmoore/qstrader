@@ -78,7 +78,7 @@ class SimpleStatistics(Statistics):
         self.max_drawdown=0
         self.equity=pd.Series()
         self.equity_returns=pd.Series()
-        self.high_water_mark=[0]
+        self.high_water_mark=[float(portfolio_handler.portfolio.equity)]
 
     def update(self, timestamp):
         """
