@@ -60,7 +60,7 @@ class SimpleStatistics(Statistics):
     that can be collected through trading.
 
     Statistics included are Sharpe Ratio, Drawdown, Max Drawdown,
-    Max Drawdown Duration, Total Profit Value and Total Return Pct.
+    Max Drawdown Duration.
 
     TODO think about Alpha/Beta, compare strategy of benchmark.
     TODO think about speed -- will be bad doing for every tick 
