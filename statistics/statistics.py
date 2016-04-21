@@ -82,23 +82,21 @@ class SimpleStatistics(Statistics):
 
     def update(self, timestamp):
         """
-        Check time
-        If now, update all self.statistics.
-
-        TODO shares a lot of logic with portfolio._update_portfolio()!
+        Update all statistics that must be tracked over time.
         """
         # Retrieve equity value of Portfolio
         self.equity.ix[timestamp]=float(self.portfolio_handler.portfolio.equity)
 
         # Calculate percentage return between current and previous equity value.
-        # TODO change this to 'last'
-        current_index = self.equity.index.get_loc(timestamp)
-        previous_index = current_index-1 
-        self.equity_returns.ix[timestamp] = (self.equity.ix[timestamp] - self.equity.ix[previous_index]) / self.equity.ix[previous_index]
+        current_index = len(self.equity)-1
+        self.equity_returns.ix[timestamp] = (self.equity.ix[current_index] - self.equity.ix[current_index-1]) / self.equity.ix[current_index-1]
 
         # Calculate Drawdown. 
-        self.hwm.append(max(self.hwm[previous_index], self.equity.ix[timestamp]))
-        self.drawdowns.ix[timestamp]=self.hwm[current_index+1]-self.equity.ix[timestamp]
+        # Note that we have pre-seeded HWM to be starting equity value -- don't add one-too-many values.
+        if(current_index>0):
+            self.hwm.append(max(self.hwm[current_index-1], self.equity.ix[timestamp]))
+
+        self.drawdowns.ix[timestamp]=self.hwm[current_index]-self.equity.ix[timestamp]
 
     def get_statistics(self):
         """
