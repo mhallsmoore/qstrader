@@ -129,5 +129,9 @@ class Backtest(object):
         Simulates the backtest and outputs portfolio performance.
         """
         self._run_backtest()
+        results = self.statistics.get_results()
         print("Backtest complete.")
+        print("Sharpe Ratio: %s" % results["sharpe"])
+        print("Max Drawdown: %s" % results["max_drawdown"])
+        print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
         self.statistics.plot_results()

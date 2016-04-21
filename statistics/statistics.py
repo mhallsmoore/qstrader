@@ -1,5 +1,6 @@
 import os, os.path
 import pandas as pd
+import numpy as np
 import matplotlib
 from abc import ABCMeta, abstractmethod
 try:
@@ -39,11 +40,11 @@ class Statistics(object):
         raise NotImplementedError("Should implement update()")
 
     @abstractmethod
-    def get_statistics(self):
+    def get_results(self):
         """
         Return a dict containing all statistics.
         """
-        raise NotImplementedError("Should implement get_statistics()")
+        raise NotImplementedError("Should implement get_results()")
 
     @abstractmethod
     def plot_results(self):
@@ -62,20 +63,21 @@ class SimpleStatistics(Statistics):
     Max Drawdown Duration, Total Profit Value and Total Return Pct.
 
     TODO think about Alpha/Beta, compare strategy of benchmark.
-    TODO testing
     TODO think about speed -- will be bad doing for every tick 
     on anything that trades sub-minute.
     TODO think about slippage, fill rate, etc
+    TODO brokerage costs?
     TODO remove equity_file references throughout QSTrader
+
+    TODO need some kind of trading-frequency parameter in setup.
+    Sharpe calculations need to know if daily, hourly, minutely, etc.
     """
     def __init__(self, portfolio_handler):
         """
         Takes in a portfolio handler.
         """
         self.portfolio_handler = portfolio_handler
-        self.sharpe={}
         self.drawdowns=pd.Series()
-        self.max_drawdown=0
         self.equity=pd.Series()
         self.equity_returns=pd.Series()
         self.hwm=[float(self.portfolio_handler.portfolio.equity)]
@@ -83,32 +85,82 @@ class SimpleStatistics(Statistics):
     def update(self, timestamp):
         """
         Update all statistics that must be tracked over time.
+
+        TODO test equity_returns calculation
         """
         # Retrieve equity value of Portfolio
         self.equity.ix[timestamp]=float(self.portfolio_handler.portfolio.equity)
 
         # Calculate percentage return between current and previous equity value.
         current_index = len(self.equity)-1
-        self.equity_returns.ix[timestamp] = (self.equity.ix[current_index] - self.equity.ix[current_index-1]) / self.equity.ix[current_index-1]
+        self.equity_returns.ix[timestamp] = (
+            (self.equity.ix[current_index] - self.equity.ix[current_index-1])
+            /self.equity.ix[current_index]
+        )
 
         # Calculate Drawdown. 
-        # Note that we have pre-seeded HWM to be starting equity value -- don't add one-too-many values.
+        # Note that we have pre-seeded HWM to be starting equity value,
+        # so we don't seed it twice, else we'd add one-too-many values.
         if(current_index>0):
-            self.hwm.append(max(self.hwm[current_index-1], self.equity.ix[timestamp]))
+            self.hwm.append(
+                max(self.hwm[current_index-1], self.equity.ix[timestamp])
+            )
 
-        self.drawdowns.ix[timestamp]=self.hwm[current_index]-self.equity.ix[timestamp]
+        self.drawdowns.ix[timestamp]=(
+            self.hwm[current_index]-self.equity.ix[timestamp]
+        )
 
-    def get_statistics(self):
+    def get_results(self):
         """
-        Return a dict with all statistics
+        Return a dict with all important results & stats.
         """
         statistics={}
-        statistics["sharpe"]=self.sharpe
+        statistics["sharpe"]=self.calculate_sharpe()
         statistics["drawdowns"]=self.drawdowns
-        statistics["max_drawdown"]=self.max_drawdown
+        statistics["max_drawdown"]=max(self.drawdowns)
+        statistics["max_drawdown_pct"]=self.calculate_max_drawdown_pct()
         statistics["equity"]=self.equity
         statistics["equity_returns"]=self.equity_returns
         return statistics
+
+    def calculate_sharpe(self):
+        """
+        Calculate the sharpe ratio of our equity_returns.
+
+        TOOD TEST
+        """
+        # Assume an average annual risk-free rate over the period of 1%,
+        # which is generous given the 1yr US treasury yield
+        excess_returns = self.equity_returns - 0.01/252
+        # Return the annualised Sharpe ratio based on the excess daily returns
+        return round(self.annualised_sharpe(excess_returns), 4)
+
+    def annualised_sharpe(self, returns, N=252):
+        """
+        Calculate the annualised Sharpe ratio of a returns stream 
+        based on a number of trading periods, N. N defaults to 252,
+        which then assumes a stream of daily returns.
+
+        The function assumes that the returns are the excess of 
+        those compared to a benchmark.
+
+        TODO TEST
+        """
+        return np.sqrt(N) * returns.mean() / returns.std()
+
+    def calculate_max_drawdown_pct(self):
+        """
+        Calculate the percentage drop related to the "worst"
+        drawdown seen.
+
+        TODO TEST
+        """
+        bottom_index = self.drawdowns.idxmax()
+        top_index = self.equity[:bottom_index].idxmax()
+        return (
+            (self.equity.ix[top_index] - self.equity.ix[bottom_index])
+            /self.equity.ix[top_index] * 100
+        )
 
     def plot_results(self):
         """
@@ -132,7 +184,6 @@ class SimpleStatistics(Statistics):
         df["equity"].plot(ax=ax1, color=sns.color_palette()[0])
 
         # Plot the returns
-        # df["Returns"]=df["Equity"].pct_change()
         ax2 = fig.add_subplot(312, ylabel='Equity Returns')
         df['equity_returns'].plot(ax=ax2, color=sns.color_palette()[1])
 
