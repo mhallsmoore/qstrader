@@ -89,6 +89,12 @@ class Backtest(object):
                     if event.type == 'TICK':
                         self.cur_time = event.time
                         print("Tick %s, at %s" % (ticks, self.cur_time))
+                        # TODO ********************************
+                        # Next two lines are needed, but should be refactored out of this loop.
+                        # Should these functions be called through update_portfolio_value() or similar?
+                        self.portfolio_handler.portfolio._reset_values()
+                        self.portfolio_handler.portfolio._update_portfolio()
+                        # END TODO ****************************
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
