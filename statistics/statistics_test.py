@@ -152,6 +152,11 @@ class TestSimpleStatistics(unittest.TestCase):
 		self.assertEqual(statistics.drawdowns[t], Decimal("00.00"))
 		self.assertEqual(statistics.equity_returns[t], Decimal("0.0462"))
 
+		# Test that results are calculated correctly.
+		results=statistics.get_results()
+		self.assertEqual(results["max_drawdown"], Decimal("954.00"))
+		self.assertEqual(results["max_drawdown_pct"], Decimal("0.1908"))
+		self.assertEqual(results["sharpe"], Decimal("1.8231"))
 
 if __name__ == "__main__":
     unittest.main()

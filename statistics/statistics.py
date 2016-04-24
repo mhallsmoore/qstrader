@@ -145,17 +145,13 @@ class SimpleStatistics(Statistics):
 
         The function assumes that the returns are the excess of 
         those compared to a benchmark.
-
-        TODO TEST
         """
-        return np.sqrt(N) * returns.mean() / returns.std()
+        return Decimal(np.sqrt(N) * returns.mean() / returns.std()).quantize(Decimal("0.0001"))
 
     def calculate_max_drawdown_pct(self):
         """
         Calculate the percentage drop related to the "worst"
         drawdown seen.
-
-        TODO TEST
         """
         bottom_index = self.drawdowns.idxmax()
         top_index = self.equity[:bottom_index].idxmax()
