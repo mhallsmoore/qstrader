@@ -44,7 +44,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("499807.00"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("193.00"))
-
+		self.assertEqual(statistics.equity_returns[t], Decimal("-0.0386"))
 
 		# Perform transaction and test statistics at this tick
 		self.portfolio.transact_position(
@@ -56,7 +56,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("499455.00"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("545.00"))
-
+		self.assertEqual(statistics.equity_returns[t], Decimal("-0.0705"))
 
 		# Perform transaction and test statistics at this tick
 		self.portfolio.transact_position(
@@ -67,6 +67,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("499046.00"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("954.00"))
+		self.assertEqual(statistics.equity_returns[t], Decimal("-0.0820"))
 
 		
 		# Perform transaction and test statistics at this tick
@@ -78,6 +79,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t);
 		self.assertEqual(statistics.equity[t], Decimal("499164.00"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("836.00"))
+		self.assertEqual(statistics.equity_returns[t], Decimal("0.0236"))
 
 		
 		# Perform transaction and test statistics at this tick
@@ -89,6 +91,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("499146.00"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("854.00"))
+		self.assertEqual(statistics.equity_returns[t], Decimal("-0.0036"))
 
 
 		# Perform transaction and test statistics at this tick
@@ -100,6 +103,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("499335.00"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("665.00"))
+		self.assertEqual(statistics.equity_returns[t], Decimal("0.0379"))
 		
 
 		# Perform transaction and test statistics at this tick
@@ -111,7 +115,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("499580.00"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("420.00"))
-		
+		self.assertEqual(statistics.equity_returns[t], Decimal("0.0490"))
 
 		# Perform transaction and test statistics at this tick
 		self.portfolio.transact_position(
@@ -122,6 +126,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("499824.00"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("176.00"))
+		self.assertEqual(statistics.equity_returns[t], Decimal("0.0488"))
 		
 
 		# Perform transaction and test statistics at this tick
@@ -133,6 +138,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("500069.50"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("00.00"))
+		self.assertEqual(statistics.equity_returns[t], Decimal("0.0491"))
 		
 
 		# Perform transaction and test statistics at this tick
@@ -144,6 +150,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		statistics.update(t)
 		self.assertEqual(statistics.equity[t], Decimal("500300.50"))
 		self.assertEqual(statistics.drawdowns[t], Decimal("00.00"))
+		self.assertEqual(statistics.equity_returns[t], Decimal("0.0462"))
 
 
 if __name__ == "__main__":

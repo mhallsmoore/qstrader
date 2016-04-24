@@ -2,6 +2,7 @@ import os, os.path
 import pandas as pd
 import numpy as np
 import matplotlib
+from decimal import Decimal
 from abc import ABCMeta, abstractmethod
 try:
     matplotlib.use('TkAgg')
@@ -84,18 +85,22 @@ class SimpleStatistics(Statistics):
     def update(self, timestamp):
         """
         Update all statistics that must be tracked over time.
-
-        TODO test equity_returns calculation
         """
+        current_index = len(self.equity)-1
         # Retrieve equity value of Portfolio
         self.equity.ix[timestamp]=float(self.portfolio_handler.portfolio.equity)
+        # Retrieve the 'previous' equity value. This may be 'starting capital' if we're at the first tick.
+        previous_equity = Decimal(self.equity.ix[current_index-1] \
+                            if current_index > 0 \
+                            else self.hwm[0])
 
         # Calculate percentage return between current and previous equity value.
-        current_index = len(self.equity)-1
         self.equity_returns.ix[timestamp] = (
-            (self.equity.ix[current_index] - self.equity.ix[current_index-1])
-            /self.equity.ix[current_index]
-        )
+            (Decimal(self.equity.ix[current_index]) - previous_equity)
+            /Decimal(self.equity.ix[current_index])
+        )*100
+        self.equity_returns.ix[timestamp] = \
+            Decimal(self.equity_returns.ix[timestamp]).quantize(Decimal("0.0001"))
 
         # Calculate Drawdown. 
         # Note that we have pre-seeded HWM to be starting equity value,
@@ -130,7 +135,7 @@ class SimpleStatistics(Statistics):
         """
         # Assume an average annual risk-free rate over the period of 1%,
         # which is generous given the 1yr US treasury yield
-        excess_returns = self.equity_returns - 0.01/252
+        excess_returns = self.equity_returns.astype(float) - 0.01/252
         # Return the annualised Sharpe ratio based on the excess daily returns
         return round(self.annualised_sharpe(excess_returns), 4)
 
@@ -184,7 +189,7 @@ class SimpleStatistics(Statistics):
 
         # Plot the returns
         ax2 = fig.add_subplot(312, ylabel='Equity Returns')
-        df['equity_returns'].plot(ax=ax2, color=sns.color_palette()[1])
+        df['equity_returns'].astype(float).plot(ax=ax2, color=sns.color_palette()[1])
 
         # drawdown, max_dd, dd_duration = self.create_drawdowns(df["Equity"])
         ax3 = fig.add_subplot(313, ylabel='Drawdowns')
