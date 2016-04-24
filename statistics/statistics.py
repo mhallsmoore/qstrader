@@ -80,23 +80,21 @@ class SimpleStatistics(Statistics):
         self.drawdowns=pd.Series()
         self.equity=pd.Series()
         self.equity_returns=pd.Series()
+        # Initialize in order for first-step calculations to be correct.
         self.hwm=[float(self.portfolio_handler.portfolio.equity)]
+        self.equity.ix["0000-00-00 00:00:00"] = float(self.portfolio_handler.portfolio.equity)
 
     def update(self, timestamp):
         """
         Update all statistics that must be tracked over time.
         """
-        current_index = len(self.equity)-1
         # Retrieve equity value of Portfolio
         self.equity.ix[timestamp]=float(self.portfolio_handler.portfolio.equity)
-        # Retrieve the 'previous' equity value. This may be 'starting capital' if we're at the first tick.
-        previous_equity = Decimal(self.equity.ix[current_index-1] \
-                            if current_index > 0 \
-                            else self.hwm[0])
+        current_index = len(self.equity)-1
 
         # Calculate percentage return between current and previous equity value.
         self.equity_returns.ix[timestamp] = (
-            (Decimal(self.equity.ix[current_index]) - previous_equity)
+            (Decimal(self.equity.ix[current_index]) - Decimal(self.equity.ix[current_index-1]))
             /Decimal(self.equity.ix[current_index])
         )*100
         self.equity_returns.ix[timestamp] = \
@@ -161,10 +159,11 @@ class SimpleStatistics(Statistics):
         """
         bottom_index = self.drawdowns.idxmax()
         top_index = self.equity[:bottom_index].idxmax()
-        return (
+        pct=(
             (self.equity.ix[top_index] - self.equity.ix[bottom_index])
             /self.equity.ix[top_index] * 100
         )
+        return Decimal(pct).quantize(Decimal("0.0001"))
 
     def plot_results(self):
         """
