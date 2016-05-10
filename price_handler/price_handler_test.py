@@ -1,7 +1,10 @@
 import datetime
 from decimal import Decimal
 import os, os.path
-import queue
+try:
+    import Queue as queue
+except ImportError:
+    import queue
 import unittest
 
 import pandas as pd
