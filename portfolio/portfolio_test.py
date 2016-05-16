@@ -6,7 +6,7 @@ from qstrader.portfolio.portfolio import Portfolio
 
 class PriceHandlerMock(object):
     def __init__(self):
-        pass
+        self.type = "TICK_HANDLER"
 
     def get_best_bid_ask(self, ticker):
         prices = {
