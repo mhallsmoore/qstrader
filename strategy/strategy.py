@@ -59,7 +59,7 @@ class TestStrategy(Strategy):
 class BuyAndHoldStrategy(Strategy):
     """
     A testing strategy that simply purchases (longs) a set of
-    assets upon first receipt of the relevant tick event and 
+    assets upon first receipt of the relevant bar event and 
     then holds until the completion of a backtest.
     """
     def __init__(self, tickers, events_queue):
@@ -70,7 +70,7 @@ class BuyAndHoldStrategy(Strategy):
 
     def calculate_signals(self, event):
         ticker = self.tickers[0]
-        if event.type == "TICK" and event.ticker == ticker:
+        if event.type == "BAR" and event.ticker == ticker:
             if not self.invested and self.ticks == 0:
                 signal = SignalEvent(ticker, "BOT")
                 self.events_queue.put(signal)

@@ -81,11 +81,15 @@ class IBSimulatedExecutionHandler(ExecutionHandler):
             quantity = event.quantity
 
             # Obtain the fill price
-            bid, ask = self.price_handler.get_best_bid_ask(ticker)
-            if event.action == "BOT":
-                fill_price = Decimal(str(ask))
+            if self.price_handler.type == "TICK_HANDLER":
+                bid, ask = self.price_handler.get_best_bid_ask(ticker)
+                if event.action == "BOT":
+                    fill_price = Decimal(str(ask))
+                else:
+                    fill_price = Decimal(str(bid))
             else:
-                fill_price = Decimal(str(bid))
+                close_price = self.price_handler.get_last_close(ticker)
+                fill_price = Decimal(str(close_price))
 
             # Set a dummy exchange and calculate trade commission
             exchange = "ARCA"
