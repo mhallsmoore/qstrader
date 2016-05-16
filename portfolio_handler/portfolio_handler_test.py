@@ -1,6 +1,9 @@
 import datetime
 from decimal import Decimal
-import queue
+try:
+    import Queue as queue
+except ImportError:
+    import queue
 import unittest
 
 from qstrader.event.event import FillEvent, OrderEvent, SignalEvent
