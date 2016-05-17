@@ -79,26 +79,35 @@ class Backtest(object):
         print("Running Backtest...")
         iters = 0
         ticks = 0
+        bars = 0
         while iters < self.max_iters and self.price_handler.continue_backtest:
             try:
                 event = self.events_queue.get(False)
             except queue.Empty:
-                self.price_handler.stream_next_tick()
+                if self.price_handler.type == "TICK_HANDLER":
+                    self.price_handler.stream_next_tick()
+                else:
+                    self.price_handler.stream_next_bar()
             else:
                 if event is not None:
                     if event.type == 'TICK':
                         self.cur_time = event.time
                         print("Tick %s, at %s" % (ticks, self.cur_time))
-                        # TODO ********************************
-                        # Next two lines are needed, but should be refactored out of this loop.
-                        # Should these functions be called through update_portfolio_value() or similar?
+                        self.strategy.calculate_signals(event)
                         self.portfolio_handler.portfolio._reset_values()
                         self.portfolio_handler.portfolio._update_portfolio()
-                        # END TODO ****************************
-                        self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
                         ticks += 1
+                    elif event.type == 'BAR':
+                        self.cur_time = event.time
+                        print("Bar %s, at %s" % (bars, self.cur_time))
+                        self.strategy.calculate_signals(event)
+                        self.portfolio_handler.portfolio._reset_values()
+                        self.portfolio_handler.portfolio._update_portfolio()
+                        self.portfolio_handler.update_portfolio_value()
+                        self.statistics.update(event.time)
+                        bars += 1
                     elif event.type == 'SIGNAL':
                         self.portfolio_handler.on_signal(event)
                     elif event.type == 'ORDER':
