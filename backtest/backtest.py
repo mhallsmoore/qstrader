@@ -22,54 +22,40 @@ except ImportError:
 
 class Backtest(object):
     """
-    Enscapsulates the settings and components for 
+    Enscapsulates the settings and components for
     carrying out an event-driven backtest.
     """
     def __init__(
-        self, tickers, price_handler, 
-        strategy, portfolio_handler, 
-        execution_handler, 
+        self, tickers, price_handler,
+        strategy, portfolio_handler,
+        execution_handler,
         position_sizer, risk_manager,
         statistics,
-        equity=Decimal("100000.00"), 
+        equity=Decimal("100000.00"),
         heartbeat=0.0, max_iters=10000000000
     ):
-        """
-        Initialises the backtest.
-        """
-        self.tickers = tickers
-        self.events_queue = queue.Queue()
-        self.csv_dir = settings.CSV_DATA_DIR
-        self.output_dir = settings.OUTPUT_DIR
+      """
+      Set up the backtest variables according to
+      what has been passed in.
+      """
 
-        self.price_handler = price_handler(
-            self.csv_dir, self.events_queue, 
-            init_tickers=self.tickers
-        )
-        self.strategy = strategy(
-            self.tickers, self.events_queue
-        )
-        self.equity = equity
-        self.heartbeat = heartbeat
-        self.max_iters = max_iters
-
-        self.position_sizer = position_sizer()
-        self.risk_manager = risk_manager()
-
-        self.portfolio_handler = portfolio_handler(
-            self.equity, self.events_queue, self.price_handler,
-            self.position_sizer, self.risk_manager
-        )
-        self.execution_handler = execution_handler(
-            self.events_queue, self.price_handler
-        )
-        self.statistics = statistics(self.portfolio_handler)
-
-        self.cur_time = None
+      self.tickers = tickers
+      self.price_handler = price_handler
+      self.strategy = strategy
+      self.portfolio_handler = portfolio_handler
+      self.execution_handler = execution_handler
+      self.position_sizer = position_sizer
+      self.risk_manager = risk_manager
+      self.statistics = statistics
+      self.equity = equity
+      self.heartbeat = heartbeat
+      self.max_iters = max_iters
+      self.events_queue = price_handler.events_queue
+      self.cur_time = None
 
     def _run_backtest(self):
         """
-        Carries out an infinite while loop that polls the 
+        Carries out an infinite while loop that polls the
         events queue and directs each event to either the
         strategy component of the execution handler. The
         loop will then pause for "heartbeat" seconds and
@@ -94,6 +80,7 @@ class Backtest(object):
                         self.cur_time = event.time
                         print("Tick %s, at %s" % (ticks, self.cur_time))
                         self.strategy.calculate_signals(event)
+                        self.portfolio_handler.portfolio._reset_values()
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
                         ticks += 1
@@ -101,6 +88,7 @@ class Backtest(object):
                         self.cur_time = event.time
                         print("Bar %s, at %s" % (bars, self.cur_time))
                         self.strategy.calculate_signals(event)
+                        self.portfolio_handler.portfolio._reset_values()
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
                         bars += 1
