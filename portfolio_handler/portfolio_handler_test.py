@@ -1,6 +1,9 @@
 import datetime
 from decimal import Decimal
-import queue
+try:
+    import Queue as queue
+except ImportError:
+    import queue
 import unittest
 
 from qstrader.event.event import FillEvent, OrderEvent, SignalEvent
@@ -9,7 +12,7 @@ from qstrader.portfolio_handler.portfolio_handler import PortfolioHandler
 
 class PriceHandlerMock(object):
     def __init__(self):
-        pass
+        self.type = "TICK_HANDLER"
 
     def get_best_bid_ask(self, ticker):
         prices = {

@@ -40,7 +40,12 @@ class Portfolio(object):
         """
         for ticker in self.positions:
             pt = self.positions[ticker]
-            bid, ask = self.price_handler.get_best_bid_ask(ticker)
+            if self.price_handler.type == "TICK_HANDLER":
+                bid, ask = self.price_handler.get_best_bid_ask(ticker)
+            else:
+                close_price = self.price_handler.get_last_close(ticker)
+                bid = close_price
+                ask = close_price
             pt.update_market_value(bid, ask)
             self.unrealised_pnl += pt.unrealised_pnl
             self.realised_pnl += pt.realised_pnl
@@ -66,7 +71,12 @@ class Portfolio(object):
         """
         self._reset_values()
         if ticker not in self.positions:
-            bid, ask = self.price_handler.get_best_bid_ask(ticker)
+            if self.price_handler.type == "TICK_HANDLER":
+                bid, ask = self.price_handler.get_best_bid_ask(ticker)
+            else:
+                close_price = self.price_handler.get_last_close(ticker)
+                bid = close_price
+                ask = close_price
             position = Position(
                 action, ticker, quantity,
                 price, commission, bid, ask
@@ -97,7 +107,12 @@ class Portfolio(object):
             self.positions[ticker].transact_shares(
                 action, quantity, price, commission
             )
-            bid, ask = self.price_handler.get_best_bid_ask(ticker)
+            if self.price_handler.type == "TICK_HANDLER":
+                bid, ask = self.price_handler.get_best_bid_ask(ticker)
+            else:
+                close_price = self.price_handler.get_last_close(ticker)
+                bid = close_price
+                ask = close_price
             self.positions[ticker].update_market_value(bid, ask)
             self._update_portfolio()
         else:
