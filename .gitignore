@@ -11,7 +11,7 @@ dist
 build
 eggs
 parts
-private-files
+private_files
 bin
 var
 sdist
