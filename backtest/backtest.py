@@ -108,5 +108,5 @@ class Backtest(object):
         """
         self._run_backtest()
         print("Backtest complete.")
-        self.statistics.get_results()
+        self.statistics.generate_results()
         self.statistics.plot_results()

@@ -10,6 +10,27 @@ import seaborn as sns
 from qstrader import settings
 
 class Statistics():
+    
+    def __init__(self, portfolio_handler):
+        self.portf_hand = portfolio_handler
+
+    def update(self, event_time):
+        """On every BAR or TICK event that update() is called, unrealised 
+        pnl is written to the equity.csv file in the output folder"""
+        unrealized_pnls_snapshot = []
+        for ticker in self.portf_hand.portfolio.positions:
+            pt = self.portf_hand.portfolio.positions[ticker]
+            unrealized_pnls_snapshot.append(float(pt.unrealised_pnl))
+            
+        # now write to file    
+        if not self.portf_hand.portfolio.positions:
+            #df = pd.DataFrame([str(event_time), unrealized_pnls_snapshot])
+            df = pd.DataFrame([unrealized_pnls_snapshot])            
+            file_name = "equity.csv"
+            file_path = os.path.join(settings.OUTPUT_DIR, file_name)
+            with open(file_path, 'a') as f:
+                df.to_csv(f, header=False)
+    
     def create_drawdowns(self, pnl):
         """
         Calculate the largest peak-to-trough drawdown of the PnL curve
