@@ -6,7 +6,7 @@ from qstrader.portfolio_handler.portfolio_handler import PortfolioHandler
 from qstrader.position_sizer.position_sizer import TestPositionSizer
 from qstrader.price_handler.price_handler import HistoricCSVPriceHandler
 from qstrader.risk_manager.risk_manager import TestRiskManager
-from qstrader.statistics.statistics import SimpleStatistics
+from qstrader.statistics.statistics import Statistics
 from qstrader import settings
 from qstrader.strategy.strategy import TestStrategy
 try:
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     )
 
     # Use the default Statistics
-    statistics = SimpleStatistics(portfolio_handler)
+    statistics = Statistics(portfolio_handler)
 
     # Set up the backtest
     backtest = Backtest(
