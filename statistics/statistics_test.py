@@ -156,7 +156,7 @@ class TestSimpleStatistics(unittest.TestCase):
 		results=statistics.get_results()
 		self.assertEqual(results["max_drawdown"], Decimal("954.00"))
 		self.assertEqual(results["max_drawdown_pct"], Decimal("0.1908"))
-		self.assertEqual(results["sharpe"], Decimal("1.8231"))
+		self.assertEqual(results["sharpe"], Decimal("1.8353"))
 
 if __name__ == "__main__":
     unittest.main()

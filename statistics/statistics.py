@@ -125,15 +125,16 @@ class SimpleStatistics(Statistics):
         statistics["equity_returns"]=self.equity_returns
         return statistics
 
-    def calculate_sharpe(self):
+    def calculate_sharpe(self, benchmark_return=0.00):
         """
         Calculate the sharpe ratio of our equity_returns.
 
+        Expects benchmark_return to be, for example, 0.01 for 1%
+
         TOOD TEST
         """
-        # Assume an average annual risk-free rate over the period of 1%,
-        # which is generous given the 1yr US treasury yield
-        excess_returns = self.equity_returns.astype(float) - 0.01/252
+        excess_returns = self.equity_returns.astype(float) - benchmark_return/252
+        
         # Return the annualised Sharpe ratio based on the excess daily returns
         return round(self.annualised_sharpe(excess_returns), 4)
 
