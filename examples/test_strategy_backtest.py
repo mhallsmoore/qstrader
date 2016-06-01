@@ -7,6 +7,7 @@ from qstrader.position_sizer.position_sizer import TestPositionSizer
 from qstrader.price_handler.price_handler import HistoricCSVPriceHandler
 from qstrader.risk_manager.risk_manager import TestRiskManager
 from qstrader.statistics.statistics import SimpleStatistics
+from qstrader.compliance.compliance import TestCompliance
 from qstrader import settings
 from qstrader.strategy.strategy import TestStrategy
 try:
@@ -44,11 +45,13 @@ if __name__ == "__main__":
         position_sizer, risk_manager
     )
 
-    # Use a simulated IB Execution Handler
-    execution_handler = IBSimulatedExecutionHandler(
-        events_queue, price_handler
-    )
+	# Use the TestCompliance component
+	compliance = TestCompliance();
 
+	# Use a simulated IB Execution Handler
+	execution_handler = IBSimulatedExecutionHandler(
+		events_queue, price_handler, compliance
+	)
     # Use the default Statistics
     statistics = SimpleStatistics(portfolio_handler)
 
