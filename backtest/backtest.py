@@ -22,23 +22,23 @@ except ImportError:
 
 class Backtest(object):
     """
-    Enscapsulates the settings and components for 
+    Enscapsulates the settings and components for
     carrying out an event-driven backtest.
     """
     def __init__(
-        self, tickers, price_handler, 
-        strategy, portfolio_handler, 
-        execution_handler, 
+        self, tickers, price_handler,
+        strategy, portfolio_handler,
+        execution_handler,
         position_sizer, risk_manager,
         statistics,
-        equity=Decimal("100000.00"), 
+        equity=Decimal("100000.00"),
         heartbeat=0.0, max_iters=10000000000
     ):
       """
-      Set up the backtest variables according to 
+      Set up the backtest variables according to
       what has been passed in.
       """
-      
+
       self.tickers = tickers
       self.price_handler = price_handler
       self.strategy = strategy
@@ -55,7 +55,7 @@ class Backtest(object):
 
     def _run_backtest(self):
         """
-        Carries out an infinite while loop that polls the 
+        Carries out an infinite while loop that polls the
         events queue and directs each event to either the
         strategy component of the execution handler. The
         loop will then pause for "heartbeat" seconds and
@@ -107,6 +107,9 @@ class Backtest(object):
         Simulates the backtest and outputs portfolio performance.
         """
         self._run_backtest()
+        results = self.statistics.get_results()
         print("Backtest complete.")
-        self.statistics.get_results()
+        print("Sharpe Ratio: %s" % results["sharpe"])
+        print("Max Drawdown: %s" % results["max_drawdown"])
+        print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
         self.statistics.plot_results()

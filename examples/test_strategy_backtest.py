@@ -43,7 +43,7 @@ if __name__ == "__main__":
         initial_equity, events_queue, price_handler,
         position_sizer, risk_manager
     )
-    
+
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(
         events_queue, price_handler
@@ -54,10 +54,10 @@ if __name__ == "__main__":
 
     # Set up the backtest
     backtest = Backtest(
-        tickers, price_handler, 
-        strategy, portfolio_handler, 
+        tickers, price_handler,
+        strategy, portfolio_handler,
         execution_handler,
-        position_sizer, risk_manager, 
+        position_sizer, risk_manager,
         statistics,
         initial_equity
     )
