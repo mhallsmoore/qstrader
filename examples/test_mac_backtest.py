@@ -7,6 +7,7 @@ from qstrader.position_sizer.position_sizer import TestPositionSizer
 from qstrader.price_handler.yahoo_price_handler import YahooDailyBarPriceHandler
 from qstrader.risk_manager.risk_manager import TestRiskManager
 from qstrader.statistics.statistics import SimpleStatistics
+from qstrader.compliance.compliance import TestCompliance
 from qstrader import settings
 from qstrader.strategy.moving_average_cross_strategy import MovingAverageCrossStrategy
 try:
@@ -16,7 +17,7 @@ except ImportError:
 
 
 if __name__ == "__main__":
-    tickers = ["AAPL"]
+    tickers = ["SP500TR"]
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
@@ -33,10 +34,10 @@ if __name__ == "__main__":
     # Use the MAC Strategy
     strategy = MovingAverageCrossStrategy( tickers, events_queue )
 
-    # Use an example Position Sizer, 
+    # Use an example Position Sizer,
     position_sizer = TestPositionSizer()
 
-    # Use an example Risk Manager, 
+    # Use an example Risk Manager,
     risk_manager = TestRiskManager()
 
     # Use the default Portfolio Handler
@@ -44,10 +45,13 @@ if __name__ == "__main__":
         initial_equity, events_queue, price_handler,
         position_sizer, risk_manager
     )
-    
+
+    # Use the TestCompliance component
+    compliance = TestCompliance();
+
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(
-        events_queue, price_handler
+        events_queue, price_handler, compliance
     )
 
     # Use the default Statistics
@@ -55,10 +59,10 @@ if __name__ == "__main__":
 
     # Set up the backtest
     backtest = Backtest(
-        tickers, price_handler, 
-        strategy, portfolio_handler, 
+        tickers, price_handler,
+        strategy, portfolio_handler,
         execution_handler,
-        position_sizer, risk_manager, 
+        position_sizer, risk_manager,
         statistics,
         initial_equity
     )
