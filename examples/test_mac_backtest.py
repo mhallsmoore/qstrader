@@ -17,7 +17,7 @@ except ImportError:
 
 
 if __name__ == "__main__":
-    tickers = ["AAPL"]
+    tickers = ["SP500TR"]
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
