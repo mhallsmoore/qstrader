@@ -88,9 +88,14 @@ class Position(object):
         self.market_value = (
             self.quantity * midpoint
         ).quantize(TWOPLACES)
-        self.unrealised_pnl = (
-            self.market_value - self.cost_basis
-        ).quantize(TWOPLACES)
+        if self.action == "BOT":
+            self.unrealised_pnl = (
+                self.market_value - self.cost_basis
+            ).quantize(TWOPLACES)
+        elif self.action == "SLD":
+            self.unrealised_pnl = (
+                -self.market_value - self.cost_basis
+            ).quantize(TWOPLACES)
         self.realised_pnl = (
             self.market_value + self.net_incl_comm
         )
