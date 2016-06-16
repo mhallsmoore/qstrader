@@ -85,20 +85,17 @@ class Position(object):
         and loss of any transactions.
         """
         midpoint = (bid+ask)/Decimal("2.0")
-        self.market_value = (
-            self.quantity * midpoint
-        ).quantize(TWOPLACES)
         if self.action == "BOT":
-            self.unrealised_pnl = (
-                self.market_value - self.cost_basis
+            self.market_value = (
+                self.quantity * midpoint
             ).quantize(TWOPLACES)
         elif self.action == "SLD":
-            self.unrealised_pnl = (
-                -self.market_value - self.cost_basis
+            self.market_value = (
+                -self.quantity * midpoint
             ).quantize(TWOPLACES)
-        self.realised_pnl = (
-            self.market_value + self.net_incl_comm
-        )
+        self.unrealised_pnl = (
+            self.market_value - self.cost_basis
+        ).quantize(TWOPLACES)
 
     def transact_shares(self, action, quantity, price, commission):
         """
@@ -109,8 +106,6 @@ class Position(object):
         bought/sold, the cost basis and PnL calculations,
         as carried out through Interactive Brokers TWS.
         """
-        prev_quantity = self.quantity
-        prev_commission = self.total_commission
 
         self.total_commission += commission
 
@@ -119,13 +114,16 @@ class Position(object):
             self.avg_bot = (
                 (self.avg_bot*self.buys + price*quantity)/(self.buys + quantity)
             ).quantize(FIVEPLACES)
-            if self.action != "SLD":
+            if self.action != "SLD": #increased long position
                 self.avg_price = (
                     (
                         self.avg_price*self.buys +
                         price*quantity+commission
                     )/(self.buys + quantity)
                 ).quantize(FIVEPLACES)
+            elif self.action == "SLD": #closed some stuff out 
+                self.realised_pnl += quantity * (self.avg_price - price) - commission #adjust realized pnl
+                    
             self.buys += quantity
             self.total_bot = (self.buys * self.avg_bot).quantize(TWOPLACES)
 
@@ -134,13 +132,16 @@ class Position(object):
             self.avg_sld = (
                 (self.avg_sld*self.sells + price*quantity)/(self.sells + quantity)
             ).quantize(FIVEPLACES)
-            if self.action != "BOT":
+            if self.action != "BOT": #increasing short position
                 self.avg_price = (
                     (
                         self.avg_price*self.sells +
                         price*quantity-commission
                     )/(self.sells + quantity)
                 ).quantize(FIVEPLACES)
+                self.unrealised_pnl -= commission
+            elif self.action == "BOT": #closed stuff out
+                self.realised_pnl += quantity * (price - self.avg_price) - commission
             self.sells += quantity
             self.total_sld = (self.sells * self.avg_sld).quantize(TWOPLACES)
 

@@ -120,6 +120,60 @@ class TestRoundTripPGPosition(unittest.TestCase):
         self.assertEqual(self.position.unrealised_pnl, Decimal("0.00"))
         self.assertEqual(self.position.realised_pnl, Decimal("-19.50"))
 
+class TestPNLsShorting(unittest.TestCase):
+    """
+    Tests that the unrealised and realised pnls are working after position 
+    initialization, every transaction, and every price updpate"""
+    
+    def setUp(self):
+        self.position = Position(
+            "SLD", "PG", Decimal('100'), 
+            Decimal("77.69"), Decimal("1.00"), 
+            Decimal('77.68'), Decimal('77.70')
+        )
+        
+    def testStuff(self):
+        
+        self.assertEqual(self.position.unrealised_pnl, Decimal('-1.00'))
+        self.assertEqual(self.position.realised_pnl, Decimal('0.00'))
+        
+        self.position.update_market_value(Decimal('76.68'), Decimal('76.70'))
+        self.assertEqual(self.position.unrealised_pnl, Decimal('99.00'))
+
+        self.position.transact_shares("BOT", Decimal('100'), Decimal('76.69'), Decimal('1.00'))
+        self.assertEqual(self.position.unrealised_pnl, Decimal('99.00')) #still high
+        self.assertEqual(self.position.realised_pnl, Decimal('98.00000'))
+        
+        self.position.update_market_value(Decimal('76.68'), Decimal('76.70'))
+        self.assertEqual(self.position.unrealised_pnl, Decimal('0.00')) #back to 0 because we closed out
+        self.assertEqual(self.position.realised_pnl, Decimal('98.00000'))
+        
+class TestPNLsBuying(unittest.TestCase):
+    """
+    Tests that the unrealised and realised pnls are working after position
+    initialization, every transaction, and every price update"""
+    
+    def setUp(self):
+        self.position = Position(
+            "BOT", "XOM", Decimal('100'), 
+            Decimal("74.78"), Decimal("1.00"), 
+            Decimal('74.77'), Decimal('74.79')
+        )
+
+    def testStuff(self):
+        self.assertEqual(self.position.unrealised_pnl, Decimal('-1.00'))
+        self.assertEqual(self.position.realised_pnl, Decimal('0.00'))
+
+        self.position.update_market_value(Decimal('75.77'), Decimal('75.79'))
+        self.assertEqual(self.position.unrealised_pnl, Decimal('99.00'))
+        
+        self.position.transact_shares("SLD", Decimal('100'), Decimal('75.78'), Decimal('1.00'))
+        self.assertEqual(self.position.unrealised_pnl, Decimal('99.00')) #still high
+        self.assertEqual(self.position.realised_pnl, Decimal('98.00000'))
+
+        self.position.update_market_value(Decimal('75.77'), Decimal('75.79'))
+        self.assertEqual(self.position.unrealised_pnl, Decimal('0.00'))
+        
 
 if __name__ == "__main__":
     unittest.main()
