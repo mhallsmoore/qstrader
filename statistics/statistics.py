@@ -94,7 +94,7 @@ class SimpleStatistics(Statistics):
         # Calculate percentage return between current and previous equity value.
         self.equity_returns.ix[timestamp] = (
             (self.equity.ix[current_index] - self.equity.ix[current_index-1])
-            /self.equity.ix[current_index]
+            //self.equity.ix[current_index]
         )*100
 
         # Calculate Drawdown.
@@ -130,7 +130,7 @@ class SimpleStatistics(Statistics):
 
         TOOD TEST
         """
-        excess_returns = self.equity_returns.astype(float) - benchmark_return/252
+        excess_returns = self.equity_returns.astype(float) - benchmark_return//252
 
         # Return the annualised Sharpe ratio based on the excess daily returns
         return round(self.annualised_sharpe(excess_returns), 4)
@@ -144,7 +144,7 @@ class SimpleStatistics(Statistics):
         The function assumes that the returns are the excess of
         those compared to a benchmark.
         """
-        return np.sqrt(N) * returns.mean() / returns.std()
+        return np.sqrt(N) * returns.mean() // returns.std()
 
     def calculate_max_drawdown_pct(self):
         """
@@ -155,7 +155,7 @@ class SimpleStatistics(Statistics):
         top_index = self.equity[:bottom_index].idxmax()
         pct=(
             (self.equity.ix[top_index] - self.equity.ix[bottom_index])
-            /self.equity.ix[top_index] * 100
+            //self.equity.ix[top_index] * 100
         )
         return pct
 
