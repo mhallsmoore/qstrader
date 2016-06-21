@@ -172,9 +172,9 @@ class SimpleStatistics(Statistics):
         fig.patch.set_facecolor('white')
 
         df = pd.DataFrame()
-        df["equity"]=self.equity
-        df["equity_returns"]=self.equity_returns
-        df["drawdowns"]=self.drawdowns
+        df["equity"]=pd.Series(self.equity)
+        df["equity_returns"]=pd.Series(self.equity_returns)
+        df["drawdowns"]=pd.Series(self.drawdowns)
 
         # Plot the equity curve
         ax1 = fig.add_subplot(311, ylabel='Equity Value')
