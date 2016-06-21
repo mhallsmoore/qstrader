@@ -2,7 +2,7 @@
 
 QSTrader is an open-source event-driven backtesting and live trading platform for use in the equities markets, currently in an early "alpha" state.
 
-It has been created as part of the Advanced Trading Infrastructure article series on QuantStart.com to provide the systematic trading community with a robust trading engine that allows straightforward equities/ETF strategy implementation and testing. 
+It has been created as part of the Advanced Trading Infrastructure article series on QuantStart.com to provide the systematic trading community with a robust trading engine that allows straightforward equities/ETF strategy implementation and testing.
 
 The software is provided under a permissive "MIT" license (see below).
 
@@ -20,6 +20,8 @@ The software is provided under a permissive "MIT" license (see below).
 
 * **Backtesting** - QSTrader supports intraday tick-resolution (top of order book bid/ask) datasets.
 
+* **Private Components** - QSTrader allows you to include a repository of your own private strategies or components. Simply checkout your own repository within the root of QSTrader and rename the directory to `private_files`. This will ensure the QSTrader repository can be easily kept up to date without interfering with your private repository.
+
 # Planned Features
 
 * **Transaction Costs** - Fees/commission, slippage and market impact will all be simulated using realistic assumptions. This means the costs predicted in backtests will be similar to those encountered in live trading.
@@ -30,7 +32,7 @@ The software is provided under a permissive "MIT" license (see below).
 
 # Installation and Usage
 
-QSTrader is in an extremely early alpha state at the moment and should only be used for exploratory backtesting research. 
+QSTrader is in an extremely early alpha state at the moment and should only be used for exploratory backtesting research.
 
 1) Clone this git repository into a suitable location on your machine using the following command in your terminal: ```git clone https://github.com/mhallsmoore/qstrader.git```.
 
