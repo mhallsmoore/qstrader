@@ -126,11 +126,11 @@ class YahooDailyBarPriceHandler(PriceHandler):
         # Obtain all elements of the bar from the dataframe
         getcontext().rounding = ROUND_HALF_DOWN
         ticker = row["Ticker"]
-        open_price = int(Decimal(str(row["Open"])).quantize(Decimal("0.0001")) * settings.PRICE_MULTIPLIER)
-        high_price = int(Decimal(str(row["High"])).quantize(Decimal("0.0001")) * settings.PRICE_MULTIPLIER)
-        low_price = int(Decimal(str(row["Low"])).quantize(Decimal("0.0001")) * settings.PRICE_MULTIPLIER)
-        close_price = int(Decimal(str(row["Close"])).quantize(Decimal("0.0001")) * settings.PRICE_MULTIPLIER)
-        adj_close_price = int(Decimal(str(row["Adj Close"])).quantize(Decimal("0.0001")) * settings.PRICE_MULTIPLIER)
+        open_price = int(row["Open"] * 100) * settings.PRICE_MULTIPLIER // 100
+        high_price = int(row["High"] * 100) * settings.PRICE_MULTIPLIER // 100
+        low_price = int(row["Low"] * 100) * settings.PRICE_MULTIPLIER // 100
+        close_price = int(row["Close"] * 100) * settings.PRICE_MULTIPLIER // 100
+        adj_close_price = int(row["Adj Close"] * 100) * settings.PRICE_MULTIPLIER // 100
         volume = int(row["Volume"])
 
         # Create decimalised prices for
