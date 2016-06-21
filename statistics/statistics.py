@@ -2,7 +2,6 @@ import os, os.path
 import pandas as pd
 import numpy as np
 import matplotlib
-from decimal import Decimal
 from abc import ABCMeta, abstractmethod
 try:
     matplotlib.use('TkAgg')
@@ -14,7 +13,7 @@ from qstrader import settings
 
 class Statistics(object):
     """
-    Statistics is an abstract class providing an interface for 
+    Statistics is an abstract class providing an interface for
     all inherited statistic classes (live, historic, custom, etc).
 
     The goal of a Statistics object is to keep a record of useful
@@ -64,7 +63,7 @@ class SimpleStatistics(Statistics):
     Max Drawdown Duration.
 
     TODO think about Alpha/Beta, compare strategy of benchmark.
-    TODO think about speed -- will be bad doing for every tick 
+    TODO think about speed -- will be bad doing for every tick
     on anything that trades sub-minute.
     TODO think about slippage, fill rate, etc
     TODO brokerage costs?
@@ -94,13 +93,11 @@ class SimpleStatistics(Statistics):
 
         # Calculate percentage return between current and previous equity value.
         self.equity_returns.ix[timestamp] = (
-            (Decimal(self.equity.ix[current_index]) - Decimal(self.equity.ix[current_index-1]))
-            /Decimal(self.equity.ix[current_index])
+            (self.equity.ix[current_index] - self.equity.ix[current_index-1])
+            /self.equity.ix[current_index]
         )*100
-        self.equity_returns.ix[timestamp] = \
-            Decimal(self.equity_returns.ix[timestamp]).quantize(Decimal("0.0001"))
 
-        # Calculate Drawdown. 
+        # Calculate Drawdown.
         # Note that we have pre-seeded HWM to be starting equity value,
         # so we don't seed it twice, else we'd add one-too-many values.
         if(current_index>0):
@@ -134,20 +131,20 @@ class SimpleStatistics(Statistics):
         TOOD TEST
         """
         excess_returns = self.equity_returns.astype(float) - benchmark_return/252
-        
+
         # Return the annualised Sharpe ratio based on the excess daily returns
         return round(self.annualised_sharpe(excess_returns), 4)
 
     def annualised_sharpe(self, returns, N=252):
         """
-        Calculate the annualised Sharpe ratio of a returns stream 
+        Calculate the annualised Sharpe ratio of a returns stream
         based on a number of trading periods, N. N defaults to 252,
         which then assumes a stream of daily returns.
 
-        The function assumes that the returns are the excess of 
+        The function assumes that the returns are the excess of
         those compared to a benchmark.
         """
-        return Decimal(np.sqrt(N) * returns.mean() / returns.std()).quantize(Decimal("0.0001"))
+        return np.sqrt(N) * returns.mean() / returns.std()
 
     def calculate_max_drawdown_pct(self):
         """
@@ -160,7 +157,7 @@ class SimpleStatistics(Statistics):
             (self.equity.ix[top_index] - self.equity.ix[bottom_index])
             /self.equity.ix[top_index] * 100
         )
-        return Decimal(pct).quantize(Decimal("0.0001"))
+        return pct
 
     def plot_results(self):
         """
@@ -178,7 +175,7 @@ class SimpleStatistics(Statistics):
         df["equity"]=self.equity
         df["equity_returns"]=self.equity_returns
         df["drawdowns"]=self.drawdowns
-        
+
         # Plot the equity curve
         ax1 = fig.add_subplot(311, ylabel='Equity Value')
         df["equity"].plot(ax=ax1, color=sns.color_palette()[0])

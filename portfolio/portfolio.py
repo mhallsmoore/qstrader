@@ -1,4 +1,3 @@
-from decimal import Decimal
 from qstrader.position.position import Position
 
 
@@ -27,8 +26,8 @@ class Portfolio(object):
         """
         self.cur_cash = self.init_cash
         self.equity = self.cur_cash
-        self.unrealised_pnl = Decimal('0.00')
-        self.realised_pnl = Decimal('0.00')
+        self.unrealised_pnl = 0
+        self.realised_pnl = 0
 
     def _update_portfolio(self):
         """
@@ -90,7 +89,7 @@ class Portfolio(object):
             )
 
     def _modify_position(
-        self, action, ticker, 
+        self, action, ticker,
         quantity, price, commission
     ):
         """
@@ -122,28 +121,28 @@ class Portfolio(object):
             )
 
     def transact_position(
-        self, action, ticker, 
+        self, action, ticker,
         quantity, price, commission
     ):
         """
-        Handles any new position or modification to 
+        Handles any new position or modification to
         a current position, by calling the respective
-        _add_position and _modify_position methods. 
+        _add_position and _modify_position methods.
 
-        Hence, this single method will be called by the 
+        Hence, this single method will be called by the
         PortfolioHandler to update the Portfolio itself.
         """
         if ticker not in self.positions:
             self._add_position(
-                action, ticker, quantity, 
+                action, ticker, quantity,
                 price, commission
             )
         else:
             self._modify_position(
-                action, ticker, quantity, 
+                action, ticker, quantity,
                 price, commission
             )
-    
+
     def create_portfolio_state_dict(self):
         """
         Creates a dictionary containing the best estimated

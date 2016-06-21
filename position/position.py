@@ -1,9 +1,4 @@
-from decimal import Decimal
-
-
-TWOPLACES = Decimal("0.01")
-FIVEPLACES = Decimal("0.00001")
-
+from qstrader import settings
 
 class Position(object):
     def __init__(
@@ -25,15 +20,15 @@ class Position(object):
         self.init_price = init_price
         self.init_commission = init_commission
 
-        self.realised_pnl = Decimal("0.00")
-        self.unrealised_pnl = Decimal("0.00")
+        self.realised_pnl = 0
+        self.unrealised_pnl = 0
 
-        self.buys = Decimal("0")
-        self.sells = Decimal("0")
-        self.avg_bot = Decimal("0.00")
-        self.avg_sld = Decimal("0.00")
-        self.total_bot = Decimal("0.00")
-        self.total_sld = Decimal("0.00")
+        self.buys = 0
+        self.sells = 0
+        self.avg_bot = 0
+        self.avg_sld = 0
+        self.total_bot = 0
+        self.total_sld = 0
         self.total_commission = init_commission
 
         self._calculate_initial_value()
@@ -50,27 +45,19 @@ class Position(object):
 
         if self.action == "BOT":
             self.buys = self.quantity
-            self.avg_bot = self.init_price.quantize(FIVEPLACES)
-            self.total_bot = (self.buys * self.avg_bot).quantize(TWOPLACES)
-            self.avg_price = (
-                (self.init_price * self.quantity + self.init_commission)/self.quantity
-            ).quantize(FIVEPLACES)
-            self.cost_basis = (
-                self.quantity * self.avg_price
-            ).quantize(TWOPLACES)
+            self.avg_bot = self.init_price
+            self.total_bot = self.buys * self.avg_bot
+            self.avg_price = (self.init_price * self.quantity + self.init_commission)/self.quantity
+            self.cost_basis = self.quantity * self.avg_price
         else:  # action == "SLD"
             self.sells = self.quantity
-            self.avg_sld = self.init_price.quantize(FIVEPLACES)
-            self.total_sld = (self.sells * self.avg_sld).quantize(TWOPLACES)
-            self.avg_price = (
-                (self.init_price * self.quantity - self.init_commission)/self.quantity
-            ).quantize(FIVEPLACES)
-            self.cost_basis = (
-                -self.quantity * self.avg_price
-            ).quantize(TWOPLACES)
+            self.avg_sld = self.init_price
+            self.total_sld = self.sells * self.avg_sld
+            self.avg_price = (self.init_price * self.quantity - self.init_commission)/self.quantity
+            self.cost_basis = -self.quantity * self.avg_price
         self.net = self.buys - self.sells
-        self.net_total = (self.total_sld - self.total_bot).quantize(TWOPLACES)
-        self.net_incl_comm = (self.net_total - self.init_commission).quantize(TWOPLACES)
+        self.net_total = self.total_sld - self.total_bot
+        self.net_incl_comm = self.net_total - self.init_commission
 
     def update_market_value(self, bid, ask):
         """
@@ -84,16 +71,10 @@ class Position(object):
         allows calculation of the unrealised and realised profit
         and loss of any transactions.
         """
-        midpoint = (bid+ask)/Decimal("2.0")
-        self.market_value = (
-            self.quantity * midpoint
-        ).quantize(TWOPLACES)
-        self.unrealised_pnl = (
-            self.market_value - self.cost_basis
-        ).quantize(TWOPLACES)
-        self.realised_pnl = (
-            self.market_value + self.net_incl_comm
-        )
+        midpoint = (bid+ask)/2
+        self.market_value = self.quantity * midpoint
+        self.unrealised_pnl = self.market_value - self.cost_basis
+        self.realised_pnl = self.market_value + self.net_incl_comm
 
     def transact_shares(self, action, quantity, price, commission):
         """
@@ -111,45 +92,25 @@ class Position(object):
 
         # Adjust total bought and sold
         if action == "BOT":
-            self.avg_bot = (
-                (self.avg_bot*self.buys + price*quantity)/(self.buys + quantity)
-            ).quantize(FIVEPLACES)
+            self.avg_bot = (self.avg_bot*self.buys + price*quantity)/(self.buys + quantity)
             if self.action != "SLD":
-                self.avg_price = (
-                    (
-                        self.avg_price*self.buys +
-                        price*quantity+commission
-                    )/(self.buys + quantity)
-                ).quantize(FIVEPLACES)
+                self.avg_price = (self.avg_price*self.buys + price*quantity+commission)/(self.buys + quantity)
             self.buys += quantity
-            self.total_bot = (self.buys * self.avg_bot).quantize(TWOPLACES)
+            self.total_bot = self.buys * self.avg_bot
 
         # action == "SLD"
         else:
-            self.avg_sld = (
-                (self.avg_sld*self.sells + price*quantity)/(self.sells + quantity)
-            ).quantize(FIVEPLACES)
+            self.avg_sld = (self.avg_sld*self.sells + price*quantity)/(self.sells + quantity)
             if self.action != "BOT":
-                self.avg_price = (
-                    (
-                        self.avg_price*self.sells +
-                        price*quantity-commission
-                    )/(self.sells + quantity)
-                ).quantize(FIVEPLACES)
+                self.avg_price =(self.avg_price*self.sells + price*quantity-commission)/(self.sells + quantity)
             self.sells += quantity
-            self.total_sld = (self.sells * self.avg_sld).quantize(TWOPLACES)
+            self.total_sld = self.sells * self.avg_sld
 
         # Adjust net values, including commissions
         self.net = self.buys - self.sells
         self.quantity = self.net
-        self.net_total = (
-            self.total_sld - self.total_bot
-        ).quantize(TWOPLACES)
-        self.net_incl_comm = (
-            self.net_total - self.total_commission
-        ).quantize(TWOPLACES)
+        self.net_total = self.total_sld - self.total_bot
+        self.net_incl_comm = self.net_total - self.total_commission
 
         # Adjust average price and cost basis
-        self.cost_basis = (
-            self.quantity * self.avg_price
-        ).quantize(TWOPLACES)
+        self.cost_basis = self.quantity * self.avg_price

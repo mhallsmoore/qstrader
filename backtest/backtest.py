@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-from decimal import Decimal
 import os, os.path
 import pprint
 from qstrader.statistics.statistics import Statistics
@@ -31,7 +30,7 @@ class Backtest(object):
         execution_handler,
         position_sizer, risk_manager,
         statistics,
-        equity=Decimal("100000.00"),
+        equity=(100000 * settings.PRICE_MULTIPLIER),
         heartbeat=0.0, max_iters=10000000000
     ):
       """
@@ -112,4 +111,4 @@ class Backtest(object):
         print("Sharpe Ratio: %s" % results["sharpe"])
         print("Max Drawdown: %s" % results["max_drawdown"])
         print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
-        self.statistics.plot_results()
+        # self.statistics.plot_results()
