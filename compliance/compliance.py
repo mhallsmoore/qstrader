@@ -48,10 +48,10 @@ class TestCompliance(Compliance):
         a production environment that requires strict record-keeping.
         """
         # Remove the previous CSV file
-        self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d")
+        self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".csv"
         try:
             os.remove(os.path.join(settings.OUTPUT_DIR, self.csv_filename))
-        except FileNotFoundError:
+        except (OSError, IOError):
             print("No tradelog files to clean.");
 
         # Write new file header
