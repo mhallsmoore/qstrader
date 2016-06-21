@@ -76,38 +76,37 @@ class SimpleStatistics(Statistics):
         Takes in a portfolio handler.
         """
         self.portfolio_handler = portfolio_handler
-        self.drawdowns=pd.Series()
-        self.equity=pd.Series()
-        self.equity_returns=pd.Series()
+        self.drawdowns=[]
+        self.equity=[]
+        self.equity_returns=[]
         # Initialize in order for first-step calculations to be correct.
-        self.hwm=[float(self.portfolio_handler.portfolio.equity)]
-        self.equity.ix["0000-00-00 00:00:00"] = float(self.portfolio_handler.portfolio.equity)
+        self.hwm=[self.portfolio_handler.portfolio.equity]
+        # self.equity.ix["0000-00-00 00:00:00"] = self.portfolio_handler.portfolio.equity
+        self.equity.append(self.portfolio_handler.portfolio.equity)
 
     def update(self, timestamp):
         """
         Update all statistics that must be tracked over time.
         """
         # Retrieve equity value of Portfolio
-        self.equity.ix[timestamp]=float(self.portfolio_handler.portfolio.equity)
+        self.equity.append(self.portfolio_handler.portfolio.equity)
         current_index = len(self.equity)-1
 
         # Calculate percentage return between current and previous equity value.
-        self.equity_returns.ix[timestamp] = (
-            (self.equity.ix[current_index] - self.equity.ix[current_index-1])
-            //self.equity.ix[current_index]
-        )*100
+        self.equity_returns.append ((
+            (self.equity[current_index] - self.equity[current_index-1])
+            //self.equity[current_index]
+        )*100)
 
         # Calculate Drawdown.
         # Note that we have pre-seeded HWM to be starting equity value,
         # so we don't seed it twice, else we'd add one-too-many values.
         if(current_index>0):
             self.hwm.append(
-                max(self.hwm[current_index-1], self.equity.ix[timestamp])
+                max(self.hwm[current_index-1], self.equity[current_index])
             )
 
-        self.drawdowns.ix[timestamp]=(
-            self.hwm[current_index]-self.equity.ix[timestamp]
-        )
+        self.drawdowns.append( self.hwm[current_index]-self.equity[current_index] )
 
     def get_results(self):
         """
@@ -130,7 +129,7 @@ class SimpleStatistics(Statistics):
 
         TOOD TEST
         """
-        excess_returns = self.equity_returns.astype(float) - benchmark_return//252
+        excess_returns = pd.Series(self.equity_returns) - benchmark_return//252
 
         # Return the annualised Sharpe ratio based on the excess daily returns
         return round(self.annualised_sharpe(excess_returns), 4)
@@ -151,11 +150,12 @@ class SimpleStatistics(Statistics):
         Calculate the percentage drop related to the "worst"
         drawdown seen.
         """
-        bottom_index = self.drawdowns.idxmax()
-        top_index = self.equity[:bottom_index].idxmax()
+        drawdown_series = pd.Series(self.drawdowns);
+        bottom_index = drawdown_series.idxmax()
+        top_index = drawdown_series[:bottom_index].idxmax()
         pct=(
-            (self.equity.ix[top_index] - self.equity.ix[bottom_index])
-            //self.equity.ix[top_index] * 100
+            self.equity[top_index] - self.equity[bottom_index]
+            //self.equity[top_index] * 100
         )
         return pct
 
@@ -182,7 +182,7 @@ class SimpleStatistics(Statistics):
 
         # Plot the returns
         ax2 = fig.add_subplot(312, ylabel='Equity Returns')
-        df['equity_returns'].astype(float).plot(ax=ax2, color=sns.color_palette()[1])
+        df['equity_returns'].plot(ax=ax2, color=sns.color_palette()[1])
 
         # drawdown, max_dd, dd_duration = self.create_drawdowns(df["Equity"])
         ax3 = fig.add_subplot(313, ylabel='Drawdowns')
