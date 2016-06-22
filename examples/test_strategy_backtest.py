@@ -45,13 +45,13 @@ if __name__ == "__main__":
         position_sizer, risk_manager
     )
 
-	# Use the TestCompliance component
-	compliance = TestCompliance();
+    # Use the TestCompliance component
+    compliance = TestCompliance()
 
-	# Use a simulated IB Execution Handler
-	execution_handler = IBSimulatedExecutionHandler(
-		events_queue, price_handler, compliance
-	)
+    # Use a simulated IB Execution Handler
+    execution_handler = IBSimulatedExecutionHandler(
+        events_queue, price_handler, compliance
+    )
     # Use the default Statistics
     statistics = SimpleStatistics(portfolio_handler)
 
