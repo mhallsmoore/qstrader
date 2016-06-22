@@ -10,17 +10,15 @@ from qstrader.statistics.statistics import SimpleStatistics
 from qstrader.compliance.compliance import TestCompliance
 from qstrader import settings
 from qstrader.strategy.strategy import TestStrategy
-try:
-		import Queue as queue
-except ImportError:
-		import queue
+from qstrader.compat.compat import queue
 
-if __name__ == "__main__":
+
+def main(config, testing=False):
     tickers = ["GOOG"]
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
-    csv_dir = settings.CSV_DATA_DIR
+    csv_dir = config.CSV_DATA_DIR
     initial_equity = Decimal("500000.00")
     heartbeat = 0.0
     max_iters = 10000000000
@@ -45,13 +43,13 @@ if __name__ == "__main__":
         position_sizer, risk_manager
     )
 
-	# Use the TestCompliance component
-	compliance = TestCompliance();
+    # Use the TestCompliance component
+    compliance = TestCompliance();
 
-	# Use a simulated IB Execution Handler
-	execution_handler = IBSimulatedExecutionHandler(
-		events_queue, price_handler, compliance
-	)
+    # Use a simulated IB Execution Handler
+    execution_handler = IBSimulatedExecutionHandler(
+        events_queue, price_handler, compliance
+    )
     # Use the default Statistics
     statistics = SimpleStatistics(portfolio_handler)
 
@@ -64,4 +62,7 @@ if __name__ == "__main__":
         statistics,
         initial_equity
     )
-    backtest.simulate_trading()
+    backtest.simulate_trading(testing=testing)
+
+if __name__ == "__main__":
+    main(settings.DEFAULT, testing=False)
