@@ -48,7 +48,7 @@ class TestCompliance(Compliance):
         """
         # Remove the previous CSV file
         self.config = config
-        self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d")
+        self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".csv"
         try:
             os.remove(os.path.join(config.OUTPUT_DIR, self.csv_filename))
         except (IOError, OSError):
