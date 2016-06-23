@@ -1,13 +1,11 @@
 from __future__ import print_function
 
 import click
-import warnings
 
 import calendar
 import copy
 import datetime
 import os
-import sys
 import numpy as np
 from qstrader import settings
 
@@ -22,6 +20,7 @@ def month_weekdays(year_int, month_int):
         d for d in cal.itermonthdates(year_int, month_int)
         if d.weekday() < 5 and d.year == year_int
     ]
+
 
 def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, config):
     if seed >= 0:
@@ -49,20 +48,19 @@ def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, mon
     # Loop over every day in the month and create a CSV file
     # for each day, e.g. "GOOG_20150101.csv"
     for d in days:
-        #print("day: %d" % d.day)
         print("Create '%s' data for %s" % (ticker, d))
         current_time = current_time.replace(day=d.day)
         fname = os.path.join(
-            outdir, 
+            outdir,
             "%s_%s.csv" % (ticker, d.strftime("%Y%m%d"))
         )
         outfile = open(fname, "w")
         print("Save data to '%s'" % fname)
-        outfile.write("Ticker,Time,Bid,Ask\n")     
-        
+        outfile.write("Ticker,Time,Bid,Ask\n")
+
         # Create the random walk for the bid/ask prices
         # with fixed spread between them
-        #for i in range(0, 10000):
+        # for i in range(0, 10000):
         while True:
             dt = abs(np.random.normal(mu_dt, sigma_dt))
             current_time += datetime.timedelta(0, 0, 0, dt)
@@ -77,11 +75,12 @@ def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, mon
                     ticker,
                     current_time.strftime(
                         "%d.%m.%Y %H:%M:%S.%f"
-                    )[:-3], 
-                    "%0.5f" % bid, 
+                    )[:-3],
+                    "%0.5f" % bid,
                     "%0.5f" % ask
                 )
                 outfile.write(line)
+
 
 @click.command()
 @click.option('--outdir', default='', help='Ouput directory (CSV_DATA_DIR)')
