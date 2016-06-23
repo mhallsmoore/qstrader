@@ -3,8 +3,11 @@ from abc import ABCMeta, abstractmethod
 import datetime
 import os
 import csv
-from qstrader import settings
-from qstrader.event.event import FillEvent;
+try:  # PY3
+    FileNotFoundError
+except NameError:  # PY2
+    FileNotFoundError = IOError
+
 
 class Compliance(object):
     """
@@ -38,7 +41,7 @@ class TestCompliance(Compliance):
     CSV file in the output directory.
     """
 
-    def __init__(self):
+    def __init__(self, config):
         """
         Wipe the existing trade log for the day, leaving only
         the headers in an empty CSV.
@@ -48,11 +51,12 @@ class TestCompliance(Compliance):
         a production environment that requires strict record-keeping.
         """
         # Remove the previous CSV file
+        self.config = config
         self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d")
         try:
-            os.remove(os.path.join(settings.OUTPUT_DIR, self.csv_filename))
+            os.remove(os.path.join(config.OUTPUT_DIR, self.csv_filename))
         except FileNotFoundError:
-            print("No tradelog files to clean.");
+            print("No tradelog files to clean.")
 
         # Write new file header
         fieldnames = [
@@ -61,16 +65,15 @@ class TestCompliance(Compliance):
             "exchange", "price",
             "commission"
         ]
-        with open(os.path.join(settings.OUTPUT_DIR, self.csv_filename), 'a') as csvfile:
+        with open(os.path.join(self.config.OUTPUT_DIR, self.csv_filename), 'a') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
-
 
     def record_trade(self, fill):
         """
         Append all details about the FillEvent to the CSV trade log.
         """
-        with open(os.path.join(settings.OUTPUT_DIR, self.csv_filename), 'a') as csvfile:
+        with open(os.path.join(self.config.OUTPUT_DIR, self.csv_filename), 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow([
                 fill.timestamp, fill.ticker,

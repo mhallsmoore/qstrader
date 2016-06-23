@@ -32,7 +32,7 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-  - conda create -q -n test-environment python=$PYTHON pandas=$PANDAS nose coverage setuptools
+  - conda create -q -n test-environment python=$PYTHON pandas=$PANDAS nose coverage setuptools decorator path.py pexpect pickleshare ptyprocess python-dateutil pytz scipy simplegeneric six traitlets seaborn
   - source activate test-environment
   - pip install coveralls --quiet
   - conda list

@@ -1,23 +1,9 @@
 from __future__ import print_function
 
-from decimal import Decimal
-import os, os.path
-import pprint
-from qstrader.statistics.statistics import Statistics
-try:
-    import Queue as queue
-except ImportError:
-    import queue
 import time
+from decimal import Decimal
 
-try:
-    from qstrader import settings
-except ImportError:
-    print(
-        "Could not import settings.py. Have you copied " \
-        "settings.py.example to settings.py and configured " \
-        "your QSTrader settings?"
-    )
+from qstrader.compat.compat import queue
 
 
 class Backtest(object):
@@ -34,24 +20,24 @@ class Backtest(object):
         equity=Decimal("100000.00"),
         heartbeat=0.0, max_iters=10000000000
     ):
-      """
-      Set up the backtest variables according to
-      what has been passed in.
-      """
+        """
+        Set up the backtest variables according to
+        what has been passed in.
+        """
 
-      self.tickers = tickers
-      self.price_handler = price_handler
-      self.strategy = strategy
-      self.portfolio_handler = portfolio_handler
-      self.execution_handler = execution_handler
-      self.position_sizer = position_sizer
-      self.risk_manager = risk_manager
-      self.statistics = statistics
-      self.equity = equity
-      self.heartbeat = heartbeat
-      self.max_iters = max_iters
-      self.events_queue = price_handler.events_queue
-      self.cur_time = None
+        self.tickers = tickers
+        self.price_handler = price_handler
+        self.strategy = strategy
+        self.portfolio_handler = portfolio_handler
+        self.execution_handler = execution_handler
+        self.position_sizer = position_sizer
+        self.risk_manager = risk_manager
+        self.statistics = statistics
+        self.equity = equity
+        self.heartbeat = heartbeat
+        self.max_iters = max_iters
+        self.events_queue = price_handler.events_queue
+        self.cur_time = None
 
     def _run_backtest(self):
         """
@@ -100,7 +86,6 @@ class Backtest(object):
                         self.portfolio_handler.on_fill(event)
             time.sleep(self.heartbeat)
             iters += 1
-
 
     def simulate_trading(self, testing=False):
         """

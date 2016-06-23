@@ -1,13 +1,11 @@
 from __future__ import print_function
 
-from abc import ABCMeta, abstractmethod
-
 
 class Event(object):
     """
-    Event is base class providing an interface for all subsequent 
-    (inherited) events, that will trigger further events in the 
-    trading infrastructure.   
+    Event is base class providing an interface for all subsequent
+    (inherited) events, that will trigger further events in the
+    trading infrastructure.
     """
     pass
 
@@ -36,7 +34,7 @@ class TickEvent(Event):
 
     def __str__(self):
         return "Type: %s, Ticker: %s, Time: %s, Bid: %s, Ask: %s" % (
-            str(self.type), str(self.ticker), 
+            str(self.type), str(self.ticker),
             str(self.time), str(self.bid), str(self.ask)
         )
 
@@ -47,12 +45,12 @@ class TickEvent(Event):
 class BarEvent(Event):
     """
     Handles the event of receiving a new market
-    open-high-low-close-volume bar, as would be generated 
+    open-high-low-close-volume bar, as would be generated
     via common data providers such as Yahoo Finance.
     """
     def __init__(
-        self, ticker, time, period, 
-        open_price, high_price, low_price, 
+        self, ticker, time, period,
+        open_price, high_price, low_price,
         close_price, volume, adj_close_price=None
     ):
         """
@@ -67,7 +65,7 @@ class BarEvent(Event):
         low_price - The unadjusted low price of the bar
         close_price - The unadjusted close price of the bar
         volume - The volume of trading within the bar
-        adj_close_price - The vendor adjusted closing price 
+        adj_close_price - The vendor adjusted closing price
             (e.g. back-adjustment) of the bar
 
         Note: It is not advised to use 'open', 'close' instead
@@ -141,7 +139,7 @@ class SignalEvent(Event):
     """
     Handles the event of sending a Signal from a Strategy object.
     This is received by a Portfolio object and acted upon.
-    """  
+    """
     def __init__(self, ticker, action):
         """
         Initialises the SignalEvent.
@@ -192,20 +190,20 @@ class FillEvent(Event):
     from a brokerage. Stores the quantity of an instrument
     actually filled and at what price. In addition, stores
     the commission of the trade from the brokerage.
-    
+
     TODO: Currently does not support filling positions at
     different prices. This will be simulated by averaging
     the cost.
     """
 
     def __init__(
-        self, timestamp, ticker, 
-        action, quantity, 
-        exchange, price, 
+        self, timestamp, ticker,
+        action, quantity,
+        exchange, price,
         commission
     ):
         """
-        Initialises the FillEvent object. 
+        Initialises the FillEvent object.
 
         timestamp - The timestamp when the order was filled.
         ticker - The ticker symbol, e.g. 'GOOG'.

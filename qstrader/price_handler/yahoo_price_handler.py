@@ -1,6 +1,5 @@
-import datetime
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
-import os, os.path
+import os
 
 import pandas as pd
 
@@ -12,7 +11,7 @@ class YahooDailyBarPriceHandler(PriceHandler):
     """
     YahooDailyBarPriceHandler is designed to read CSV files of
     Yahoo Finance daily Open-High-Low-Close-Volume (OHLCV) data
-    for each requested financial instrument and stream those to 
+    for each requested financial instrument and stream those to
     the provided events queue as BarEvents.
     """
     def __init__(self, csv_dir, events_queue, init_tickers=None):
@@ -40,9 +39,9 @@ class YahooDailyBarPriceHandler(PriceHandler):
         """
         ticker_path = os.path.join(self.csv_dir, "%s.csv" % ticker)
         self.tickers_data[ticker] = pd.io.parsers.read_csv(
-            ticker_path, header=0, parse_dates=True, 
+            ticker_path, header=0, parse_dates=True,
             index_col=0, names=(
-                "Date", "Open", "High", "Low", 
+                "Date", "Open", "High", "Low",
                 "Close", "Volume", "Adj Close"
             )
         )
@@ -51,7 +50,7 @@ class YahooDailyBarPriceHandler(PriceHandler):
     def _merge_sort_ticker_data(self):
         """
         Concatenates all of the separate equities DataFrames
-        into a single DataFrame that is time ordered, allowing tick 
+        into a single DataFrame that is time ordered, allowing tick
         data events to be added to the queue in a chronological fashion.
 
         Note that this is an idealised situation, utilised solely for
@@ -67,27 +66,27 @@ class YahooDailyBarPriceHandler(PriceHandler):
         """
         if ticker not in self.tickers:
             try:
-                self._open_ticker_price_csv(ticker) 
+                self._open_ticker_price_csv(ticker)
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
                 ticker_prices = {
                     "close": Decimal(
                         str(row0["Close"])
-                    ).quantize(Decimal("0.00001")), 
+                    ).quantize(Decimal("0.00001")),
                     "adj_close": Decimal(
                         str(row0["Adj Close"])
-                    ).quantize(Decimal("0.00001")), 
+                    ).quantize(Decimal("0.00001")),
                     "timestamp": dft.index[0]
                 }
                 self.tickers[ticker] = ticker_prices
             except OSError:
                 print(
-                    "Could not subscribe ticker %s " \
+                    "Could not subscribe ticker %s "
                     "as no data CSV found for pricing." % ticker
                 )
         else:
             print(
-                "Could not subscribe ticker %s " \
+                "Could not subscribe ticker %s "
                 "as is already subscribed." % ticker
             )
 
@@ -100,7 +99,7 @@ class YahooDailyBarPriceHandler(PriceHandler):
             return close_price
         else:
             print(
-                "Close price for ticker %s is not " \
+                "Close price for ticker %s is not "
                 "available from the YahooDailyBarPriceHandler."
             )
             return None
@@ -114,7 +113,7 @@ class YahooDailyBarPriceHandler(PriceHandler):
         except StopIteration:
             self.continue_backtest = False
             return
-        
+
         # Obtain all elements of the bar from the dataframe
         getcontext().rounding = ROUND_HALF_DOWN
         ticker = row["Ticker"]
@@ -125,7 +124,7 @@ class YahooDailyBarPriceHandler(PriceHandler):
         adj_close_price = Decimal(str(row["Adj Close"])).quantize(Decimal("0.00001"))
         volume = int(row["Volume"])
 
-        # Create decimalised prices for 
+        # Create decimalised prices for
         # closing price and adjusted closing price
         self.tickers[ticker]["close"] = close_price
         self.tickers[ticker]["adj_close"] = adj_close_price

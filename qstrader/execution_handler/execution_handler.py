@@ -1,13 +1,8 @@
 import datetime
 from decimal import Decimal
-try:
-    import Queue as queue
-except ImportError:
-    import queue
-
 from abc import ABCMeta, abstractmethod
 
-from qstrader.event.event import FillEvent, OrderEvent
+from qstrader.event.event import FillEvent
 
 
 class ExecutionHandler(object):

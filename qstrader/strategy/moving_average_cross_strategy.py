@@ -7,7 +7,7 @@ from qstrader.strategy.strategy import Strategy
 
 
 class MovingAverageCrossStrategy(Strategy):
-    """    
+    """
     Requires:
     tickers - The list of ticker symbols
     events_queue - A handle to the system events queue
@@ -15,7 +15,7 @@ class MovingAverageCrossStrategy(Strategy):
     long_window - Lookback period for long moving average
     """
     def __init__(
-        self, tickers, events_queue, 
+        self, tickers, events_queue,
         short_window=100, long_window=400
     ):
         self.tickers = tickers

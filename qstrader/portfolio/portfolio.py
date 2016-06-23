@@ -85,12 +85,12 @@ class Portfolio(object):
             self._update_portfolio()
         else:
             print(
-                "Ticker %s is already in the positions list. " \
+                "Ticker %s is already in the positions list. "
                 "Could not add a new position." % ticker
             )
 
     def _modify_position(
-        self, action, ticker, 
+        self, action, ticker,
         quantity, price, commission
     ):
         """
@@ -117,33 +117,33 @@ class Portfolio(object):
             self._update_portfolio()
         else:
             print(
-                "Ticker %s not in the current position list. " \
+                "Ticker %s not in the current position list. "
                 "Could not modify a current position." % ticker
             )
 
     def transact_position(
-        self, action, ticker, 
+        self, action, ticker,
         quantity, price, commission
     ):
         """
-        Handles any new position or modification to 
+        Handles any new position or modification to
         a current position, by calling the respective
-        _add_position and _modify_position methods. 
+        _add_position and _modify_position methods.
 
-        Hence, this single method will be called by the 
+        Hence, this single method will be called by the
         PortfolioHandler to update the Portfolio itself.
         """
         if ticker not in self.positions:
             self._add_position(
-                action, ticker, quantity, 
+                action, ticker, quantity,
                 price, commission
             )
         else:
             self._modify_position(
-                action, ticker, quantity, 
+                action, ticker, quantity,
                 price, commission
             )
-    
+
     def create_portfolio_state_dict(self):
         """
         Creates a dictionary containing the best estimated

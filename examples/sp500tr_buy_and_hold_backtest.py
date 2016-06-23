@@ -44,7 +44,7 @@ def main(config, testing=False):
     )
 
     # Use the TestCompliance component
-    compliance = TestCompliance();
+    compliance = TestCompliance(config);
 
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(

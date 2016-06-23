@@ -4,25 +4,25 @@ from qstrader.portfolio.portfolio import Portfolio
 
 class PortfolioHandler(object):
     def __init__(
-        self, initial_cash, events_queue, 
+        self, initial_cash, events_queue,
         price_handler, position_sizer, risk_manager
     ):
         """
-        The PortfolioHandler is designed to interact with the 
+        The PortfolioHandler is designed to interact with the
         backtesting or live trading overall event-driven
         architecture. It exposes two methods, on_signal and
         on_fill, which handle how SignalEvent and FillEvent
         objects are dealt with.
 
         Each PortfolioHandler contains a Portfolio object,
-        which stores the actual Position objects. 
+        which stores the actual Position objects.
 
         The PortfolioHandler takes a handle to a PositionSizer
         object which determines a mechanism, based on the current
         Portfolio, as to how to size a new Order.
 
-        The PortfolioHandler also takes a handle to the 
-        RiskManager, which is used to modify any generated 
+        The PortfolioHandler also takes a handle to the
+        RiskManager, which is used to modify any generated
         Orders to remain in line with risk parameters.
         """
         self.initial_cash = initial_cash
@@ -62,25 +62,25 @@ class PortfolioHandler(object):
         are "in sync".
 
         In addition, for backtesting purposes, the portfolio value can
-        be reasonably estimated in a realistic manner, simply by 
+        be reasonably estimated in a realistic manner, simply by
         modifying how the ExecutionHandler object handles slippage,
         transaction costs, liquidity and market impact.
         """
-        action = fill_event.action       
+        action = fill_event.action
         ticker = fill_event.ticker
         quantity = fill_event.quantity
         price = fill_event.price
         commission = fill_event.commission
         # Create or modify the position from the fill info
         self.portfolio.transact_position(
-            action, ticker, quantity, 
+            action, ticker, quantity,
             price, commission
         )
 
     def on_signal(self, signal_event):
         """
         This is called by the backtester or live trading architecture
-        to form the initial orders from the SignalEvent. 
+        to form the initial orders from the SignalEvent.
 
         These orders are sized by the PositionSizer object and then
         sent to the RiskManager to verify, modify or eliminate.

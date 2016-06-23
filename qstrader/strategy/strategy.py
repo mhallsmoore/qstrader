@@ -9,7 +9,7 @@ class Strategy(object):
     all subsequent (inherited) strategy handling objects.
 
     The goal of a (derived) Strategy object is to generate Signal
-    objects for particular symbols based on the inputs of ticks 
+    objects for particular symbols based on the inputs of ticks
     generated from a PriceHandler (derived) object.
 
     This is designed to work both with historic and live data as
@@ -29,8 +29,8 @@ class Strategy(object):
 class TestStrategy(Strategy):
     """
     A testing strategy that alternates between buying and selling
-    a ticker on every 5th tick. This has the effect of continuously 
-    "crossing the spread" and so will be loss-making strategy. 
+    a ticker on every 5th tick. This has the effect of continuously
+    "crossing the spread" and so will be loss-making strategy.
 
     It is used to test that the backtester/live trading system is
     behaving as expected.
@@ -45,7 +45,7 @@ class TestStrategy(Strategy):
         ticker = self.tickers[0]
         if event.type == 'TICK' and event.ticker == ticker:
             if self.ticks % 5 == 0:
-                if self.invested == False:
+                if not self.invested:
                     signal = SignalEvent(ticker, "BOT")
                     self.events_queue.put(signal)
                     self.invested = True
@@ -59,7 +59,7 @@ class TestStrategy(Strategy):
 class BuyAndHoldStrategy(Strategy):
     """
     A testing strategy that simply purchases (longs) a set of
-    assets upon first receipt of the relevant bar event and 
+    assets upon first receipt of the relevant bar event and
     then holds until the completion of a backtest.
     """
     def __init__(self, tickers, events_queue):

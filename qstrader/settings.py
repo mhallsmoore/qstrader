@@ -39,6 +39,3 @@ class SettingsTest(SettingsDefault):
 
 DEFAULT = SettingsDefault()
 TEST = SettingsTest()
-
-CSV_DATA_DIR = DEFAULT.CSV_DATA_DIR
-OUTPUT_DIR = DEFAULT.OUTPUT_DIR

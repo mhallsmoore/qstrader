@@ -53,7 +53,7 @@ class Position(object):
             self.avg_bot = self.init_price.quantize(FIVEPLACES)
             self.total_bot = (self.buys * self.avg_bot).quantize(TWOPLACES)
             self.avg_price = (
-                (self.init_price * self.quantity + self.init_commission)/self.quantity
+                (self.init_price * self.quantity + self.init_commission) / self.quantity
             ).quantize(FIVEPLACES)
             self.cost_basis = (
                 self.quantity * self.avg_price
@@ -63,7 +63,7 @@ class Position(object):
             self.avg_sld = self.init_price.quantize(FIVEPLACES)
             self.total_sld = (self.sells * self.avg_sld).quantize(TWOPLACES)
             self.avg_price = (
-                (self.init_price * self.quantity - self.init_commission)/self.quantity
+                (self.init_price * self.quantity - self.init_commission) / self.quantity
             ).quantize(FIVEPLACES)
             self.cost_basis = (
                 -self.quantity * self.avg_price
@@ -84,7 +84,7 @@ class Position(object):
         allows calculation of the unrealised and realised profit
         and loss of any transactions.
         """
-        midpoint = (bid+ask)/Decimal("2.0")
+        midpoint = (bid + ask) / Decimal("2.0")
         self.market_value = (
             self.quantity * midpoint
         ).quantize(TWOPLACES)
@@ -104,22 +104,19 @@ class Position(object):
         bought/sold, the cost basis and PnL calculations,
         as carried out through Interactive Brokers TWS.
         """
-        prev_quantity = self.quantity
-        prev_commission = self.total_commission
-
         self.total_commission += commission
 
         # Adjust total bought and sold
         if action == "BOT":
             self.avg_bot = (
-                (self.avg_bot*self.buys + price*quantity)/(self.buys + quantity)
+                (self.avg_bot * self.buys + price * quantity) / (self.buys + quantity)
             ).quantize(FIVEPLACES)
             if self.action != "SLD":
                 self.avg_price = (
                     (
-                        self.avg_price*self.buys +
-                        price*quantity+commission
-                    )/(self.buys + quantity)
+                        self.avg_price * self.buys +
+                        price * quantity + commission
+                    ) / (self.buys + quantity)
                 ).quantize(FIVEPLACES)
             self.buys += quantity
             self.total_bot = (self.buys * self.avg_bot).quantize(TWOPLACES)
@@ -127,14 +124,14 @@ class Position(object):
         # action == "SLD"
         else:
             self.avg_sld = (
-                (self.avg_sld*self.sells + price*quantity)/(self.sells + quantity)
+                (self.avg_sld * self.sells + price * quantity) / (self.sells + quantity)
             ).quantize(FIVEPLACES)
             if self.action != "BOT":
                 self.avg_price = (
                     (
-                        self.avg_price*self.sells +
-                        price*quantity-commission
-                    )/(self.sells + quantity)
+                        self.avg_price * self.sells +
+                        price * quantity - commission
+                    ) / (self.sells + quantity)
                 ).quantize(FIVEPLACES)
             self.sells += quantity
             self.total_sld = (self.sells * self.avg_sld).quantize(TWOPLACES)

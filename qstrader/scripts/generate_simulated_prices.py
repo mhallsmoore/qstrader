@@ -3,11 +3,10 @@ from __future__ import print_function
 import calendar
 import copy
 import datetime
-import os, os.path
+import os
 import sys
 
 import numpy as np
-import pandas as pd
 
 
 def month_weekdays(year_int, month_int):
@@ -17,7 +16,7 @@ def month_weekdays(year_int, month_int):
     """
     cal = calendar.Calendar()
     return [
-        d for d in cal.itermonthdates(year_int, month_int) 
+        d for d in cal.itermonthdates(year_int, month_int)
         if d.weekday() < 5 and d.year == year_int
     ]
 
@@ -30,7 +29,7 @@ if __name__ == "__main__":
         random_seed = sys.argv[4]
     except IndexError:
         print(
-            "You need to enter an equity ticker symbol and a " \
+            "You need to enter an equity ticker symbol and a "
             "fixtures directory as command line parameters."
         )
     else:
@@ -54,16 +53,15 @@ if __name__ == "__main__":
             current_time = current_time.replace(day=d.day)
             outfile = open(
                 os.path.join(
-                    fixtures_dir, 
+                    fixtures_dir,
                     "%s.csv" % ticker
-                ), 
-            "w")
-            outfile.write("Ticker,Time,Bid,Ask\n")     
-            
+                ), "w")
+            outfile.write("Ticker,Time,Bid,Ask\n")
+
             # Create the random walk for the bid/ask prices
             # with fixed spread between them
+            # while True:
             for i in range(0, 10000):
-            #while True:
                 dt = abs(np.random.normal(mu_dt, sigma_dt))
                 current_time += datetime.timedelta(0, 0, 0, dt)
                 if current_time.day != d.day:
@@ -77,8 +75,8 @@ if __name__ == "__main__":
                         ticker,
                         current_time.strftime(
                             "%d.%m.%Y %H:%M:%S.%f"
-                        )[:-3], 
-                        "%0.5f" % bid, 
+                        )[:-3],
+                        "%0.5f" % bid,
                         "%0.5f" % ask
                     )
                     outfile.write(line)

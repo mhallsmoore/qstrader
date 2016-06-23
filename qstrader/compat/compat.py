@@ -1,4 +1,11 @@
-try:
+# flake8: noqa
+
+import sys
+
+PY2 = sys.version_info[0] == 2
+PY3 = (sys.version_info[0] >= 3)
+
+if PY2:
     import Queue as queue
-except ImportError:
+else:  # PY3
     import queue
