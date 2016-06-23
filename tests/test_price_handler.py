@@ -1,16 +1,14 @@
 import datetime
 from decimal import Decimal
 import os, os.path
-try:
-    import Queue as queue
-except ImportError:
-    import queue
 import unittest
 
 import pandas as pd
 
 from qstrader.event.event import TickEvent
 from qstrader.price_handler.price_handler import HistoricCSVPriceHandler
+from qstrader.compat.compat import queue
+from qstrader import settings
 
 
 class TestPriceHandlerSimpleCase(unittest.TestCase):
@@ -26,7 +24,8 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         Set up the PriceHandler object with a small
         set of initial tickers.
         """
-        fixtures_path = os.path.join("..", "fixtures", "price_handler")
+        self.config = settings.TEST
+        fixtures_path = self.config.CSV_DATA_DIR
         events_queue = queue.Queue()
         init_tickers = ["GOOG", "AMZN", "MSFT"]
         self.price_handler = HistoricCSVPriceHandler(

@@ -102,7 +102,7 @@ class Backtest(object):
             iters += 1
 
 
-    def simulate_trading(self):
+    def simulate_trading(self, testing=False):
         """
         Simulates the backtest and outputs portfolio performance.
         """
@@ -112,4 +112,5 @@ class Backtest(object):
         print("Sharpe Ratio: %s" % results["sharpe"])
         print("Max Drawdown: %s" % results["max_drawdown"])
         print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
-        self.statistics.plot_results()
+        if not testing:
+            self.statistics.plot_results()
