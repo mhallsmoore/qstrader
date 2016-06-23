@@ -68,13 +68,13 @@ class TestSimpleSignalOrderFillCycleForPortfolioHandler(unittest.TestCase):
         risk_manager = RiskManagerMock()
         # Create the PortfolioHandler object from the rest
         self.portfolio_handler = PortfolioHandler(
-            initial_cash, events_queue, price_handler, 
+            initial_cash, events_queue, price_handler,
             position_sizer, risk_manager
         )
 
     def test_create_order_from_signal_basic_check(self):
         """
-        Tests the "_create_order_from_signal" method 
+        Tests the "_create_order_from_signal" method
         as a basic sanity check.
         """
         signal_event = SignalEvent("MSFT", "BOT")
@@ -85,7 +85,7 @@ class TestSimpleSignalOrderFillCycleForPortfolioHandler(unittest.TestCase):
 
     def test_place_orders_onto_queue_basic_check(self):
         """
-        Tests the "_place_orders_onto_queue" method 
+        Tests the "_place_orders_onto_queue" method
         as a basic sanity check.
         """
         order = OrderEvent("MSFT", "BOT", 100)
@@ -131,4 +131,3 @@ class TestSimpleSignalOrderFillCycleForPortfolioHandler(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-    

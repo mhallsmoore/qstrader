@@ -20,8 +20,8 @@ def main(config, testing=False):
     events_queue = queue.Queue()
     csv_dir = config.CSV_DATA_DIR
     initial_equity = Decimal("500000.00")
-    heartbeat = 0.0
-    max_iters = 10000000000
+    # heartbeat = 0.0
+    # max_iters = 10000000000
 
     # Use Yahoo Daily Price Handler
     price_handler = YahooDailyBarPriceHandler(
@@ -29,7 +29,7 @@ def main(config, testing=False):
     )
 
     # Use the MAC Strategy
-    strategy = MovingAverageCrossStrategy( tickers, events_queue )
+    strategy = MovingAverageCrossStrategy(tickers, events_queue)
 
     # Use an example Position Sizer,
     position_sizer = TestPositionSizer()
@@ -44,7 +44,7 @@ def main(config, testing=False):
     )
 
     # Use the TestCompliance component
-    compliance = TestCompliance(config);
+    compliance = TestCompliance(config)
 
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(

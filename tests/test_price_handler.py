@@ -1,11 +1,6 @@
-import datetime
 from decimal import Decimal
-import os, os.path
 import unittest
 
-import pandas as pd
-
-from qstrader.event.event import TickEvent
 from qstrader.price_handler.price_handler import HistoricCSVPriceHandler
 from qstrader.compat.compat import queue
 from qstrader import settings
@@ -16,7 +11,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
     Test the initialisation of a PriceHandler object with
     a small list of tickers. Concatenate the ticker data (
     pre-generated and stored as a fixture) and stream the
-    subsequent ticks, checking that the correct bid-ask 
+    subsequent ticks, checking that the correct bid-ask
     values are returned.
     """
     def setUp(self):
@@ -36,7 +31,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         """
         The initialisation of the class will open the three
         test CSV files, then merge and sort them. They will
-        then be stored in a member "tick_stream". This will 
+        then be stored in a member "tick_stream". This will
         be used for streaming the ticks.
         """
         # Stream to Tick #1 (GOOG)
@@ -44,15 +39,15 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.assertEqual(
             self.price_handler.tickers["GOOG"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
-            ), 
+            ),
             "01-02-2016 00:00:01.358000"
         )
         self.assertEqual(
-            self.price_handler.tickers["GOOG"]["bid"], 
+            self.price_handler.tickers["GOOG"]["bid"],
             Decimal("683.56000")
         )
         self.assertEqual(
-            self.price_handler.tickers["GOOG"]["ask"], 
+            self.price_handler.tickers["GOOG"]["ask"],
             Decimal("683.58000")
         )
 
@@ -61,15 +56,15 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.assertEqual(
             self.price_handler.tickers["AMZN"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
-            ), 
+            ),
             "01-02-2016 00:00:01.562000"
         )
         self.assertEqual(
-            self.price_handler.tickers["AMZN"]["bid"], 
+            self.price_handler.tickers["AMZN"]["bid"],
             Decimal("502.10001")
         )
         self.assertEqual(
-            self.price_handler.tickers["AMZN"]["ask"], 
+            self.price_handler.tickers["AMZN"]["ask"],
             Decimal("502.11999")
         )
 
@@ -78,15 +73,15 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.assertEqual(
             self.price_handler.tickers["MSFT"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
-            ), 
+            ),
             "01-02-2016 00:00:01.578000"
         )
         self.assertEqual(
-            self.price_handler.tickers["MSFT"]["bid"], 
+            self.price_handler.tickers["MSFT"]["bid"],
             Decimal("50.14999")
         )
         self.assertEqual(
-            self.price_handler.tickers["MSFT"]["ask"], 
+            self.price_handler.tickers["MSFT"]["ask"],
             Decimal("50.17001")
         )
 
@@ -96,15 +91,15 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.assertEqual(
             self.price_handler.tickers["GOOG"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
-            ), 
+            ),
             "01-02-2016 00:00:05.215000"
         )
         self.assertEqual(
-            self.price_handler.tickers["GOOG"]["bid"], 
+            self.price_handler.tickers["GOOG"]["bid"],
             Decimal("683.56001")
         )
         self.assertEqual(
-            self.price_handler.tickers["GOOG"]["ask"], 
+            self.price_handler.tickers["GOOG"]["ask"],
             Decimal("683.57999")
         )
 
@@ -114,15 +109,15 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.assertEqual(
             self.price_handler.tickers["MSFT"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
-            ), 
+            ),
             "01-02-2016 00:00:09.904000"
         )
         self.assertEqual(
-            self.price_handler.tickers["MSFT"]["bid"], 
+            self.price_handler.tickers["MSFT"]["bid"],
             Decimal("50.15000")
         )
         self.assertEqual(
-            self.price_handler.tickers["MSFT"]["ask"], 
+            self.price_handler.tickers["MSFT"]["ask"],
             Decimal("50.17000")
         )
 
@@ -132,15 +127,15 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.assertEqual(
             self.price_handler.tickers["AMZN"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
-            ), 
+            ),
             "01-02-2016 00:00:14.616000"
         )
         self.assertEqual(
-            self.price_handler.tickers["AMZN"]["bid"], 
+            self.price_handler.tickers["AMZN"]["bid"],
             Decimal("502.10015")
         )
         self.assertEqual(
-            self.price_handler.tickers["AMZN"]["ask"], 
+            self.price_handler.tickers["AMZN"]["ask"],
             Decimal("502.11985")
         )
 
@@ -151,12 +146,12 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         appropriate.
         """
 
-        # Check unsubscribing a ticker that isn't 
+        # Check unsubscribing a ticker that isn't
         # in the price handler list
         # ToFix: https://github.com/mhallsmoore/qstrader/issues/46
-        #self.assertRaises(
-        #    KeyError, lambda: self.price_handler.unsubscribe_ticker("PG")
-        #)
+        # self.assertRaises(
+        #     KeyError, lambda: self.price_handler.unsubscribe_ticker("PG")
+        # )
 
         # Check a ticker that is already subscribed
         # to make sure that it doesn't raise an exception
@@ -167,9 +162,9 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
 
         # Subscribe a new ticker, without CSV
         # ToFix: https://github.com/mhallsmoore/qstrader/issues/46
-        #self.assertRaises(
-        #    IOError, lambda: self.price_handler.subscribe_ticker("XOM")
-        #)
+        # self.assertRaises(
+        #     IOError, lambda: self.price_handler.subscribe_ticker("XOM")
+        # )
 
         # Unsubscribe a current ticker
         self.assertTrue("GOOG" in self.price_handler.tickers)
@@ -194,4 +189,3 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-    

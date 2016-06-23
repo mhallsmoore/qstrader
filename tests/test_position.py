@@ -15,8 +15,8 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         Set up the Position object that will store the PnL.
         """
         self.position = Position(
-            "BOT", "XOM", Decimal('100'), 
-            Decimal("74.78"), Decimal("1.00"), 
+            "BOT", "XOM", Decimal('100'),
+            Decimal("74.78"), Decimal("1.00"),
             Decimal('74.78'), Decimal('74.80')
         )
 
@@ -45,7 +45,7 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         self.assertEqual(self.position.action, "BOT")
         self.assertEqual(self.position.ticker, "XOM")
         self.assertEqual(self.position.quantity, Decimal("0"))
-        
+
         self.assertEqual(self.position.buys, Decimal("450"))
         self.assertEqual(self.position.sells, Decimal("450"))
         self.assertEqual(self.position.net, Decimal("0"))
@@ -72,8 +72,8 @@ class TestRoundTripPGPosition(unittest.TestCase):
     """
     def setUp(self):
         self.position = Position(
-            "SLD", "PG", Decimal('100'), 
-            Decimal("77.69"), Decimal("1.00"), 
+            "SLD", "PG", Decimal('100'),
+            Decimal("77.69"), Decimal("1.00"),
             Decimal('77.68'), Decimal('77.70')
         )
 
@@ -102,7 +102,7 @@ class TestRoundTripPGPosition(unittest.TestCase):
         self.assertEqual(self.position.action, "SLD")
         self.assertEqual(self.position.ticker, "PG")
         self.assertEqual(self.position.quantity, Decimal("0"))
-        
+
         self.assertEqual(self.position.buys, Decimal("250"))
         self.assertEqual(self.position.sells, Decimal("250"))
         self.assertEqual(self.position.net, Decimal("0"))

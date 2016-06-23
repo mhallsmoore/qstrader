@@ -13,6 +13,7 @@ import examples.sp500tr_buy_and_hold_backtest
 import examples.mac_backtest
 import examples.strategy_backtest
 
+
 class TestExamples(unittest.TestCase):
     """
     Test example are executing correctly
