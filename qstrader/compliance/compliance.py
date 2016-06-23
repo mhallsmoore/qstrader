@@ -3,10 +3,6 @@ from abc import ABCMeta, abstractmethod
 import datetime
 import os
 import csv
-try:  # PY3
-    FileNotFoundError
-except NameError:  # PY2
-    FileNotFoundError = IOError
 
 
 class Compliance(object):
@@ -55,7 +51,7 @@ class TestCompliance(Compliance):
         self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d")
         try:
             os.remove(os.path.join(config.OUTPUT_DIR, self.csv_filename))
-        except FileNotFoundError:
+        except IOError:
             print("No tradelog files to clean.")
 
         # Write new file header
