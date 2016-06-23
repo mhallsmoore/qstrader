@@ -43,7 +43,7 @@ class TestStrategy(Strategy):
 
     def calculate_signals(self, event):
         ticker = self.tickers[0]
-        if event.type == 'TICK' and event.ticker == ticker:
+        if event.ticker == ticker:
             if self.ticks % 5 == 0:
                 if not self.invested:
                     signal = SignalEvent(ticker, "BOT")
