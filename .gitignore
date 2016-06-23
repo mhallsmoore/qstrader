@@ -33,3 +33,7 @@ pip-log.txt
 
 # Textmate (a Mac editor) meta files
 ._*
+
+# Hides quandl config file that may contain
+# private information (i.e. quandl api key)
+quandl.conf
