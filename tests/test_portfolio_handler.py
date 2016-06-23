@@ -1,13 +1,10 @@
 import datetime
 from decimal import Decimal
-try:
-    import Queue as queue
-except ImportError:
-    import queue
 import unittest
 
 from qstrader.event.event import FillEvent, OrderEvent, SignalEvent
 from qstrader.portfolio_handler.portfolio_handler import PortfolioHandler
+from qstrader.compat.compat import queue
 
 
 class PriceHandlerMock(object):

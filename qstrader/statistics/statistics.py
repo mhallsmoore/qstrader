@@ -10,7 +10,6 @@ except:
     pass
 import matplotlib.pyplot as plt
 import seaborn as sns
-from qstrader import settings
 
 class Statistics(object):
     """
