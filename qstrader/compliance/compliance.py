@@ -51,7 +51,7 @@ class TestCompliance(Compliance):
         self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d")
         try:
             os.remove(os.path.join(config.OUTPUT_DIR, self.csv_filename))
-        except IOError:
+        except (IOError, OSError):
             print("No tradelog files to clean.")
 
         # Write new file header
