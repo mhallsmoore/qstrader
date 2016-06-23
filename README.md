@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/qstraders/qstrader.svg?branch=master)](https://travis-ci.org/qstraders/qstrader)
+
 # QSTrader
 
 QSTrader is an open-source event-driven backtesting and live trading platform for use in the equities markets, currently in an early "alpha" state.
