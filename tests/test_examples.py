@@ -12,7 +12,7 @@ from qstrader import settings
 import examples.sp500tr_buy_and_hold_backtest
 import examples.mac_backtest
 import examples.strategy_backtest
-
+import examples.quandl_futures_backtest
 
 class TestExamples(unittest.TestCase):
     """
@@ -41,3 +41,9 @@ class TestExamples(unittest.TestCase):
         Test strategy_backtest
         """
         examples.strategy_backtest.main(self.config, testing=True)
+
+    def test_quandl_backtest(self):
+        """
+        Test quandl_futures_backtest
+        """
+        examples.quandl_futures_backtest.main(self.config, testing=True)

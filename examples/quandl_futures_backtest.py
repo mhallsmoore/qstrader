@@ -14,7 +14,7 @@ try:
 except ImportError:
 		import queue
 
-if __name__ == "__main__":
+def main(config, testing=False):
     # see: https://www.quandl.com/collections/futures
     tickers = [ "CHRIS/CME_ES1",    # /ES (front month)
             #    "CHRIS/CME_NQ1",   # /NQ (front month)
@@ -68,4 +68,7 @@ if __name__ == "__main__":
         statistics,
         initial_equity
     )
-    backtest.simulate_trading()
+    backtest.simulate_trading(testing=testing)
+
+if __name__ == "__main__":
+    main(settings.DEFAULT, testing=False)

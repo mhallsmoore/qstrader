@@ -22,6 +22,7 @@ def get_info(key, default_value=None):
 class SettingsDefault(object):
     _CSV_DATA_DIR = "~/data"
     _OUTPUT_DIR = "~/qstrader"
+    _QUANDL_CONF = "~/qstrader/quandl.conf"
 
     @property
     def CSV_DATA_DIR(self):
@@ -31,11 +32,15 @@ class SettingsDefault(object):
     def OUTPUT_DIR(self):
         return get_info("OUTPUT_DIR", os.path.expanduser(self._CSV_DATA_DIR))
 
+    @property
+    def QUANDL_CONF(self):
+        return get_info("QUANDL_CONF", os.path.expanduser(self._QUANDL_CONF))
+
 
 class SettingsTest(SettingsDefault):
     _CSV_DATA_DIR = "data"
     _OUTPUT_DIR = "out"
-
+    _QUANDL_CONF = ""
 
 DEFAULT = SettingsDefault()
 TEST = SettingsTest()
