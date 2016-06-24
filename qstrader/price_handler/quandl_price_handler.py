@@ -3,13 +3,12 @@ from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os, os.path
 
 import pandas as pd
-import quandl
 
 from qstrader.event.event import BarEvent
 from qstrader.price_handler.price_handler import PriceHandler
-from qstrader import settings
+from qstrader.settings import DEFAULT as settings
 
-quandl.ApiConfig.api_key = settings.QUANDL_API_KEY
+import quandl
 
 class QuandlPriceHandler(PriceHandler):
     """
@@ -23,12 +22,27 @@ class QuandlPriceHandler(PriceHandler):
           Later, cache the data as a CSV or sqlite db for better
           performance.
     """
-    def __init__(self, csv_dir, events_queue, init_tickers=None):
+    def __init__(self, csv_dir, events_queue, init_tickers=None,
+                 config=settings):
         """
         Takes the CSV directory, the events queue and a possible
         list of initial ticker (quandl) symbols then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
+        # Globally set the Quandl Key and other quandl config parms
+        # (see comment in quandl_conf.py)
+        #
+        # Note:
+        # quandl.get() also supports a parm called api_key.  Specifying the
+        # api_key and setting the key directly in the ApiConfig class
+        # effectively are the same thing.  The key only needs to be specified
+        # here once, as opposed to on each API call.
+        quandl.ApiConfig.api_key = config.QUANDL_API_KEY
+        quandl.ApiConfig.api_base = config.QUANDL_API_BASE
+        quandl.ApiConfig.api_version = config.QUANDL_API_VERSION
+        quandl.ApiConfig.page_limit = config.QUANDL_PAGE_LIMIT
+
+
         self.type = "BAR_HANDLER"
         self.csv_dir = csv_dir
         self.events_queue = events_queue
@@ -47,8 +61,9 @@ class QuandlPriceHandler(PriceHandler):
         them into a pandas DataFrame, stored in a dictionary.
         """
         # TBD: for now just get straight from quandl
+        # TBD: Input start_date from user.  For now just hard code it.
         self.tickers_data[ticker] = quandl.get(ticker,
-                                               start_date="2015-01-01")
+                                               start_date="2016-05-01")
         self.tickers_data[ticker]["Ticker"] = ticker
         """
         ticker_path = os.path.join(self.csv_dir, "%s.csv" % ticker)

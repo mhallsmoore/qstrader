@@ -26,14 +26,14 @@ def main(config, testing=False):
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
-    csv_dir = settings.CSV_DATA_DIR
+    csv_dir = config.CSV_DATA_DIR
     initial_equity = Decimal("500000.00")
     heartbeat = 0.0
     max_iters = 10000000000
 
     # Use Historic CSV Price Handler
     price_handler = QuandlPriceHandler(
-        csv_dir, events_queue, tickers
+        csv_dir, events_queue, tickers, config=config
     )
 
     # Use the Test Strategy
