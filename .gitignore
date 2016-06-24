@@ -36,4 +36,4 @@ pip-log.txt
 
 # Hides quandl config file that may contain
 # private information (i.e. quandl api key)
-quandl.conf
+quandl_conf.py
