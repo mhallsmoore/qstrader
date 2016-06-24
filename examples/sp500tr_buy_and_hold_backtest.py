@@ -65,7 +65,8 @@ def run(config, testing):
         statistics,
         initial_equity
     )
-    backtest.simulate_trading(testing=testing)
+    results = backtest.simulate_trading(testing=testing)
+    return results
 
 
 @click.command()

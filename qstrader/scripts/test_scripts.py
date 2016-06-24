@@ -32,5 +32,6 @@ class TestScripts(unittest.TestCase):
             100,  # sigma_dt
             2014,  # year
             1,  # month
+            3,  # nb_days (number of days of data to create)
             config=self.config
         )

@@ -22,7 +22,7 @@ def month_weekdays(year_int, month_int):
     ]
 
 
-def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, config):
+def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, nb_days, config):
     if seed >= 0:
         np.random.seed(seed)
 
@@ -30,7 +30,7 @@ def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, mon
         config = settings.DEFAULT
 
     if outdir == '':
-        outdir = config.CSV_DATA_DIR
+        outdir = os.path.expanduser(config.CSV_DATA_DIR)
     else:
         outdir = os.path.expanduser(outdir)
 
@@ -47,7 +47,7 @@ def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, mon
 
     # Loop over every day in the month and create a CSV file
     # for each day, e.g. "GOOG_20150101.csv"
-    for d in days:
+    for i, d in enumerate(days):
         print("Create '%s' data for %s" % (ticker, d))
         current_time = current_time.replace(day=d.day)
         fname = os.path.join(
@@ -80,6 +80,8 @@ def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, mon
                     "%0.5f" % ask
                 )
                 outfile.write(line)
+        if nb_days > 0 and i >= nb_days - 1:
+            break
 
 
 @click.command()
@@ -93,8 +95,9 @@ def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, mon
 @click.option('--sigma_dt', default=100, help='sigma_dt (Milliseconds)')
 @click.option('--year', default=2014, help='Year')
 @click.option('--month', default=1, help='Month')
-def main(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, config=None):
-    return run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, config=config)
+@click.option('--days', default=-1, help='Number days to process')
+def main(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, days, config=None):
+    return run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, days, config=config)
 
 if __name__ == "__main__":
     main()
