@@ -50,7 +50,8 @@ class TestCompliance(Compliance):
         self.config = config
         self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".csv"
         try:
-            os.remove(os.path.join(config.OUTPUT_DIR, self.csv_filename))
+            fname = os.path.expanduser(os.path.join(config.OUTPUT_DIR, self.csv_filename))
+            os.remove(fname)
         except (IOError, OSError):
             print("No tradelog files to clean.")
 
@@ -61,7 +62,8 @@ class TestCompliance(Compliance):
             "exchange", "price",
             "commission"
         ]
-        with open(os.path.join(self.config.OUTPUT_DIR, self.csv_filename), 'a') as csvfile:
+        fname = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, self.csv_filename))
+        with open(fname, 'a') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
 
@@ -69,7 +71,8 @@ class TestCompliance(Compliance):
         """
         Append all details about the FillEvent to the CSV trade log.
         """
-        with open(os.path.join(self.config.OUTPUT_DIR, self.csv_filename), 'a') as csvfile:
+        fname = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, self.csv_filename))
+        with open(fname, 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow([
                 fill.timestamp, fill.ticker,

@@ -14,5 +14,8 @@ scipy==0.17.0
 simplegeneric==0.8.1
 six==1.10.0
 traitlets==4.1.0
-seaborn>=-0.7.0
+seaborn>=0.7.0
 click>=6.6
+yaml>=3.11
+munch>=2.0.4
+enum34>=1.1.6

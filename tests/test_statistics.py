@@ -150,8 +150,7 @@ class TestSimpleStatistics(unittest.TestCase):
         results = statistics.get_results()
         self.assertEqual(results["max_drawdown"], Decimal("954.00"))
         self.assertEqual(results["max_drawdown_pct"], Decimal("0.1908"))
-        # ToFix: https://github.com/mhallsmoore/qstrader/issues/45
-        # self.assertEqual(results["sharpe"], Decimal("1.8353"))
+        self.assertAlmostEqual(float(results["sharpe"]), 1.8353)
 
 if __name__ == "__main__":
     unittest.main()
