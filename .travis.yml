@@ -37,13 +37,14 @@ install:
   - if [[ "$PYTHON" == "2.7" ]]; then
       conda install enum34;
     fi
+  - pip install nose-timer
   - pip install munch
   - pip install coveralls --quiet
   - conda list
   - python setup.py install
 
 script:
-    - nosetests -v --with-coverage --cover-package=qstrader
+    - nosetests -v --with-coverage --cover-package=qstrader --with-timer
     - flake8 --ignore E501 tests examples qstrader
 
 after_success:
