@@ -26,6 +26,18 @@ class Strategy(object):
         raise NotImplementedError("Should implement calculate_signals()")
 
 
+class Strategies(Strategy):
+    """
+    Strategies is a collection of strategy
+    """
+    def __init__(self, *strategies):
+        self._lst_strategies = strategies
+
+    def calculate_signals(self, event):
+        for strategy in self._lst_strategies:
+            strategy.calculate_signals(event)
+
+
 class TestStrategy(Strategy):
     """
     A testing strategy that alternates between buying and selling
