@@ -50,8 +50,6 @@ class Backtest(object):
         """
         print("Running Backtest...")
         iters = 0
-        ticks = 0
-        bars = 0
         while iters < self.max_iters and self.price_handler.continue_backtest:
             try:
                 event = self.events_queue.get(False)
@@ -62,20 +60,12 @@ class Backtest(object):
                     self.price_handler.stream_next_bar()
             else:
                 if event is not None:
-                    if event.type == 'TICK':
+                    if event.type in ['TICK', 'BAR']:
                         self.cur_time = event.time
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.portfolio._reset_values()
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
-                        ticks += 1
-                    elif event.type == 'BAR':
-                        self.cur_time = event.time
-                        self.strategy.calculate_signals(event)
-                        self.portfolio_handler.portfolio._reset_values()
-                        self.portfolio_handler.update_portfolio_value()
-                        self.statistics.update(event.time)
-                        bars += 1
                     elif event.type == 'SIGNAL':
                         self.portfolio_handler.on_signal(event)
                     elif event.type == 'ORDER':
