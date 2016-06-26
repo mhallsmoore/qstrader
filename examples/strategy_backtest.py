@@ -9,7 +9,8 @@ from qstrader.risk_manager.risk_manager import TestRiskManager
 from qstrader.statistics.statistics import SimpleStatistics
 from qstrader.compliance.compliance import TestCompliance
 from qstrader import settings
-from qstrader.strategy.strategy import TestStrategy
+from qstrader.strategy.strategy import TestStrategy, Strategies
+from qstrader.strategy.print_strategy import PrintStrategy
 from qstrader.compat.compat import queue
 
 
@@ -29,7 +30,12 @@ def main(config, testing=False):
     )
 
     # Use the Test Strategy
-    strategy = TestStrategy(tickers, events_queue)
+    strategy01 = TestStrategy(tickers, events_queue)
+
+    # Use the Print Strategy
+    strategy02 = PrintStrategy(tickers, events_queue)
+
+    strategies = Strategies(strategy01, strategy02)
 
     # Use an example Position Sizer
     position_sizer = TestPositionSizer()
@@ -56,7 +62,7 @@ def main(config, testing=False):
     # Set up the backtest
     backtest = Backtest(
         tickers, price_handler,
-        strategy, portfolio_handler,
+        strategies, portfolio_handler,
         execution_handler,
         position_sizer, risk_manager,
         statistics,
