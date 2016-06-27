@@ -3,7 +3,7 @@ from __future__ import print_function
 import time
 from decimal import Decimal
 
-from qstrader.compat.compat import queue
+from six.moves.queue import Queue as queue
 
 
 class Backtest(object):
