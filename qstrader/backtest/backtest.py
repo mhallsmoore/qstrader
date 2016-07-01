@@ -66,7 +66,6 @@ class Backtest(object):
                         self.cur_time = event.time
                         print("Tick %s, at %s" % (ticks, self.cur_time))
                         self.strategy.calculate_signals(event)
-                        self.portfolio_handler.portfolio._reset_values()
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
                         ticks += 1
@@ -74,7 +73,6 @@ class Backtest(object):
                         self.cur_time = event.time
                         print("Bar %s, at %s" % (bars, self.cur_time))
                         self.strategy.calculate_signals(event)
-                        self.portfolio_handler.portfolio._reset_values()
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
                         bars += 1
