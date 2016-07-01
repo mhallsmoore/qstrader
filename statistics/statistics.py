@@ -114,11 +114,11 @@ class SimpleStatistics(Statistics):
         """
         statistics={}
         statistics["sharpe"]=self.calculate_sharpe()
-        statistics["drawdowns"]=self.drawdowns
+        statistics["drawdowns"]=pd.Series(self.drawdowns)
         statistics["max_drawdown"]=max(self.drawdowns)
         statistics["max_drawdown_pct"]=self.calculate_max_drawdown_pct()
-        statistics["equity"]=self.equity
-        statistics["equity_returns"]=self.equity_returns
+        statistics["equity"]=pd.Series(self.equity)
+        statistics["equity_returns"]=pd.Series(self.equity_returns)
         return statistics
 
     def calculate_sharpe(self, benchmark_return=0.00):

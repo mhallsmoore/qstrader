@@ -25,7 +25,7 @@ class Backtest(object):
     carrying out an event-driven backtest.
     """
     def __init__(
-        self, tickers, price_handler,
+        self, price_handler,
         strategy, portfolio_handler,
         execution_handler,
         position_sizer, risk_manager,
@@ -37,8 +37,6 @@ class Backtest(object):
       Set up the backtest variables according to
       what has been passed in.
       """
-
-      self.tickers = tickers
       self.price_handler = price_handler
       self.strategy = strategy
       self.portfolio_handler = portfolio_handler
