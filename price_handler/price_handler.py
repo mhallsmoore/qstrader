@@ -39,7 +39,7 @@ class PriceHandler(object):
 class HistoricCSVPriceHandler(PriceHandler):
     """
     HistoricCSVPriceHandler is designed to read CSV files of
-    tick data for each requested financial instrument and 
+    tick data for each requested financial instrument and
     stream those to the provided events queue as TickEvents.
     """
     def __init__(self, csv_dir, events_queue, init_tickers=None):
@@ -67,7 +67,7 @@ class HistoricCSVPriceHandler(PriceHandler):
         """
         ticker_path = os.path.join(self.csv_dir, "%s.csv" % ticker)
         self.tickers_data[ticker] = pd.io.parsers.read_csv(
-            ticker_path, header=0, parse_dates=True, 
+            ticker_path, header=0, parse_dates=True,
             dayfirst=True, index_col=1,
             names=("Ticker", "Time", "Bid", "Ask")
         )
@@ -75,7 +75,7 @@ class HistoricCSVPriceHandler(PriceHandler):
     def _merge_sort_ticker_data(self):
         """
         Concatenates all of the separate equities DataFrames
-        into a single DataFrame that is time ordered, allowing tick 
+        into a single DataFrame that is time ordered, allowing tick
         data events to be added to the queue in a chronological fashion.
 
         Note that this is an idealised situation, utilised solely for
@@ -91,12 +91,12 @@ class HistoricCSVPriceHandler(PriceHandler):
         """
         if ticker not in self.tickers:
             try:
-                self._open_ticker_price_csv(ticker) 
+                self._open_ticker_price_csv(ticker)
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
                 ticker_prices = {
-                    "bid": Decimal(str(row0["Bid"])), 
-                    "ask": Decimal(str(row0["Ask"])), 
+                    "bid": Decimal(str(row0["Bid"])),
+                    "ask": Decimal(str(row0["Ask"])),
                     "timestamp": dft.index[0]
                 }
                 self.tickers[ticker] = ticker_prices
@@ -126,6 +126,20 @@ class HistoricCSVPriceHandler(PriceHandler):
             )
             return None, None
 
+    def get_last_timestamp(self, ticker):
+        """
+        Returns the most recent actual timestamp for a given ticker
+        """
+        if ticker in self.tickers:
+            timestamp = self.tickers[ticker]["timestamp"]
+            return timestamp
+        else:
+            print(
+                "Timestamp for ticker %s is not "
+                "available from the %s." % (ticker, self.__class__.__name__)
+            )
+            return None
+
     def stream_next_tick(self):
         """
         Place the next TickEvent onto the event queue.
@@ -135,7 +149,7 @@ class HistoricCSVPriceHandler(PriceHandler):
         except StopIteration:
             self.continue_backtest = False
             return
-        
+
         getcontext().rounding = ROUND_HALF_DOWN
         ticker = row["Ticker"]
         bid = Decimal(str(row["Bid"])).quantize(
