@@ -21,7 +21,7 @@ def get_info(key, default_value=None):
 
 class SettingsDefault(object):
     _CSV_DATA_DIR = "~/data"
-    _OUTPUT_DIR = "~/qstrader"
+    _OUTPUT_DIR = "~/out"
 
     @property
     def CSV_DATA_DIR(self):
@@ -29,7 +29,7 @@ class SettingsDefault(object):
 
     @property
     def OUTPUT_DIR(self):
-        return get_info("OUTPUT_DIR", os.path.expanduser(self._CSV_DATA_DIR))
+        return get_info("OUTPUT_DIR", os.path.expanduser(self._OUTPUT_DIR))
 
 
 class SettingsTest(SettingsDefault):
