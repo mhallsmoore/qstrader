@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/qstraders/qstrader.svg?branch=master)](https://travis-ci.org/qstraders/qstrader)
+[![Build Status](https://travis-ci.org/mhallsmoore/qstrader.svg?branch=master)](https://travis-ci.org/mhallsmoore/qstrader)
 
 # QSTrader
 
