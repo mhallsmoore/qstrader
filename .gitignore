@@ -2,7 +2,7 @@
 *.py[co]
 .DS_Store
 __pycache__
-settings.py
+qstrader/settings.py
 
 # Packages
 *.egg
