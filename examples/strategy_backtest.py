@@ -1,3 +1,5 @@
+import click
+
 from decimal import Decimal
 
 from qstrader.backtest.backtest import Backtest
@@ -13,7 +15,7 @@ from qstrader.strategy.strategy import TestStrategy
 from qstrader.compat.compat import queue
 
 
-def main(config, testing=False):
+def run(config, testing):
     tickers = ["GOOG"]
 
     # Set up variables needed for backtest
@@ -64,5 +66,14 @@ def main(config, testing=False):
     )
     backtest.simulate_trading(testing=testing)
 
+
+@click.command()
+@click.option('--config', default=settings.DEFAULT_CONFIG_FILENAME, help='Config filename')
+@click.option('--testing/--no-testing', default=False, help='Enable testing mode')
+def main(config, testing):
+    config = settings.from_file(config, testing)
+    run(config, testing)
+
+
 if __name__ == "__main__":
-    main(settings.DEFAULT, testing=False)
+    main()

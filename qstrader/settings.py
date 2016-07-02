@@ -1,14 +1,21 @@
 import os
+import time
 import warnings
+import yaml
+from munch import munchify, unmunchify
 
 
 ENV_VAR_ROOT = 'QSTRADER'
+DEFAULT_CONFIG_FILENAME = '~/qstrader.yml'
 
 
-def get_info(key, default_value=None):
+def from_env(key, default_value=None, root=ENV_VAR_ROOT):
     """Returns a value (url, login, password)
     using either default_value or using environment variable"""
-    ENV_VAR_KEY = ENV_VAR_ROOT + "_" + key.upper()
+    if root != "":
+        ENV_VAR_KEY = root + "_" + key.upper()
+    else:
+        ENV_VAR_KEY = key.upper()
     if default_value == '' or default_value is None:
         try:
             return(os.environ[ENV_VAR_KEY])
@@ -19,23 +26,41 @@ def get_info(key, default_value=None):
         return(default_value)
 
 
-class SettingsDefault(object):
-    _CSV_DATA_DIR = "~/data"
-    _OUTPUT_DIR = "~/qstrader"
-
-    @property
-    def CSV_DATA_DIR(self):
-        return get_info("CSV_DATA_DIR", os.path.expanduser(self._CSV_DATA_DIR))
-
-    @property
-    def OUTPUT_DIR(self):
-        return get_info("OUTPUT_DIR", os.path.expanduser(self._CSV_DATA_DIR))
+DEFAULT = munchify({
+    "CSV_DATA_DIR": from_env("CSV_DATA_DIR", "~/data"),
+    "OUTPUT_DIR": from_env("OUTPUT_DIR", "~/qstrader")
+})
 
 
-class SettingsTest(SettingsDefault):
-    _CSV_DATA_DIR = "data"
-    _OUTPUT_DIR = "out"
+TEST = munchify({
+    "CSV_DATA_DIR": "data",
+    "OUTPUT_DIR": "out"
+})
 
 
-DEFAULT = SettingsDefault()
-TEST = SettingsTest()
+def from_file(fname=DEFAULT_CONFIG_FILENAME, testing=False):
+    if testing:
+        return TEST
+    try:
+        with open(os.path.expanduser(fname)) as fd:
+            conf = yaml.load(fd)
+        conf = munchify(conf)
+        return conf
+    except IOError:
+        print("A configuration file named '%s' is missing" % fname)
+        s_conf = yaml.dump(unmunchify(DEFAULT), explicit_start=True, indent=True, default_flow_style=False)
+        print("""
+Creating this file
+
+%s
+
+You still have to create directories with data and put your data in!
+""" % s_conf)
+        time.sleep(3)
+        try:
+            with open(os.path.expanduser(fname), "w") as fd:
+                fd.write(s_conf)
+        except IOError:
+            print("Can create '%s'" % fname)
+    print("Trying anyway with default configuration")
+    return DEFAULT

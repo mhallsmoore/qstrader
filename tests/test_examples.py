@@ -23,21 +23,22 @@ class TestExamples(unittest.TestCase):
         Set up configuration.
         """
         self.config = settings.TEST
+        self.testing = True
 
     def test_sp500tr_buy_and_hold(self):
         """
         Test sp500tr_buy_and_hold
         """
-        examples.sp500tr_buy_and_hold_backtest.main(self.config, testing=True)
+        examples.sp500tr_buy_and_hold_backtest.run(self.config, testing=self.testing)
 
     def test_mac_backtest(self):
         """
         Test mac_backtest
         """
-        examples.mac_backtest.main(self.config, testing=True)
+        examples.mac_backtest.run(self.config, testing=self.testing)
 
     def test_strategy_backtest(self):
         """
         Test strategy_backtest
         """
-        examples.strategy_backtest.main(self.config, testing=True)
+        examples.strategy_backtest.run(self.config, testing=self.testing)
