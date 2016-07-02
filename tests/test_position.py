@@ -1,7 +1,7 @@
 from decimal import Decimal
 import unittest
 
-from qstrader.position.position import Position
+from qstrader.position import Position
 
 
 class TestRoundTripXOMPosition(unittest.TestCase):

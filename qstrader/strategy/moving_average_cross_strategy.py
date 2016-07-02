@@ -1,12 +1,13 @@
+from .base import AbstractStrategy
+
 from collections import deque
 
 import numpy as np
 
-from qstrader.event.event import (SignalEvent, EventType)
-from qstrader.strategy.strategy import Strategy
+from ..event import (SignalEvent, EventType)
 
 
-class MovingAverageCrossStrategy(Strategy):
+class MovingAverageCrossStrategy(AbstractStrategy):
     """
     Requires:
     tickers - The list of ticker symbols

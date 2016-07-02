@@ -1,54 +1,25 @@
-from __future__ import print_function
-
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
 
 import pandas as pd
 
-from qstrader.event.event import TickEvent
-from qstrader.price_handler import PriceHandlerType
+from .base import AbstractBarPriceHandler
+from ..event import BarEvent
 
 
-class PriceHandler(object):
+class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
     """
-    PriceHandler is a base class providing an interface for
-    all subsequent (inherited) data handlers (both live and historic).
-
-    The goal of a (derived) PriceHandler object is to output a set of
-    TickEvents or BarEvents for each financial instrument and place
-    them into an event queue.
-
-    This will replicate how a live strategy would function as current
-    tick/bar data would be streamed via a brokerage. Thus a historic and live
-    system will be treated identically by the rest of the QSTrader suite.
-    """
-    def unsubscribe_ticker(self, ticker):
-        """
-        Unsubscribes the price handler from a current ticker symbol.
-        """
-        try:
-            self.tickers.pop(ticker, None)
-            self.tickers_data.pop(ticker, None)
-        except KeyError:
-            print(
-                "Could not unsubscribe ticker %s "
-                "as it was never subscribed." % ticker
-            )
-
-
-class HistoricCSVPriceHandler(PriceHandler):
-    """
-    HistoricCSVPriceHandler is designed to read CSV files of
-    tick data for each requested financial instrument and
-    stream those to the provided events queue as TickEvents.
+    YahooDailyBarPriceHandler is designed to read CSV files of
+    Yahoo Finance daily Open-High-Low-Close-Volume (OHLCV) data
+    for each requested financial instrument and stream those to
+    the provided events queue as BarEvents.
     """
     def __init__(self, csv_dir, events_queue, init_tickers=None):
         """
         Takes the CSV directory, the events queue and a possible
-        list of initial ticker symbols, then creates an (optional)
+        list of initial ticker symbols then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
-        self.type = PriceHandlerType.TICK
         self.csv_dir = csv_dir
         self.events_queue = events_queue
         self.continue_backtest = True
@@ -57,7 +28,7 @@ class HistoricCSVPriceHandler(PriceHandler):
         if init_tickers is not None:
             for ticker in init_tickers:
                 self.subscribe_ticker(ticker)
-        self.tick_stream = self._merge_sort_ticker_data()
+        self.bar_stream = self._merge_sort_ticker_data()
 
     def _open_ticker_price_csv(self, ticker):
         """
@@ -68,9 +39,12 @@ class HistoricCSVPriceHandler(PriceHandler):
         ticker_path = os.path.join(self.csv_dir, "%s.csv" % ticker)
         self.tickers_data[ticker] = pd.io.parsers.read_csv(
             ticker_path, header=0, parse_dates=True,
-            dayfirst=True, index_col=1,
-            names=("Ticker", "Time", "Bid", "Ask")
+            index_col=0, names=(
+                "Date", "Open", "High", "Low",
+                "Close", "Volume", "Adj Close"
+            )
         )
+        self.tickers_data[ticker]["Ticker"] = ticker
 
     def _merge_sort_ticker_data(self):
         """
@@ -95,8 +69,12 @@ class HistoricCSVPriceHandler(PriceHandler):
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
                 ticker_prices = {
-                    "bid": Decimal(str(row0["Bid"])),
-                    "ask": Decimal(str(row0["Ask"])),
+                    "close": Decimal(
+                        str(row0["Close"])
+                    ).quantize(Decimal("0.00001")),
+                    "adj_close": Decimal(
+                        str(row0["Adj Close"])
+                    ).quantize(Decimal("0.00001")),
                     "timestamp": dft.index[0]
                 }
                 self.tickers[ticker] = ticker_prices
@@ -111,20 +89,19 @@ class HistoricCSVPriceHandler(PriceHandler):
                 "as is already subscribed." % ticker
             )
 
-    def get_best_bid_ask(self, ticker):
+    def get_last_close(self, ticker):
         """
-        Returns the most recent bid/ask price for a ticker.
+        Returns the most recent actual (unadjusted) closing price.
         """
         if ticker in self.tickers:
-            bid = self.tickers[ticker]["bid"]
-            ask = self.tickers[ticker]["ask"]
-            return bid, ask
+            close_price = self.tickers[ticker]["close"]
+            return close_price
         else:
             print(
-                "Bid/ask values for ticker %s are not "
-                "available from the PriceHandler." % ticker
+                "Close price for ticker %s is not "
+                "available from the YahooDailyBarPriceHandler."
             )
-            return None, None
+            return None
 
     def get_last_timestamp(self, ticker):
         """
@@ -140,30 +117,37 @@ class HistoricCSVPriceHandler(PriceHandler):
             )
             return None
 
-    def stream_next_tick(self):
+    def stream_next(self):
         """
-        Place the next TickEvent onto the event queue.
+        Place the next BarEvent onto the event queue.
         """
         try:
-            index, row = next(self.tick_stream)
+            index, row = next(self.bar_stream)
         except StopIteration:
             self.continue_backtest = False
             return
 
+        # Obtain all elements of the bar from the dataframe
         getcontext().rounding = ROUND_HALF_DOWN
         ticker = row["Ticker"]
-        bid = Decimal(str(row["Bid"])).quantize(
-            Decimal("0.00001")
-        )
-        ask = Decimal(str(row["Ask"])).quantize(
-            Decimal("0.00001")
-        )
+        open_price = Decimal(str(row["Open"])).quantize(Decimal("0.00001"))
+        high_price = Decimal(str(row["High"])).quantize(Decimal("0.00001"))
+        low_price = Decimal(str(row["Low"])).quantize(Decimal("0.00001"))
+        close_price = Decimal(str(row["Close"])).quantize(Decimal("0.00001"))
+        adj_close_price = Decimal(str(row["Adj Close"])).quantize(Decimal("0.00001"))
+        volume = int(row["Volume"])
 
-        # Create decimalised prices for traded pair
-        self.tickers[ticker]["bid"] = bid
-        self.tickers[ticker]["ask"] = ask
+        # Create decimalised prices for
+        # closing price and adjusted closing price
+        self.tickers[ticker]["close"] = close_price
+        self.tickers[ticker]["adj_close"] = adj_close_price
         self.tickers[ticker]["timestamp"] = index
 
         # Create the tick event for the queue
-        tev = TickEvent(ticker, index, bid, ask)
-        self.events_queue.put(tev)
+        period = 86400  # Seconds in a day
+        bev = BarEvent(
+            ticker, index, period, open_price,
+            high_price, low_price, close_price,
+            volume, adj_close_price
+        )
+        self.events_queue.put(bev)

@@ -2,15 +2,15 @@ import datetime
 from decimal import Decimal
 import unittest
 
-from qstrader.event.event import FillEvent, OrderEvent, SignalEvent
-from qstrader.portfolio_handler.portfolio_handler import PortfolioHandler
-from qstrader.price_handler.price_handler import PriceHandlerType
-from qstrader.compat.compat import queue
+from qstrader.event import FillEvent, OrderEvent, SignalEvent
+from qstrader.portfolio_handler import PortfolioHandler
+from qstrader.price_handler.base import AbstractTickPriceHandler
+from qstrader.compat import queue
 
 
-class PriceHandlerMock(object):
+class PriceHandlerMock(AbstractTickPriceHandler):
     def __init__(self):
-        self.type = PriceHandlerType.TICK
+        pass
 
     def get_best_bid_ask(self, ticker):
         prices = {

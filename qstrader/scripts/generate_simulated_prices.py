@@ -7,7 +7,7 @@ import copy
 import datetime
 import os
 import numpy as np
-from qstrader import settings
+from .. import settings
 
 
 def month_weekdays(year_int, month_int):

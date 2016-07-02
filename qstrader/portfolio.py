@@ -1,6 +1,6 @@
 from decimal import Decimal
-from qstrader.position.position import Position
-from qstrader.price_handler.price_handler import PriceHandlerType
+
+from .position import Position
 
 
 class Portfolio(object):
@@ -41,7 +41,7 @@ class Portfolio(object):
         """
         for ticker in self.positions:
             pt = self.positions[ticker]
-            if self.price_handler.type == PriceHandlerType.TICK:
+            if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
             else:
                 close_price = self.price_handler.get_last_close(ticker)
@@ -72,7 +72,7 @@ class Portfolio(object):
         """
         self._reset_values()
         if ticker not in self.positions:
-            if self.price_handler.type == PriceHandlerType.TICK:
+            if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
             else:
                 close_price = self.price_handler.get_last_close(ticker)
@@ -108,7 +108,7 @@ class Portfolio(object):
             self.positions[ticker].transact_shares(
                 action, quantity, price, commission
             )
-            if self.price_handler.type == PriceHandlerType.TICK:
+            if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
             else:
                 close_price = self.price_handler.get_last_close(ticker)

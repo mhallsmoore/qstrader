@@ -3,9 +3,8 @@ from __future__ import print_function
 import time
 from decimal import Decimal
 
-from qstrader.compat.compat import queue
-from qstrader.event.event import EventType
-from qstrader.price_handler import PriceHandlerType
+from ..compat import queue
+from ..event import EventType
 
 
 class Backtest(object):
@@ -58,10 +57,7 @@ class Backtest(object):
             try:
                 event = self.events_queue.get(False)
             except queue.Empty:
-                if self.price_handler.type == PriceHandlerType.TICK:
-                    self.price_handler.stream_next_tick()
-                else:
-                    self.price_handler.stream_next_bar()
+                self.price_handler.stream_next()
             else:
                 if event is not None:
                     if event.type == EventType.TICK:

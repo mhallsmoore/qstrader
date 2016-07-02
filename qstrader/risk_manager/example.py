@@ -1,13 +1,11 @@
-from qstrader.event.event import OrderEvent
+from .base import AbstractRiskManager
+from ..event import OrderEvent
 
 
-class TestRiskManager(object):
-    def __init__(self):
-        pass
-
+class ExampleRiskManager(AbstractRiskManager):
     def refine_orders(self, portfolio, sized_order):
         """
-        This TestRiskManager object simply lets the
+        This ExampleRiskManager object simply lets the
         sized order through, creates the corresponding
         OrderEvent object and adds it to a list.
         """
