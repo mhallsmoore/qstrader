@@ -9,7 +9,7 @@ $ nosetests -s -v tests/test_examples.py:TestExamples.test_strategy_backtest
 import unittest
 
 from qstrader import settings
-import examples.sp500tr_buy_and_hold_backtest
+import examples.buy_and_hold_backtest
 import examples.mac_backtest
 import examples.strategy_backtest
 
@@ -25,13 +25,13 @@ class TestExamples(unittest.TestCase):
         self.config = settings.TEST
         self.testing = True
 
-    def test_sp500tr_buy_and_hold_backtest(self):
+    def test_buy_and_hold_backtest(self):
         """
-        Test sp500tr_buy_and_hold
+        Test buy_and_hold
         Bar 0, at 2010-01-04 00:00:00
         Bar 1628, at 2016-06-22 00:00:00
         """
-        results = examples.sp500tr_buy_and_hold_backtest.run(self.config, testing=self.testing)
+        results = examples.buy_and_hold_backtest.run(self.config, testing=self.testing)
         for (key, expected) in [
             ('sharpe', 0.5969),
             ('max_drawdown_pct', 5.0308),

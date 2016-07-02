@@ -1,8 +1,10 @@
 import unittest
 from decimal import Decimal
-from qstrader.portfolio.portfolio import Portfolio
+
 from test_portfolio import PriceHandlerMock
-from qstrader.statistics.statistics import SimpleStatistics
+
+from qstrader.portfolio import Portfolio
+from qstrader.statistics.simple import SimpleStatistics
 
 
 class PortfolioHandlerMock(object):

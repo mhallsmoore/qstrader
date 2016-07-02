@@ -1,14 +1,11 @@
 from decimal import Decimal
 import unittest
 
-from qstrader.portfolio.portfolio import Portfolio
-from qstrader.price_handler.price_handler import PriceHandlerType
+from qstrader.portfolio import Portfolio
+from qstrader.price_handler.base import AbstractTickPriceHandler
 
 
-class PriceHandlerMock(object):
-    def __init__(self):
-        self.type = PriceHandlerType.TICK
-
+class PriceHandlerMock(AbstractTickPriceHandler):
     def get_best_bid_ask(self, ticker):
         prices = {
             "GOOG": (Decimal("705.46"), Decimal("705.46")),

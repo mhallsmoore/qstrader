@@ -1,26 +1,26 @@
+from __future__ import print_function
+
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
 
 import pandas as pd
 
-from qstrader.event.event import BarEvent
-from qstrader.price_handler.price_handler import (PriceHandler, PriceHandlerType)
+from .base import AbstractTickPriceHandler
+from ..event import TickEvent
 
 
-class YahooDailyBarPriceHandler(PriceHandler):
+class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
     """
-    YahooDailyBarPriceHandler is designed to read CSV files of
-    Yahoo Finance daily Open-High-Low-Close-Volume (OHLCV) data
-    for each requested financial instrument and stream those to
-    the provided events queue as BarEvents.
+    HistoricCSVPriceHandler is designed to read CSV files of
+    tick data for each requested financial instrument and
+    stream those to the provided events queue as TickEvents.
     """
     def __init__(self, csv_dir, events_queue, init_tickers=None):
         """
         Takes the CSV directory, the events queue and a possible
-        list of initial ticker symbols then creates an (optional)
+        list of initial ticker symbols, then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
-        self.type = PriceHandlerType.BAR
         self.csv_dir = csv_dir
         self.events_queue = events_queue
         self.continue_backtest = True
@@ -29,7 +29,7 @@ class YahooDailyBarPriceHandler(PriceHandler):
         if init_tickers is not None:
             for ticker in init_tickers:
                 self.subscribe_ticker(ticker)
-        self.bar_stream = self._merge_sort_ticker_data()
+        self.tick_stream = self._merge_sort_ticker_data()
 
     def _open_ticker_price_csv(self, ticker):
         """
@@ -40,12 +40,9 @@ class YahooDailyBarPriceHandler(PriceHandler):
         ticker_path = os.path.join(self.csv_dir, "%s.csv" % ticker)
         self.tickers_data[ticker] = pd.io.parsers.read_csv(
             ticker_path, header=0, parse_dates=True,
-            index_col=0, names=(
-                "Date", "Open", "High", "Low",
-                "Close", "Volume", "Adj Close"
-            )
+            dayfirst=True, index_col=1,
+            names=("Ticker", "Time", "Bid", "Ask")
         )
-        self.tickers_data[ticker]["Ticker"] = ticker
 
     def _merge_sort_ticker_data(self):
         """
@@ -70,12 +67,8 @@ class YahooDailyBarPriceHandler(PriceHandler):
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
                 ticker_prices = {
-                    "close": Decimal(
-                        str(row0["Close"])
-                    ).quantize(Decimal("0.00001")),
-                    "adj_close": Decimal(
-                        str(row0["Adj Close"])
-                    ).quantize(Decimal("0.00001")),
+                    "bid": Decimal(str(row0["Bid"])),
+                    "ask": Decimal(str(row0["Ask"])),
                     "timestamp": dft.index[0]
                 }
                 self.tickers[ticker] = ticker_prices
@@ -90,19 +83,20 @@ class YahooDailyBarPriceHandler(PriceHandler):
                 "as is already subscribed." % ticker
             )
 
-    def get_last_close(self, ticker):
+    def get_best_bid_ask(self, ticker):
         """
-        Returns the most recent actual (unadjusted) closing price.
+        Returns the most recent bid/ask price for a ticker.
         """
         if ticker in self.tickers:
-            close_price = self.tickers[ticker]["close"]
-            return close_price
+            bid = self.tickers[ticker]["bid"]
+            ask = self.tickers[ticker]["ask"]
+            return bid, ask
         else:
             print(
-                "Close price for ticker %s is not "
-                "available from the YahooDailyBarPriceHandler."
+                "Bid/ask values for ticker %s are not "
+                "available from the PriceHandler." % ticker
             )
-            return None
+            return None, None
 
     def get_last_timestamp(self, ticker):
         """
@@ -118,37 +112,30 @@ class YahooDailyBarPriceHandler(PriceHandler):
             )
             return None
 
-    def stream_next_bar(self):
+    def stream_next(self):
         """
-        Place the next BarEvent onto the event queue.
+        Place the next TickEvent onto the event queue.
         """
         try:
-            index, row = next(self.bar_stream)
+            index, row = next(self.tick_stream)
         except StopIteration:
             self.continue_backtest = False
             return
 
-        # Obtain all elements of the bar from the dataframe
         getcontext().rounding = ROUND_HALF_DOWN
         ticker = row["Ticker"]
-        open_price = Decimal(str(row["Open"])).quantize(Decimal("0.00001"))
-        high_price = Decimal(str(row["High"])).quantize(Decimal("0.00001"))
-        low_price = Decimal(str(row["Low"])).quantize(Decimal("0.00001"))
-        close_price = Decimal(str(row["Close"])).quantize(Decimal("0.00001"))
-        adj_close_price = Decimal(str(row["Adj Close"])).quantize(Decimal("0.00001"))
-        volume = int(row["Volume"])
+        bid = Decimal(str(row["Bid"])).quantize(
+            Decimal("0.00001")
+        )
+        ask = Decimal(str(row["Ask"])).quantize(
+            Decimal("0.00001")
+        )
 
-        # Create decimalised prices for
-        # closing price and adjusted closing price
-        self.tickers[ticker]["close"] = close_price
-        self.tickers[ticker]["adj_close"] = adj_close_price
+        # Create decimalised prices for traded pair
+        self.tickers[ticker]["bid"] = bid
+        self.tickers[ticker]["ask"] = ask
         self.tickers[ticker]["timestamp"] = index
 
         # Create the tick event for the queue
-        period = 86400  # Seconds in a day
-        bev = BarEvent(
-            ticker, index, period, open_price,
-            high_price, low_price, close_price,
-            volume, adj_close_price
-        )
-        self.events_queue.put(bev)
+        tev = TickEvent(ticker, index, bid, ask)
+        self.events_queue.put(tev)

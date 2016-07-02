@@ -1,8 +1,8 @@
 from decimal import Decimal
 import unittest
 
-from qstrader.price_handler.price_handler import HistoricCSVPriceHandler
-from qstrader.compat.compat import queue
+from qstrader.price_handler.historic_csv_tick import HistoricCSVTickPriceHandler
+from qstrader.compat import queue
 from qstrader import settings
 
 
@@ -23,7 +23,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         fixtures_path = self.config.CSV_DATA_DIR
         events_queue = queue.Queue()
         init_tickers = ["GOOG", "AMZN", "MSFT"]
-        self.price_handler = HistoricCSVPriceHandler(
+        self.price_handler = HistoricCSVTickPriceHandler(
             fixtures_path, events_queue, init_tickers
         )
 
@@ -35,7 +35,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         be used for streaming the ticks.
         """
         # Stream to Tick #1 (GOOG)
-        self.price_handler.stream_next_tick()
+        self.price_handler.stream_next()
         self.assertEqual(
             self.price_handler.tickers["GOOG"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
@@ -52,7 +52,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         )
 
         # Stream to Tick #2 (AMZN)
-        self.price_handler.stream_next_tick()
+        self.price_handler.stream_next()
         self.assertEqual(
             self.price_handler.tickers["AMZN"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
@@ -69,7 +69,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         )
 
         # Stream to Tick #3 (MSFT)
-        self.price_handler.stream_next_tick()
+        self.price_handler.stream_next()
         self.assertEqual(
             self.price_handler.tickers["MSFT"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
@@ -87,7 +87,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
 
         # Stream to Tick #10 (GOOG)
         for i in range(4, 11):
-            self.price_handler.stream_next_tick()
+            self.price_handler.stream_next()
         self.assertEqual(
             self.price_handler.tickers["GOOG"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
@@ -105,7 +105,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
 
         # Stream to Tick #20 (GOOG)
         for i in range(11, 21):
-            self.price_handler.stream_next_tick()
+            self.price_handler.stream_next()
         self.assertEqual(
             self.price_handler.tickers["MSFT"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
@@ -123,7 +123,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
 
         # Stream to Tick #30 (final tick, AMZN)
         for i in range(21, 31):
-            self.price_handler.stream_next_tick()
+            self.price_handler.stream_next()
         self.assertEqual(
             self.price_handler.tickers["AMZN"]["timestamp"].strftime(
                 "%d-%m-%Y %H:%M:%S.%f"

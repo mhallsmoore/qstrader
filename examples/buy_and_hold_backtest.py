@@ -2,17 +2,17 @@ import click
 
 from decimal import Decimal
 
-from qstrader.backtest.backtest import Backtest
-from qstrader.execution_handler.execution_handler import IBSimulatedExecutionHandler
-from qstrader.portfolio_handler.portfolio_handler import PortfolioHandler
-from qstrader.position_sizer.position_sizer import TestPositionSizer
-from qstrader.price_handler.yahoo_price_handler import YahooDailyBarPriceHandler
-from qstrader.risk_manager.risk_manager import TestRiskManager
-from qstrader.statistics.statistics import SimpleStatistics
-from qstrader.compliance.compliance import TestCompliance
 from qstrader import settings
-from qstrader.strategy.strategy import BuyAndHoldStrategy
-from qstrader.compat.compat import queue
+from qstrader.compat import queue
+from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
+from qstrader.strategy.buy_and_hold import BuyAndHoldStrategy
+from qstrader.position_sizer.fixed import FixedPositionSizer
+from qstrader.risk_manager.example import ExampleRiskManager
+from qstrader.portfolio_handler import PortfolioHandler
+from qstrader.compliance.example import ExampleCompliance
+from qstrader.execution_handler.ib_simulated import IBSimulatedExecutionHandler
+from qstrader.statistics.simple import SimpleStatistics
+from qstrader.trading_session.backtest import Backtest
 
 
 def run(config, testing):
@@ -26,7 +26,7 @@ def run(config, testing):
     # max_iters = 10000000000
 
     # Use Yahoo Daily Price Handler
-    price_handler = YahooDailyBarPriceHandler(
+    price_handler = YahooDailyCsvBarPriceHandler(
         csv_dir, events_queue, tickers
     )
 
@@ -34,10 +34,10 @@ def run(config, testing):
     strategy = BuyAndHoldStrategy(tickers, events_queue)
 
     # Use an example Position Sizer
-    position_sizer = TestPositionSizer()
+    position_sizer = FixedPositionSizer()
 
     # Use an example Risk Manager
-    risk_manager = TestRiskManager()
+    risk_manager = ExampleRiskManager()
 
     # Use the default Portfolio Handler
     portfolio_handler = PortfolioHandler(
@@ -45,8 +45,8 @@ def run(config, testing):
         position_sizer, risk_manager
     )
 
-    # Use the TestCompliance component
-    compliance = TestCompliance(config)
+    # Use the ExampleCompliance component
+    compliance = ExampleCompliance(config)
 
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(
