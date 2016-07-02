@@ -9,7 +9,7 @@ from qstrader.strategy.example import ExampleStrategy
 from qstrader.position_sizer.fixed import FixedPositionSizer
 from qstrader.risk_manager.example import ExampleRiskManager
 from qstrader.portfolio_handler import PortfolioHandler
-from qstrader.compliance.csv import CsvCompliance
+from qstrader.compliance.example import ExampleCompliance
 from qstrader.execution_handler.ib_simulated import IBSimulatedExecutionHandler
 from qstrader.statistics.simple import SimpleStatistics
 from qstrader.trading_session.backtest import Backtest
@@ -45,8 +45,8 @@ def run(config, testing):
         position_sizer, risk_manager
     )
 
-    # Use the CsvCompliance component
-    compliance = CsvCompliance(config)
+    # Use the ExampleCompliance component
+    compliance = ExampleCompliance(config)
 
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(

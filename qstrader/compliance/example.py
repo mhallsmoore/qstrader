@@ -5,7 +5,7 @@ import csv
 from .base import AbstractCompliance
 
 
-class CsvCompliance(AbstractCompliance):
+class ExampleCompliance(AbstractCompliance):
     """
     A basic compliance module which writes trades to a
     CSV file in the output directory.
