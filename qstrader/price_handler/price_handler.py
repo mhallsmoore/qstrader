@@ -125,6 +125,20 @@ class HistoricCSVPriceHandler(PriceHandler):
             )
             return None, None
 
+    def get_last_timestamp(self, ticker):
+        """
+        Returns the most recent actual timestamp for a given ticker
+        """
+        if ticker in self.tickers:
+            timestamp = self.tickers[ticker]["timestamp"]
+            return timestamp
+        else:
+            print(
+                "Timestamp for ticker %s is not "
+                "available from the %s." % (ticker, self.__class__.__name__)
+            )
+            return None
+
     def stream_next_tick(self):
         """
         Place the next TickEvent onto the event queue.

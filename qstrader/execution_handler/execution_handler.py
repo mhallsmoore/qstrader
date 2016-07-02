@@ -78,7 +78,7 @@ class IBSimulatedExecutionHandler(ExecutionHandler):
         """
         if event.type == 'ORDER':
             # Obtain values from the OrderEvent
-            timestamp = datetime.datetime.utcnow()
+            timestamp = self.price_handler.get_last_timestamp(event.ticker)
             ticker = event.ticker
             action = event.action
             quantity = event.quantity

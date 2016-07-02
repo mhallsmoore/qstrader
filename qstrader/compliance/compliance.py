@@ -46,9 +46,12 @@ class TestCompliance(Compliance):
         in a simple way, but quite likely makes it unsuitable for
         a production environment that requires strict record-keeping.
         """
-        # Remove the previous CSV file
         self.config = config
+        # Remove the previous CSV file
+        today = datetime.datetime.utcnow().date()
         self.csv_filename = "tradelog_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".csv"
+        self.csv_filename = "tradelog_" + today.strftime("%Y-%m-%d") + ".csv"
+
         try:
             os.remove(os.path.join(config.OUTPUT_DIR, self.csv_filename))
         except (IOError, OSError):

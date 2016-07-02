@@ -104,6 +104,20 @@ class YahooDailyBarPriceHandler(PriceHandler):
             )
             return None
 
+    def get_last_timestamp(self, ticker):
+        """
+        Returns the most recent actual timestamp for a given ticker
+        """
+        if ticker in self.tickers:
+            timestamp = self.tickers[ticker]["timestamp"]
+            return timestamp
+        else:
+            print(
+                "Timestamp for ticker %s is not "
+                "available from the %s." % (ticker, self.__class__.__name__)
+            )
+            return None
+
     def stream_next_bar(self):
         """
         Place the next BarEvent onto the event queue.
