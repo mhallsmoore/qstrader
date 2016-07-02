@@ -4,6 +4,8 @@ import time
 from decimal import Decimal
 
 from qstrader.compat.compat import queue
+from qstrader.event.event import EventType
+from qstrader.price_handler import PriceHandlerType
 
 
 class Backtest(object):
@@ -56,32 +58,34 @@ class Backtest(object):
             try:
                 event = self.events_queue.get(False)
             except queue.Empty:
-                if self.price_handler.type == "TICK_HANDLER":
+                if self.price_handler.type == PriceHandlerType.TICK:
                     self.price_handler.stream_next_tick()
                 else:
                     self.price_handler.stream_next_bar()
             else:
                 if event is not None:
-                    if event.type == 'TICK':
+                    if event.type == EventType.TICK:
                         self.cur_time = event.time
                         print("Tick %s, at %s" % (ticks, self.cur_time))
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
                         ticks += 1
-                    elif event.type == 'BAR':
+                    elif event.type == EventType.BAR:
                         self.cur_time = event.time
                         print("Bar %s, at %s" % (bars, self.cur_time))
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
                         bars += 1
-                    elif event.type == 'SIGNAL':
+                    elif event.type == EventType.SIGNAL:
                         self.portfolio_handler.on_signal(event)
-                    elif event.type == 'ORDER':
+                    elif event.type == EventType.ORDER:
                         self.execution_handler.execute_order(event)
-                    elif event.type == 'FILL':
+                    elif event.type == EventType.FILL:
                         self.portfolio_handler.on_fill(event)
+                    else:
+                        raise NotImplemented("Unsupported event.type '%s'" % event.type)
             time.sleep(self.heartbeat)
             iters += 1
 
@@ -97,3 +101,4 @@ class Backtest(object):
         print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
         if not testing:
             self.statistics.plot_results()
+        return results

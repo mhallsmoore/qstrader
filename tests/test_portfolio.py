@@ -2,11 +2,12 @@ from decimal import Decimal
 import unittest
 
 from qstrader.portfolio.portfolio import Portfolio
+from qstrader.price_handler.price_handler import PriceHandlerType
 
 
 class PriceHandlerMock(object):
     def __init__(self):
-        self.type = "TICK_HANDLER"
+        self.type = PriceHandlerType.TICK
 
     def get_best_bid_ask(self, ticker):
         prices = {

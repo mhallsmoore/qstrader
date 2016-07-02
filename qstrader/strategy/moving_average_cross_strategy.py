@@ -2,7 +2,7 @@ from collections import deque
 
 import numpy as np
 
-from qstrader.event.event import SignalEvent
+from qstrader.event.event import (SignalEvent, EventType)
 from qstrader.strategy.strategy import Strategy
 
 
@@ -30,7 +30,7 @@ class MovingAverageCrossStrategy(Strategy):
     def calculate_signals(self, event):
         # TODO: Only applies SMA to first ticker
         ticker = self.tickers[0]
-        if event.type == "BAR" and event.ticker == ticker:
+        if event.type == EventType.BAR and event.ticker == ticker:
             # Add latest adjusted closing price to the
             # short and long window bars
             self.lw_bars.append(event.adj_close_price)

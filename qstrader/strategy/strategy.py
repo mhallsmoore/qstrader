@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from qstrader.event.event import SignalEvent
+from qstrader.event.event import (SignalEvent, EventType)
 
 
 class Strategy(object):
@@ -43,7 +43,7 @@ class TestStrategy(Strategy):
 
     def calculate_signals(self, event):
         ticker = self.tickers[0]
-        if event.type == 'TICK' and event.ticker == ticker:
+        if event.type == EventType.TICK and event.ticker == ticker:
             if self.ticks % 5 == 0:
                 if not self.invested:
                     signal = SignalEvent(ticker, "BOT")
@@ -70,7 +70,7 @@ class BuyAndHoldStrategy(Strategy):
 
     def calculate_signals(self, event):
         ticker = self.tickers[0]
-        if event.type == "BAR" and event.ticker == ticker:
+        if event.type == EventType.BAR and event.ticker == ticker:
             if not self.invested and self.ticks == 0:
                 signal = SignalEvent(ticker, "BOT")
                 self.events_queue.put(signal)

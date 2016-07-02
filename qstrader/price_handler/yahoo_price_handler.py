@@ -4,7 +4,7 @@ import os
 import pandas as pd
 
 from qstrader.event.event import BarEvent
-from qstrader.price_handler.price_handler import PriceHandler
+from qstrader.price_handler.price_handler import (PriceHandler, PriceHandlerType)
 
 
 class YahooDailyBarPriceHandler(PriceHandler):
@@ -20,7 +20,7 @@ class YahooDailyBarPriceHandler(PriceHandler):
         list of initial ticker symbols then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
-        self.type = "BAR_HANDLER"
+        self.type = PriceHandlerType.BAR
         self.csv_dir = csv_dir
         self.events_queue = events_queue
         self.continue_backtest = True

@@ -6,6 +6,7 @@ import os
 import pandas as pd
 
 from qstrader.event.event import TickEvent
+from qstrader.price_handler import PriceHandlerType
 
 
 class PriceHandler(object):
@@ -47,7 +48,7 @@ class HistoricCSVPriceHandler(PriceHandler):
         list of initial ticker symbols, then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
-        self.type = "TICK_HANDLER"
+        self.type = PriceHandlerType.TICK
         self.csv_dir = csv_dir
         self.events_queue = events_queue
         self.continue_backtest = True
@@ -121,7 +122,7 @@ class HistoricCSVPriceHandler(PriceHandler):
         else:
             print(
                 "Bid/ask values for ticker %s are not "
-                "available from the PriceHandler."
+                "available from the PriceHandler." % ticker
             )
             return None, None
 

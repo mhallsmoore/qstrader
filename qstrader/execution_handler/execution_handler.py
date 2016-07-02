@@ -2,7 +2,8 @@ import datetime
 from decimal import Decimal
 from abc import ABCMeta, abstractmethod
 
-from qstrader.event.event import FillEvent
+from qstrader.event.event import (FillEvent, EventType)
+from qstrader.price_handler.price_handler import PriceHandlerType
 
 
 class ExecutionHandler(object):
@@ -76,7 +77,7 @@ class IBSimulatedExecutionHandler(ExecutionHandler):
         Parameters:
         event - An Event object with order information.
         """
-        if event.type == 'ORDER':
+        if event.type == EventType.ORDER:
             # Obtain values from the OrderEvent
             timestamp = self.price_handler.get_last_timestamp(event.ticker)
             ticker = event.ticker
@@ -84,7 +85,7 @@ class IBSimulatedExecutionHandler(ExecutionHandler):
             quantity = event.quantity
 
             # Obtain the fill price
-            if self.price_handler.type == "TICK_HANDLER":
+            if self.price_handler.type == PriceHandlerType.TICK:
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
                 if event.action == "BOT":
                     fill_price = Decimal(str(ask))
