@@ -22,3 +22,15 @@ class AbstractStrategy(object):
         Provides the mechanisms to calculate the list of signals.
         """
         raise NotImplementedError("Should implement calculate_signals()")
+
+
+class Strategies(AbstractStrategy):
+    """
+    Strategies is a collection of strategy
+    """
+    def __init__(self, *strategies):
+        self._lst_strategies = strategies
+
+    def calculate_signals(self, event):
+        for strategy in self._lst_strategies:
+            strategy.calculate_signals(event)

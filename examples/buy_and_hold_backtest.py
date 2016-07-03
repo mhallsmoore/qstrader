@@ -6,6 +6,7 @@ from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
 from qstrader.strategy.buy_and_hold import BuyAndHoldStrategy
+from qstrader.strategy import Strategies, DisplayStrategy
 from qstrader.position_sizer.fixed import FixedPositionSizer
 from qstrader.risk_manager.example import ExampleRiskManager
 from qstrader.portfolio_handler import PortfolioHandler
@@ -31,6 +32,7 @@ def run(config, testing, tickers):
 
     # Use the Buy and Hold Strategy
     strategy = BuyAndHoldStrategy(tickers, events_queue)
+    strategy = Strategies(strategy, DisplayStrategy())
 
     # Use an example Position Sizer
     position_sizer = FixedPositionSizer()
