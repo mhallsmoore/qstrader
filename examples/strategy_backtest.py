@@ -15,8 +15,7 @@ from qstrader.statistics.simple import SimpleStatistics
 from qstrader.trading_session.backtest import Backtest
 
 
-def run(config, testing):
-    tickers = ["GOOG"]
+def run(config, testing, tickers):
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
@@ -71,9 +70,11 @@ def run(config, testing):
 @click.command()
 @click.option('--config', default=settings.DEFAULT_CONFIG_FILENAME, help='Config filename')
 @click.option('--testing/--no-testing', default=False, help='Enable testing mode')
-def main(config, testing):
+@click.option('--tickers', default='GOOG', help='Tickers (use comma)')
+def main(config, testing, tickers):
+    tickers = tickers.split(",")
     config = settings.from_file(config, testing)
-    run(config, testing)
+    run(config, testing, tickers)
 
 
 if __name__ == "__main__":

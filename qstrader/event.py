@@ -12,7 +12,9 @@ class Event(object):
     (inherited) events, that will trigger further events in the
     trading infrastructure.
     """
-    pass
+    @property
+    def typename(self):
+        return self.type.name
 
 
 class TickEvent(Event):

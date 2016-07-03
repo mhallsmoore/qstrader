@@ -62,14 +62,12 @@ class Backtest(object):
                 if event is not None:
                     if event.type == EventType.TICK:
                         self.cur_time = event.time
-                        print("Tick %s, at %s" % (ticks, self.cur_time))
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)
                         ticks += 1
                     elif event.type == EventType.BAR:
                         self.cur_time = event.time
-                        print("Bar %s, at %s" % (bars, self.cur_time))
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time)

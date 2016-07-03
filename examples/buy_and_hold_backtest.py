@@ -6,6 +6,7 @@ from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
 from qstrader.strategy.buy_and_hold import BuyAndHoldStrategy
+from qstrader.strategy import Strategies, DisplayStrategy
 from qstrader.position_sizer.fixed import FixedPositionSizer
 from qstrader.risk_manager.example import ExampleRiskManager
 from qstrader.portfolio_handler import PortfolioHandler
@@ -15,8 +16,7 @@ from qstrader.statistics.simple import SimpleStatistics
 from qstrader.trading_session.backtest import Backtest
 
 
-def run(config, testing):
-    tickers = ["SP500TR"]
+def run(config, testing, tickers):
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
@@ -32,6 +32,7 @@ def run(config, testing):
 
     # Use the Buy and Hold Strategy
     strategy = BuyAndHoldStrategy(tickers, events_queue)
+    strategy = Strategies(strategy, DisplayStrategy())
 
     # Use an example Position Sizer
     position_sizer = FixedPositionSizer()
@@ -72,9 +73,11 @@ def run(config, testing):
 @click.command()
 @click.option('--config', default=settings.DEFAULT_CONFIG_FILENAME, help='Config filename')
 @click.option('--testing/--no-testing', default=False, help='Enable testing mode')
-def main(config, testing):
+@click.option('--tickers', default='SP500TR', help='Tickers (use comma)')
+def main(config, testing, tickers):
+    tickers = tickers.split(",")
     config = settings.from_file(config, testing)
-    run(config, testing)
+    run(config, testing, tickers)
 
 
 if __name__ == "__main__":
