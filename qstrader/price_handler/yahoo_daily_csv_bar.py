@@ -1,19 +1,9 @@
-from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
 
 import pandas as pd
 
 from .base import AbstractBarPriceHandler
 from ..event import BarEvent
-
-try:
-    from qstrader import settings
-except ImportError:
-    print(
-        "Could not import settings.py. Have you copied " \
-        "settings.py.example to settings.py and configured " \
-        "your QSTrader settings?"
-    )
 
 class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
     """
@@ -22,12 +12,13 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
     for each requested financial instrument and stream those to
     the provided events queue as BarEvents.
     """
-    def __init__(self, csv_dir, events_queue, init_tickers=None):
+    def __init__(self, config, csv_dir, events_queue, init_tickers=None):
         """
         Takes the CSV directory, the events queue and a possible
         list of initial ticker symbols then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
+        self.config = config
         self.csv_dir = csv_dir
         self.events_queue = events_queue
         self.continue_backtest = True
@@ -77,8 +68,8 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
 
-                close =  int(Decimal(str(row0["Close"])).quantize(Decimal("0.0001")) * settings.PRICE_MULTIPLIER)
-                adj_close = int(Decimal( str(row0["Adj Close"]) ).quantize(Decimal("0.0001")) * settings.PRICE_MULTIPLIER)
+                close =  int(row0["Close"] * self.config.PRICE_MULTIPLIER)
+                adj_close = int(row0["Adj Close"] * self.config.PRICE_MULTIPLIER)
 
                 ticker_prices = {
                     "close": close,
@@ -136,17 +127,15 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
             return
 
         # Obtain all elements of the bar from the dataframe
-        getcontext().rounding = ROUND_HALF_DOWN
         ticker = row["Ticker"]
-        open_price = int(row["Open"] * 100) * settings.PRICE_MULTIPLIER // 100
-        high_price = int(row["High"] * 100) * settings.PRICE_MULTIPLIER // 100
-        low_price = int(row["Low"] * 100) * settings.PRICE_MULTIPLIER // 100
-        close_price = int(row["Close"] * 100) * settings.PRICE_MULTIPLIER // 100
-        adj_close_price = int(row["Adj Close"] * 100) * settings.PRICE_MULTIPLIER // 100
+        open_price = int(row["Open"] * 100) * self.config.PRICE_MULTIPLIER // 100
+        high_price = int(row["High"] * 100) * self.config.PRICE_MULTIPLIER // 100
+        low_price = int(row["Low"] * 100) * self.config.PRICE_MULTIPLIER // 100
+        close_price = int(row["Close"] * 100) * self.config.PRICE_MULTIPLIER // 100
+        adj_close_price = int(row["Adj Close"] * 100) * self.config.PRICE_MULTIPLIER // 100
         volume = int(row["Volume"])
 
-        # Create decimalised prices for
-        # closing price and adjusted closing price
+        # Create prices for closing price and adjusted closing price
         self.tickers[ticker]["close"] = close_price
         self.tickers[ticker]["adj_close"] = adj_close_price
         self.tickers[ticker]["timestamp"] = index

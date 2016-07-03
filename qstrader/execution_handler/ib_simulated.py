@@ -25,7 +25,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
     handler.
     """
 
-    def __init__(self, events_queue, price_handler, compliance=None):
+    def __init__(self, config, events_queue, price_handler, compliance=None):
         """
         Initialises the handler, setting the event queue
         as well as access to local pricing.
@@ -33,6 +33,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
         Parameters:
         events_queue - The Queue of Event objects.
         """
+        self.config = config
         self.events_queue = events_queue
         self.price_handler = price_handler
         self.compliance = compliance
@@ -43,7 +44,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
         a transaction. At this stage, simply add in $1.00
         for transaction costs, irrespective of lot size.
         """
-        return 1 * settings.PRICE_MULTIPLIER
+        return 1 * self.config.PRICE_MULTIPLIER
 
     def execute_order(self, event):
         """

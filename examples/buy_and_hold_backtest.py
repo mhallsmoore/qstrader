@@ -1,7 +1,5 @@
 import click
 
-from decimal import Decimal
-
 from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
@@ -21,13 +19,11 @@ def run(config, testing, tickers):
     # Set up variables needed for backtest
     events_queue = queue.Queue()
     csv_dir = config.CSV_DATA_DIR
-    initial_equity = Decimal("500000.00")
-    # heartbeat = 0.0
-    # max_iters = 10000000000
+    initial_equity = 500000 * config.PRICE_MULTIPLIER
 
     # Use Yahoo Daily Price Handler
     price_handler = YahooDailyCsvBarPriceHandler(
-        csv_dir, events_queue, tickers
+        config, csv_dir, events_queue, tickers
     )
 
     # Use the Buy and Hold Strategy
@@ -51,7 +47,7 @@ def run(config, testing, tickers):
 
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(
-        events_queue, price_handler, compliance
+        config, events_queue, price_handler, compliance
     )
 
     # Use the default Statistics
@@ -59,12 +55,11 @@ def run(config, testing, tickers):
 
     # Set up the backtest
     backtest = Backtest(
-        tickers, price_handler,
-        strategy, portfolio_handler,
-        execution_handler,
+        config,
+        price_handler, strategy,
+        portfolio_handler, execution_handler,
         position_sizer, risk_manager,
-        statistics,
-        initial_equity
+        statistics, initial_equity
     )
     results = backtest.simulate_trading(testing=testing)
     return results

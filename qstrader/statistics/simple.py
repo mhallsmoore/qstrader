@@ -3,7 +3,6 @@ from .base import AbstractStatistics
 import pandas as pd
 import numpy as np
 import matplotlib
-from decimal import Decimal
 try:
     matplotlib.use('TkAgg')
 except:
@@ -47,23 +46,16 @@ class SimpleStatistics(AbstractStatistics):
         """
         # Retrieve equity value of Portfolio
         self.equity.append(self.portfolio_handler.portfolio.equity)
-        current_index = len(self.equity)-1
 
-        # Calculate percentage return between current and previous equity value.
-        self.equity_returns.append ((
-            (self.equity[current_index] - self.equity[current_index-1])
-            //self.equity[current_index]
-        )*100)
-
-        # Calculate Drawdown.
-        # Note that we have pre-seeded HWM to be starting equity value,
-        # so we don't seed it twice, else we'd add one-too-many values.
-        if(current_index > 0):
-            self.hwm.append(
-                max(self.hwm[current_index-1], self.equity[current_index])
+        if(len(self.equity)>1):
+            # Calculate percentage return between current and previous equity value.
+            self.equity_returns.append(
+                ((self.equity[-1] - self.equity[-2]) / self.equity[-1])*100
             )
+            # Calculate Drawdown.
+            self.hwm.append(max(self.hwm[-1], self.equity[-1]))
 
-        self.drawdowns.append( self.hwm[current_index]-self.equity[current_index] )
+            self.drawdowns.append(self.hwm[-1]-self.equity[-1])
 
     def get_results(self):
         """
