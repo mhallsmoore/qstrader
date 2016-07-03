@@ -1,5 +1,5 @@
-from qstrader.order.order import SuggestedOrder
-from qstrader.portfolio.portfolio import Portfolio
+from .order.suggested import SuggestedOrder
+from .portfolio import Portfolio
 
 
 class PortfolioHandler(object):

@@ -1,18 +1,21 @@
-from qstrader.backtest.backtest import Backtest
-from qstrader.execution_handler.execution_handler import IBSimulatedExecutionHandler
-from qstrader.portfolio_handler.portfolio_handler import PortfolioHandler
-from qstrader.position_sizer.position_sizer import TestPositionSizer
-from qstrader.price_handler.price_handler import HistoricCSVPriceHandler
-from qstrader.risk_manager.risk_manager import TestRiskManager
-from qstrader.statistics.statistics import SimpleStatistics
-from qstrader.compliance.compliance import TestCompliance
+import click
+
+from decimal import Decimal
+
 from qstrader import settings
-from qstrader.strategy.strategy import TestStrategy
-from qstrader.compat.compat import queue
+from qstrader.compat import queue
+from qstrader.price_handler.historic_csv_tick import HistoricCSVTickPriceHandler
+from qstrader.strategy.example import ExampleStrategy
+from qstrader.position_sizer.fixed import FixedPositionSizer
+from qstrader.risk_manager.example import ExampleRiskManager
+from qstrader.portfolio_handler import PortfolioHandler
+from qstrader.compliance.example import ExampleCompliance
+from qstrader.execution_handler.ib_simulated import IBSimulatedExecutionHandler
+from qstrader.statistics.simple import SimpleStatistics
+from qstrader.trading_session.backtest import Backtest
 
 
-def main(config, testing=False):
-    tickers = ["GOOG"]
+def run(config, testing, tickers):
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
@@ -22,18 +25,18 @@ esop90l    csv_dir = config.CSV_DATA_DIR
     # max_iters = 10000000000
 
     # Use Historic CSV Price Handler
-    price_handler = HistoricCSVPriceHandler(
+    price_handler = HistoricCSVTickPriceHandler(
         csv_dir, events_queue, tickers
     )
 
-    # Use the Test Strategy
-    strategy = TestStrategy(tickers, events_queue)
+    # Use the Example Strategy
+    strategy = ExampleStrategy(tickers, events_queue)
 
     # Use an example Position Sizer
-    position_sizer = TestPositionSizer()
+    position_sizer = FixedPositionSizer()
 
     # Use an example Risk Manager
-    risk_manager = TestRiskManager()
+    risk_manager = ExampleRiskManager()
 
     # Use the default Portfolio Handler
     portfolio_handler = PortfolioHandler(
@@ -41,8 +44,8 @@ esop90l    csv_dir = config.CSV_DATA_DIR
         position_sizer, risk_manager
     )
 
-    # Use the TestCompliance component
-    compliance = TestCompliance(config)
+    # Use the ExampleCompliance component
+    compliance = ExampleCompliance(config)
 
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(
@@ -60,7 +63,19 @@ esop90l    csv_dir = config.CSV_DATA_DIR
         statistics,
         initial_equity
     )
-    backtest.simulate_trading(testing=testing)
+    results = backtest.simulate_trading(testing=testing)
+    return results
+
+
+@click.command()
+@click.option('--config', default=settings.DEFAULT_CONFIG_FILENAME, help='Config filename')
+@click.option('--testing/--no-testing', default=False, help='Enable testing mode')
+@click.option('--tickers', default='GOOG', help='Tickers (use comma)')
+def main(config, testing, tickers):
+    tickers = tickers.split(",")
+    config = settings.from_file(config, testing)
+    run(config, testing, tickers)
+
 
 if __name__ == "__main__":
-    main(settings.DEFAULT, testing=False)
+    main()

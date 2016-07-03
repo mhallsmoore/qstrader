@@ -32,15 +32,20 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-  - conda create -q -n test-environment python=$PYTHON pandas=$PANDAS nose coverage setuptools decorator path.py pexpect pickleshare ptyprocess python-dateutil pytz scipy simplegeneric six traitlets seaborn click
+  - conda create -q -n test-environment python=$PYTHON pandas=$PANDAS nose coverage setuptools decorator path.py pexpect pickleshare ptyprocess python-dateutil pytz scipy simplegeneric six traitlets seaborn click pyyaml
   - source activate test-environment
+  - if [[ "$PYTHON" == "2.7" ]]; then
+      conda install enum34;
+    fi
+  - pip install nose-timer
+  - pip install munch
   - pip install coveralls --quiet
   - conda list
   - python setup.py install
 
 script:
+    - nosetests -v --with-coverage --cover-package=qstrader --with-timer
     - flake8 --ignore E501 tests examples qstrader
-    - nosetests -v --with-coverage --cover-package=qstrader
 
 after_success:
   - coveralls

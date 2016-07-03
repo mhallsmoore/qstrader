@@ -5,7 +5,8 @@ from decimal import Decimal
 from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
-from qstrader.strategy.moving_average_cross_strategy import MovingAverageCrossStrategy
+from qstrader.strategy.buy_and_hold import BuyAndHoldStrategy
+from qstrader.strategy import Strategies, DisplayStrategy
 from qstrader.position_sizer.fixed import FixedPositionSizer
 from qstrader.risk_manager.example import ExampleRiskManager
 from qstrader.portfolio_handler import PortfolioHandler
@@ -21,19 +22,22 @@ def run(config, testing, tickers):
     events_queue = queue.Queue()
     csv_dir = config.CSV_DATA_DIR
     initial_equity = Decimal("500000.00")
+    # heartbeat = 0.0
+    # max_iters = 10000000000
 
     # Use Yahoo Daily Price Handler
     price_handler = YahooDailyCsvBarPriceHandler(
         csv_dir, events_queue, tickers
     )
 
-    # Use the MAC Strategy
-    strategy = MovingAverageCrossStrategy(tickers, events_queue)
+    # Use the Buy and Hold Strategy
+    strategy = BuyAndHoldStrategy(tickers, events_queue)
+    strategy = Strategies(strategy, DisplayStrategy())
 
-    # Use an example Position Sizer,
+    # Use an example Position Sizer
     position_sizer = FixedPositionSizer()
 
-    # Use an example Risk Manager,
+    # Use an example Risk Manager
     risk_manager = ExampleRiskManager()
 
     # Use the default Portfolio Handler
@@ -74,6 +78,7 @@ def main(config, testing, tickers):
     tickers = tickers.split(",")
     config = settings.from_file(config, testing)
     run(config, testing, tickers)
+
 
 if __name__ == "__main__":
     main()

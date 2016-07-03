@@ -1,5 +1,10 @@
 from __future__ import print_function
 
+from enum import Enum
+
+
+EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL")
+
 
 class Event(object):
     """
@@ -7,7 +12,9 @@ class Event(object):
     (inherited) events, that will trigger further events in the
     trading infrastructure.
     """
-    pass
+    @property
+    def typename(self):
+        return self.type.name
 
 
 class TickEvent(Event):
@@ -26,7 +33,7 @@ class TickEvent(Event):
         bid - The best bid price at the time of the tick.
         ask - The best ask price at the time of the tick.
         """
-        self.type = 'TICK'
+        self.type = EventType.TICK
         self.ticker = ticker
         self.time = time
         self.bid = bid
@@ -72,7 +79,7 @@ class BarEvent(Event):
         of 'open_price', 'close_price' as 'open' is a reserved
         word in Python.
         """
-        self.type = 'BAR'
+        self.type = EventType.BAR
         self.ticker = ticker
         self.time = time
         self.period = period
@@ -148,7 +155,7 @@ class SignalEvent(Event):
         ticker - The ticker symbol, e.g. 'GOOG'.
         action - 'BOT' (for long) or 'SLD' (for short).
         """
-        self.type = 'SIGNAL'
+        self.type = EventType.SIGNAL
         self.ticker = ticker
         self.action = action
 
@@ -168,7 +175,7 @@ class OrderEvent(Event):
         action - 'BOT' (for long) or 'SLD' (for short).
         quantity - The quantity of shares to transact.
         """
-        self.type = 'ORDER'
+        self.type = EventType.ORDER
         self.ticker = ticker
         self.action = action
         self.quantity = quantity
@@ -213,7 +220,7 @@ class FillEvent(Event):
         price - The price at which the trade was filled
         commission - The brokerage commission for carrying out the trade.
         """
-        self.type = 'FILL'
+        self.type = EventType.FILL
         self.timestamp = timestamp
         self.ticker = ticker
         self.action = action

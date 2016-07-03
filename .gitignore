@@ -30,3 +30,6 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# Textmate (a Mac editor) meta files
+._*
