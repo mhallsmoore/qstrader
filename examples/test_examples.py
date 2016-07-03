@@ -31,7 +31,8 @@ class TestExamples(unittest.TestCase):
         Bar 0, at 2010-01-04 00:00:00
         Bar 1628, at 2016-06-22 00:00:00
         """
-        results = examples.buy_and_hold_backtest.run(self.config, testing=self.testing)
+        tickers = ["SP500TR"]
+        results = examples.buy_and_hold_backtest.run(self.config, self.testing, tickers)
         for (key, expected) in [
             ('sharpe', 0.5969),
             ('max_drawdown_pct', 5.0308),
@@ -53,12 +54,14 @@ class TestExamples(unittest.TestCase):
         """
         Test mac_backtest
         """
-        results = examples.mac_backtest.run(self.config, testing=self.testing)
+        tickers = ["SP500TR"]
+        results = examples.mac_backtest.run(self.config, self.testing, tickers)
         self.assertAlmostEqual(float(results['sharpe']), 0.6018)
 
     def test_strategy_backtest(self):
         """
         Test strategy_backtest
         """
-        results = examples.strategy_backtest.run(self.config, testing=self.testing)
+        tickers = ["GOOG"]
+        results = examples.strategy_backtest.run(self.config, self.testing, tickers)
         self.assertAlmostEqual(float(results['sharpe']), -7.5299)
