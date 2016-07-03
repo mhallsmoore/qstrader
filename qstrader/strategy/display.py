@@ -15,7 +15,7 @@ class DisplayStrategy(AbstractStrategy):
         n = 10000
         n_window = 5
     """
-    def __init__(self, n=100 , n_window=5):
+    def __init__(self, n=100, n_window=5):
         self.n = n
         self.n_window = n_window
         self.t0 = time.time()
