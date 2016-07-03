@@ -1,4 +1,4 @@
-mfrom qstrader.backtest.backtest import Backtest
+from qstrader.backtest.backtest import Backtest
 from qstrader.execution_handler.execution_handler import IBSimulatedExecutionHandler
 from qstrader.portfolio_handler.portfolio_handler import PortfolioHandler
 from qstrader.position_sizer.position_sizer import TestPositionSizer
@@ -18,8 +18,6 @@ def main(config, testing=False):
     events_queue = queue.Queue()
     csv_dir = config.CSV_DATA_DIR
     initial_equity = Decimal("500000.00")
-    # heartbeat = 0.0
-    # max_iters = 10000000000
 
     # Use Yahoo Daily Price Handler
     price_handler = YahooDailyBarPriceHandler(
