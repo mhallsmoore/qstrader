@@ -6,9 +6,11 @@ One example can be test individually using:
 $ nosetests -s -v tests/test_examples.py:TestExamples.test_strategy_backtest
 
 """
+import os
 import unittest
 
 from qstrader import settings
+from qstrader.statistics import load
 import examples.buy_and_hold_backtest
 import examples.mac_backtest
 import examples.strategy_backtest
@@ -32,7 +34,8 @@ class TestExamples(unittest.TestCase):
         Bar 1628, at 2016-06-22 00:00:00
         """
         tickers = ["SP500TR"]
-        results = examples.buy_and_hold_backtest.run(self.config, self.testing, tickers)
+        filename = os.path.join(settings.TEST.OUTPUT_DIR, "buy_and_hold_backtest.pkl")
+        results = examples.buy_and_hold_backtest.run(self.config, self.testing, tickers, filename)
         for (key, expected) in [
             ('sharpe', 0.5969),
             ('max_drawdown_pct', 5.0308),
@@ -49,13 +52,17 @@ class TestExamples(unittest.TestCase):
             self.assertAlmostEqual(float(max(values)), expected['max'])
             self.assertAlmostEqual(float(values.iloc[0]), expected['first'])
             self.assertAlmostEqual(float(values.iloc[-1]), expected['last'])
+        stats = load(filename)
+        results = stats.get_results()
+        self.assertAlmostEqual(float(results['sharpe']), 0.5969)
 
     def test_mac_backtest(self):
         """
         Test mac_backtest
         """
         tickers = ["SP500TR"]
-        results = examples.mac_backtest.run(self.config, self.testing, tickers)
+        filename = os.path.join(settings.TEST.OUTPUT_DIR, "mac_backtest.pkl")
+        results = examples.mac_backtest.run(self.config, self.testing, tickers, filename)
         self.assertAlmostEqual(float(results['sharpe']), 0.6018)
 
     def test_strategy_backtest(self):
@@ -63,5 +70,6 @@ class TestExamples(unittest.TestCase):
         Test strategy_backtest
         """
         tickers = ["GOOG"]
-        results = examples.strategy_backtest.run(self.config, self.testing, tickers)
+        filename = os.path.join(settings.TEST.OUTPUT_DIR, "strategy_backtest.pkl")
+        results = examples.strategy_backtest.run(self.config, self.testing, tickers, filename)
         self.assertAlmostEqual(float(results['sharpe']), -7.5299)

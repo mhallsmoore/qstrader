@@ -15,7 +15,7 @@ from qstrader.statistics.simple import SimpleStatistics
 from qstrader.trading_session.backtest import Backtest
 
 
-def run(config, testing, tickers):
+def run(config, testing, tickers, filename):
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
@@ -52,7 +52,7 @@ def run(config, testing, tickers):
         events_queue, price_handler, compliance
     )
     # Use the default Statistics
-    statistics = SimpleStatistics(portfolio_handler)
+    statistics = SimpleStatistics(config, portfolio_handler)
 
     # Set up the backtest
     backtest = Backtest(
@@ -64,6 +64,7 @@ def run(config, testing, tickers):
         initial_equity
     )
     results = backtest.simulate_trading(testing=testing)
+    statistics.save(filename)
     return results
 
 
@@ -71,10 +72,11 @@ def run(config, testing, tickers):
 @click.option('--config', default=settings.DEFAULT_CONFIG_FILENAME, help='Config filename')
 @click.option('--testing/--no-testing', default=False, help='Enable testing mode')
 @click.option('--tickers', default='GOOG', help='Tickers (use comma)')
-def main(config, testing, tickers):
+@click.option('--filename', default='', help='Pickle (.pkl) statistics filename')
+def main(config, testing, tickers, filename):
     tickers = tickers.split(",")
     config = settings.from_file(config, testing)
-    run(config, testing, tickers)
+    run(config, testing, tickers, filename)
 
 
 if __name__ == "__main__":
