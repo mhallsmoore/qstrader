@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
+from ..compat import pickle
+
 
 class AbstractStatistics(object):
     """
@@ -42,3 +44,20 @@ class AbstractStatistics(object):
         Plot all statistics collected up until 'now'
         """
         raise NotImplementedError("Should implement plot_results()")
+
+    @abstractmethod
+    def save(self, filename):
+        """
+        Save statistics results to filename
+        """
+        raise NotImplementedError("Should implement save()")
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename, 'rb') as fd:
+            stats = pickle.load(fd)
+        return stats
+
+
+def load(filename):
+    return AbstractStatistics.load(filename)
