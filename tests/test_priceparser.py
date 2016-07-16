@@ -26,13 +26,11 @@ class TestPriceParser(unittest.TestCase):
     def test_display(self):
         parsed = PriceParser.parse(self.float)
         displayed = PriceParser.display(parsed)
-        self.assertEqual(displayed, "10.1234567")
-        self.assertIsInstance(displayed, str)
+        self.assertEqual(displayed, 10.12)
 
     def test_unparsed_display(self):
         displayed = PriceParser.display(self.float)
-        self.assertEqual(displayed, "10.1234567")
-        self.assertIsInstance(displayed, str)
+        self.assertEqual(displayed, 10.12)
 
 if __name__ == "__main__":
     unittest.main()

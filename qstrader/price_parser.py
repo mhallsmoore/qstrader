@@ -36,7 +36,7 @@ class PriceParser(object):
     @staticmethod
     @dispatch(float)
     def display(x):
-        return x
+        return round(x, 2)
 
     # Display with Precision
     @staticmethod
