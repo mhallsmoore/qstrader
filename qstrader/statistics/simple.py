@@ -1,5 +1,6 @@
 from .base import AbstractStatistics
 from ..compat import pickle
+from ..price_parser import PriceParser
 
 import datetime
 import os
@@ -41,15 +42,17 @@ class SimpleStatistics(AbstractStatistics):
         self.equity=[]
         self.equity_returns=[]
         # Initialize in order for first-step calculations to be correct.
-        self.hwm=[self.portfolio_handler.portfolio.equity]
-        self.equity.append(self.portfolio_handler.portfolio.equity)
+        current_equity = PriceParser.display(self.portfolio_handler.portfolio.equity)
+        self.hwm=[current_equity]
+        self.equity.append(current_equity)
 
     def update(self, timestamp, portfolio_handler):
         """
         Update all statistics that must be tracked over time.
         """
         # Retrieve equity value of Portfolio
-        self.equity.append(self.portfolio_handler.portfolio.equity)
+        current_equity = PriceParser.display(self.portfolio_handler.portfolio.equity)
+        self.equity.append(current_equity)
 
         if(len(self.equity)>1):
             # Calculate percentage return between current and previous equity value.
@@ -155,5 +158,4 @@ class SimpleStatistics(AbstractStatistics):
         filename = self.get_filename(filename)
         print("Save results to '%s'" % filename)
         with open(filename, 'wb') as fd:
-            # pickle.dump(self.get_results(), fd)
             pickle.dump(self, fd)

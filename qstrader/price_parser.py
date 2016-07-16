@@ -31,9 +31,9 @@ class PriceParser(object):
     @staticmethod
     @dispatch(int)
     def display(x):
-        return str(x / PriceParser.PRICE_MULTIPLIER)
+        return x / PriceParser.PRICE_MULTIPLIER
 
     @staticmethod
     @dispatch(float)
     def display(x):
-        return str(x)
+        return x
