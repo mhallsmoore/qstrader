@@ -55,12 +55,10 @@ def run(config, testing, tickers, filename):
 
     # Set up the backtest
     backtest = Backtest(
-        tickers, price_handler,
-        strategy, portfolio_handler,
-        execution_handler,
+        price_handler, strategy,
+        portfolio_handler, execution_handler,
         position_sizer, risk_manager,
-        statistics,
-        initial_equity
+        statistics, initial_equity
     )
     results = backtest.simulate_trading(testing=testing)
     statistics.save(filename)
