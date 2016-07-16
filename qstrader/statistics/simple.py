@@ -1,5 +1,8 @@
 from .base import AbstractStatistics
+from ..compat import pickle
 
+import datetime
+import os
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -28,11 +31,12 @@ class SimpleStatistics(AbstractStatistics):
     TODO need some kind of trading-frequency parameter in setup.
     Sharpe calculations need to know if daily, hourly, minutely, etc.
     """
-    def __init__(self, portfolio_handler):
+    def __init__(self, config, portfolio_handler):
         """
         Takes in a portfolio handler.
         """
         self.portfolio_handler = portfolio_handler
+        self.config = config
         self.drawdowns=[]
         self.equity=[]
         self.equity_returns=[]
@@ -40,7 +44,7 @@ class SimpleStatistics(AbstractStatistics):
         self.hwm=[self.portfolio_handler.portfolio.equity]
         self.equity.append(self.portfolio_handler.portfolio.equity)
 
-    def update(self, timestamp):
+    def update(self, timestamp, portfolio_handler):
         """
         Update all statistics that must be tracked over time.
         """
@@ -139,3 +143,17 @@ class SimpleStatistics(AbstractStatistics):
 
         # Plot the figure
         plt.show()
+
+    def get_filename(self, filename=""):
+        if filename == "":
+            now = datetime.datetime.utcnow()
+            filename = "statistics_" + now.strftime("%Y-%m-%d_%H%M%S") + ".pkl"
+            filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
+        return filename
+
+    def save(self, filename=""):
+        filename = self.get_filename(filename)
+        print("Save results to '%s'" % filename)
+        with open(filename, 'wb') as fd:
+            # pickle.dump(self.get_results(), fd)
+            pickle.dump(self, fd)
