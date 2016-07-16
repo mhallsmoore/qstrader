@@ -36,13 +36,12 @@ class SimpleStatistics(AbstractStatistics):
         """
         Takes in a portfolio handler.
         """
-        self.portfolio_handler = portfolio_handler
         self.config = config
         self.drawdowns=[]
         self.equity=[]
         self.equity_returns=[]
         # Initialize in order for first-step calculations to be correct.
-        current_equity = PriceParser.display(self.portfolio_handler.portfolio.equity)
+        current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
         self.hwm=[current_equity]
         self.equity.append(current_equity)
 
@@ -51,7 +50,7 @@ class SimpleStatistics(AbstractStatistics):
         Update all statistics that must be tracked over time.
         """
         # Retrieve equity value of Portfolio
-        current_equity = PriceParser.display(self.portfolio_handler.portfolio.equity)
+        current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
         self.equity.append(current_equity)
 
         if(len(self.equity)>1):
@@ -82,10 +81,8 @@ class SimpleStatistics(AbstractStatistics):
         Calculate the sharpe ratio of our equity_returns.
 
         Expects benchmark_return to be, for example, 0.01 for 1%
-
-        TOOD TEST
         """
-        excess_returns = pd.Series(self.equity_returns) - benchmark_return//252
+        excess_returns = pd.Series(self.equity_returns) - benchmark_return / 252
 
         # Return the annualised Sharpe ratio based on the excess daily returns
         return round(self.annualised_sharpe(excess_returns), 4)
@@ -99,7 +96,7 @@ class SimpleStatistics(AbstractStatistics):
         The function assumes that the returns are the excess of
         those compared to a benchmark.
         """
-        return np.sqrt(N) * returns.mean() // returns.std()
+        return np.sqrt(N) * returns.mean() / returns.std()
 
     def calculate_max_drawdown_pct(self):
         """
@@ -111,7 +108,7 @@ class SimpleStatistics(AbstractStatistics):
         top_index = drawdown_series[:bottom_index].idxmax()
         pct=(
             self.equity[top_index] - self.equity[bottom_index]
-            //self.equity[top_index] * 100
+            /self.equity[top_index] * 100
         )
         return pct
 
