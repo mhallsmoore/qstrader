@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 
+from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
 from ..event import BarEvent
 
@@ -12,13 +13,12 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
     for each requested financial instrument and stream those to
     the provided events queue as BarEvents.
     """
-    def __init__(self, config, csv_dir, events_queue, init_tickers=None):
+    def __init__(self, csv_dir, events_queue, init_tickers=None):
         """
         Takes the CSV directory, the events queue and a possible
         list of initial ticker symbols then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
-        self.config = config
         self.csv_dir = csv_dir
         self.events_queue = events_queue
         self.continue_backtest = True
@@ -68,8 +68,8 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
 
-                close =  int(row0["Close"] * self.config.PRICE_MULTIPLIER)
-                adj_close = int(row0["Adj Close"] * self.config.PRICE_MULTIPLIER)
+                close = PriceParser.parse(row0["Close"])
+                adj_close = PriceParser.parse(row0["Adj Close"])
 
                 ticker_prices = {
                     "close": close,
@@ -128,11 +128,13 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
 
         # Obtain all elements of the bar from the dataframe
         ticker = row["Ticker"]
-        open_price = int(row["Open"] * 100) * self.config.PRICE_MULTIPLIER // 100
-        high_price = int(row["High"] * 100) * self.config.PRICE_MULTIPLIER // 100
-        low_price = int(row["Low"] * 100) * self.config.PRICE_MULTIPLIER // 100
-        close_price = int(row["Close"] * 100) * self.config.PRICE_MULTIPLIER // 100
-        adj_close_price = int(row["Adj Close"] * 100) * self.config.PRICE_MULTIPLIER // 100
+
+
+        open_price      = PriceParser.parse(row["Open"])
+        high_price      = PriceParser.parse(row["High"])
+        low_price       = PriceParser.parse(row["Low"])
+        close_price     = PriceParser.parse(row["Close"])
+        adj_close_price = PriceParser.parse(row["Adj Close"])
         volume = int(row["Volume"])
 
         # Create prices for closing price and adjusted closing price

@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from qstrader import settings
 from qstrader.compat import queue
+from qstrader.price_parser import PriceParser
 from qstrader.price_handler.historic_csv_tick import HistoricCSVTickPriceHandler
 from qstrader.strategy.example import ExampleStrategy
 from qstrader.position_sizer.fixed import FixedPositionSizer
@@ -19,10 +20,8 @@ def run(config, testing, tickers, filename):
 
     # Set up variables needed for backtest
     events_queue = queue.Queue()
-esop90l    csv_dir = config.CSV_DATA_DIR
-    initial_equity = Decimal("500000.00")
-    # heartbeat = 0.0
-    # max_iters = 10000000000
+    csv_dir = config.CSV_DATA_DIR
+    initial_equity = PriceParser.parse(500000.00)
 
     # Use Historic CSV Price Handler
     price_handler = HistoricCSVTickPriceHandler(

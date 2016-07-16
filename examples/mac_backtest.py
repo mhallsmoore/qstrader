@@ -2,6 +2,7 @@ import click
 
 from qstrader import settings
 from qstrader.compat import queue
+from qstrader.price_parser import PriceParser
 from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
 from qstrader.strategy.moving_average_cross_strategy import MovingAverageCrossStrategy
 from qstrader.strategy import Strategies, DisplayStrategy
@@ -19,11 +20,11 @@ def run(config, testing, tickers, filename):
     # Set up variables needed for backtest
     events_queue = queue.Queue()
     csv_dir = config.CSV_DATA_DIR
-    initial_equity = 500000 * config.PRICE_MULTIPLIER
+    initial_equity = PriceParser.parse(500000.00)
 
     # Use Yahoo Daily Price Handler
     price_handler = YahooDailyCsvBarPriceHandler(
-        config, csv_dir, events_queue, tickers
+        csv_dir, events_queue, tickers
     )
 
     # Use the MAC Strategy
@@ -47,7 +48,7 @@ def run(config, testing, tickers, filename):
 
     # Use a simulated IB Execution Handler
     execution_handler = IBSimulatedExecutionHandler(
-        config, events_queue, price_handler, compliance
+        events_queue, price_handler, compliance
     )
 
     # Use the default Statistics
@@ -55,7 +56,6 @@ def run(config, testing, tickers, filename):
 
     # Set up the backtest
     backtest = Backtest(
-        config,
         price_handler, strategy,
         portfolio_handler, execution_handler,
         position_sizer, risk_manager,

@@ -13,7 +13,7 @@ class Backtest(object):
     carrying out an event-driven backtest.
     """
     def __init__(
-        self, config, price_handler,
+        self, price_handler,
         strategy, portfolio_handler,
         execution_handler,
         position_sizer, risk_manager,
@@ -58,7 +58,7 @@ class Backtest(object):
                         self.cur_time = event.time
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
-                        self.statistics.update(event.time)
+                        self.statistics.update(self.portfolio_handler, event.time)
                     elif event.type == EventType.SIGNAL:
                         self.portfolio_handler.on_signal(event)
                     elif event.type == EventType.ORDER:
