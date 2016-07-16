@@ -41,10 +41,10 @@ class PriceParser(object):
     # Display with Precision
     @staticmethod
     @dispatch(int, int)
-    def display_dp(x, dp):
+    def display(x, dp):
         return round(x / PriceParser.PRICE_MULTIPLIER, dp)
 
     @staticmethod
     @dispatch(float, int)
-    def display_dp(x, dp):
+    def display(x, dp):
         return round(x, dp)

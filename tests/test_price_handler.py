@@ -43,11 +43,11 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             "01-02-2016 00:00:01.358000"
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["GOOG"]["bid"], 5),
+            PriceParser.display(self.price_handler.tickers["GOOG"]["bid"], 5),
             683.56000
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["GOOG"]["ask"], 5),
+            PriceParser.display(self.price_handler.tickers["GOOG"]["ask"], 5),
             683.58000
         )
 
@@ -60,11 +60,11 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             "01-02-2016 00:00:01.562000"
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["AMZN"]["bid"], 5),
+            PriceParser.display(self.price_handler.tickers["AMZN"]["bid"], 5),
             502.10001
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["AMZN"]["ask"], 5),
+            PriceParser.display(self.price_handler.tickers["AMZN"]["ask"], 5),
             502.11999
         )
 
@@ -77,11 +77,11 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             "01-02-2016 00:00:01.578000"
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["MSFT"]["bid"], 5),
+            PriceParser.display(self.price_handler.tickers["MSFT"]["bid"], 5),
             50.14999
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["MSFT"]["ask"], 5),
+            PriceParser.display(self.price_handler.tickers["MSFT"]["ask"], 5),
             50.17001
         )
 
@@ -95,11 +95,11 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             "01-02-2016 00:00:05.215000"
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["GOOG"]["bid"], 5),
+            PriceParser.display(self.price_handler.tickers["GOOG"]["bid"], 5),
             683.56001
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["GOOG"]["ask"], 5),
+            PriceParser.display(self.price_handler.tickers["GOOG"]["ask"], 5),
             683.57999
         )
 
@@ -113,11 +113,11 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             "01-02-2016 00:00:09.904000"
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["MSFT"]["bid"], 5),
+            PriceParser.display(self.price_handler.tickers["MSFT"]["bid"], 5),
             50.15000
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["MSFT"]["ask"], 5),
+            PriceParser.display(self.price_handler.tickers["MSFT"]["ask"], 5),
             50.17000
         )
 
@@ -131,11 +131,11 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             "01-02-2016 00:00:14.616000"
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["AMZN"]["bid"], 5),
+            PriceParser.display(self.price_handler.tickers["AMZN"]["bid"], 5),
             502.10015
         )
         self.assertEqual(
-            PriceParser.display_dp(self.price_handler.tickers["AMZN"]["ask"], 5),
+            PriceParser.display(self.price_handler.tickers["AMZN"]["ask"], 5),
             502.11985
         )
 
@@ -179,13 +179,13 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         correct values depending upon validity of ticker.
         """
         bid, ask = self.price_handler.get_best_bid_ask("AMZN")
-        self.assertEqual(PriceParser.display_dp(bid, 5), 502.10001)
-        self.assertEqual(PriceParser.display_dp(ask, 5), 502.11999)
+        self.assertEqual(PriceParser.display(bid, 5), 502.10001)
+        self.assertEqual(PriceParser.display(ask, 5), 502.11999)
 
         bid, ask = self.price_handler.get_best_bid_ask("C")
         # TODO WHAT TO DO HERE?.
-        # self.assertEqual(PriceParser.display_dp(bid, 5), None)
-        # self.assertEqual(PriceParser.display_dp(ask, 5), None)
+        # self.assertEqual(PriceParser.display(bid, 5), None)
+        # self.assertEqual(PriceParser.display(ask, 5), None)
 
 
 if __name__ == "__main__":

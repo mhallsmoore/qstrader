@@ -51,10 +51,10 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         self.assertEqual(self.position.sells, 450)
         self.assertEqual(self.position.net, 0)
         self.assertEqual(
-            PriceParser.display_dp(self.position.avg_bot, 5), 74.65778
+            PriceParser.display(self.position.avg_bot, 5), 74.65778
         )
         self.assertEqual(
-            PriceParser.display_dp(self.position.avg_sld, 5), 74.95778
+            PriceParser.display(self.position.avg_sld, 5), 74.95778
         )
         self.assertEqual(PriceParser.display(self.position.total_bot), 33596.00)
         self.assertEqual(PriceParser.display(self.position.total_sld), 33731.00)
@@ -63,7 +63,7 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.net_incl_comm), 129.50)
 
         self.assertEqual(
-            PriceParser.display_dp(self.position.avg_price, 3), 74.665
+            PriceParser.display(self.position.avg_price, 3), 74.665
         )
         self.assertEqual(PriceParser.display(self.position.cost_basis), 0.00)
         self.assertEqual(PriceParser.display(self.position.market_value), 0.00)
@@ -116,10 +116,10 @@ class TestRoundTripPGPosition(unittest.TestCase):
         self.assertEqual(self.position.sells, 250)
         self.assertEqual(self.position.net, 0)
         self.assertEqual(
-            PriceParser.display_dp(self.position.avg_bot, 3), 77.746
+            PriceParser.display(self.position.avg_bot, 3), 77.746
         )
         self.assertEqual(
-            PriceParser.display_dp(self.position.avg_sld, 3), 77.688
+            PriceParser.display(self.position.avg_sld, 3), 77.688
         )
         self.assertEqual(PriceParser.display(self.position.total_bot), 19436.50)
         self.assertEqual(PriceParser.display(self.position.total_sld), 19422.00)
@@ -128,7 +128,7 @@ class TestRoundTripPGPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.net_incl_comm), -19.50)
 
         self.assertEqual(
-            PriceParser.display_dp(self.position.avg_price, 5), 77.67600
+            PriceParser.display(self.position.avg_price, 5), 77.67600
         )
         self.assertEqual(PriceParser.display(self.position.cost_basis), 0.00)
         self.assertEqual(PriceParser.display(self.position.market_value), 0.00)
