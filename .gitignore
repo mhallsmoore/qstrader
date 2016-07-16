@@ -2,7 +2,6 @@
 *.py[co]
 .DS_Store
 __pycache__
-qstrader/settings.py
 out
 
 # Packages
