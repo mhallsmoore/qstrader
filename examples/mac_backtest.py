@@ -4,6 +4,7 @@ from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
 from qstrader.strategy.moving_average_cross_strategy import MovingAverageCrossStrategy
+from qstrader.strategy import Strategies, DisplayStrategy
 from qstrader.position_sizer.fixed import FixedPositionSizer
 from qstrader.risk_manager.example import ExampleRiskManager
 from qstrader.portfolio_handler import PortfolioHandler
@@ -27,6 +28,7 @@ def run(config, testing, tickers):
 
     # Use the MAC Strategy
     strategy = MovingAverageCrossStrategy(tickers, events_queue)
+    strategy = Strategies(strategy, DisplayStrategy())
 
     # Use an example Position Sizer,
     position_sizer = FixedPositionSizer()
