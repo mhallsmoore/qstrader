@@ -37,7 +37,7 @@ class SimpleStatistics(AbstractStatistics):
         Takes in a portfolio handler.
         """
         self.config = config
-        self.drawdowns=[]
+        self.drawdowns=[0]
         self.equity=[]
         self.equity_returns=[]
         # Initialize in order for first-step calculations to be correct.
@@ -55,9 +55,8 @@ class SimpleStatistics(AbstractStatistics):
 
         if(len(self.equity)>1):
             # Calculate percentage return between current and previous equity value.
-            self.equity_returns.append(
-                ((self.equity[-1] - self.equity[-2]) / self.equity[-1])*100
-            )
+            pct = ((self.equity[-1] - self.equity[-2]) / self.equity[-1])*100
+            self.equity_returns.append(round(pct, 4))
             # Calculate Drawdown.
             self.hwm.append(max(self.hwm[-1], self.equity[-1]))
 
@@ -104,13 +103,15 @@ class SimpleStatistics(AbstractStatistics):
         drawdown seen.
         """
         drawdown_series = pd.Series(self.drawdowns);
+        equity_series = pd.Series(self.equity);
         bottom_index = drawdown_series.idxmax()
-        top_index = drawdown_series[:bottom_index].idxmax()
-        pct=(
-            self.equity[top_index] - self.equity[bottom_index]
-            /self.equity[top_index] * 100
+        top_index = equity_series[:bottom_index].idxmax()
+
+        pct = (
+            (equity_series.ix[top_index] - equity_series.ix[bottom_index]) /
+            equity_series.ix[top_index] * 100
         )
-        return pct
+        return round(pct, 4)
 
     def plot_results(self):
         """
