@@ -1,48 +1,38 @@
 import unittest
 from qstrader.price_parser import PriceParser
 
-class TestPriceParserOnFloats(unittest.TestCase):
-    """
-    Test that PriceParser works with floats.
-    """
+class TestPriceParser(unittest.TestCase):
     def setUp(self):
         self.int = 200
-        self.float  = 155.5
+        self.float  = 10.1234567
+        self.rounded_float = 10.0
         self.vol = 30
 
     def test_price_from_float(self):
         parsed = PriceParser.parse(self.float)
-        self.assertEqual(parsed, 155)
-        self.assertIsInstance(parsed, float)
+        self.assertEqual(parsed, 101234567)
+        self.assertIsInstance(parsed, int)
 
     def test_price_from_int(self):
-        pass
+        parsed = PriceParser.parse(self.int)
+        self.assertEqual(parsed, 200)
+        self.assertIsInstance(parsed, int)
 
-    def test_vol(self):
-        pass
-        # parsed = QsNumParser.parse_price(self.vol)
-        # self.assertEqual(parsed, 30)
-        # self.assertIsInstance(parsed, float)
-
-    def test_display(self):
-        pass
-        # parsed = QsNumParser.display_price(self.)
-
-
-
-class TestQsNumParserOnInts(unittest.TestCase):
-    """
-    Test that QsNumParser works with ints.
-    """
-    def test_creation_from_float(self):
-        pass
-
-    def test_creation_from_integer(self):
-        pass
+    def test_rounded_float(self):
+        parsed = PriceParser.parse(self.rounded_float)
+        self.assertEqual(parsed, 100000000) #100mn
+        self.assertIsInstance(parsed, int)
 
     def test_display(self):
-        pass
+        parsed = PriceParser.parse(self.float)
+        displayed = PriceParser.display(parsed)
+        self.assertEqual(displayed, "10.1234567")
+        self.assertIsInstance(displayed, str)
 
+    def test_unparsed_display(self):
+        displayed = PriceParser.display(self.float)
+        self.assertEqual(displayed, "10.1234567")
+        self.assertIsInstance(displayed, str)
 
 if __name__ == "__main__":
     unittest.main()
