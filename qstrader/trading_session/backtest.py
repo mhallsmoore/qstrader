@@ -1,8 +1,5 @@
 from __future__ import print_function
 
-import time
-from decimal import Decimal
-
 from ..compat import queue
 from ..event import EventType
 
@@ -46,7 +43,6 @@ class Backtest(object):
         exceeded.
         """
         print("Running Backtest...")
-        iters = 0
         while self.price_handler.continue_backtest:
             try:
                 event = self.events_queue.get(False)

@@ -19,32 +19,32 @@ class PriceParser(object):
     # Parse
     @staticmethod
     @dispatch(int)
-    def parse(x):
+    def parse(x):  # flake8: noqa
         return x
 
     @staticmethod
     @dispatch(float)
-    def parse(x):
+    def parse(x):  # flake8: noqa
         return int(x * PriceParser.PRICE_MULTIPLIER)
 
     # Display
     @staticmethod
     @dispatch(int)
-    def display(x):
+    def display(x):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, 2)
 
     @staticmethod
     @dispatch(float)
-    def display(x):
+    def display(x):  # flake8: noqa
         return round(x, 2)
 
     # Display with Precision
     @staticmethod
     @dispatch(int, int)
-    def display(x, dp):
+    def display(x, dp):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, dp)
 
     @staticmethod
     @dispatch(float, int)
-    def display(x, dp):
+    def display(x, dp):  # flake8: noqa
         return round(x, dp)

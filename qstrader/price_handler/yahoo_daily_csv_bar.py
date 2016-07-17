@@ -6,6 +6,7 @@ from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
 from ..event import BarEvent
 
+
 class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
     """
     YahooDailyBarPriceHandler is designed to read CSV files of
@@ -128,12 +129,10 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
 
         # Obtain all elements of the bar from the dataframe
         ticker = row["Ticker"]
-
-
-        open_price      = PriceParser.parse(row["Open"])
-        high_price      = PriceParser.parse(row["High"])
-        low_price       = PriceParser.parse(row["Low"])
-        close_price     = PriceParser.parse(row["Close"])
+        open_price = PriceParser.parse(row["Open"])
+        high_price = PriceParser.parse(row["High"])
+        low_price = PriceParser.parse(row["Low"])
+        close_price = PriceParser.parse(row["Close"])
         adj_close_price = PriceParser.parse(row["Adj Close"])
         volume = int(row["Volume"])
 

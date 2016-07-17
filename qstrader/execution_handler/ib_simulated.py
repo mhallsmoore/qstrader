@@ -1,8 +1,7 @@
-from decimal import Decimal
-
 from .base import AbstractExecutionHandler
 from ..event import (FillEvent, EventType)
 from ..price_parser import PriceParser
+
 
 class IBSimulatedExecutionHandler(AbstractExecutionHandler):
     """
