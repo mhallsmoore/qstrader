@@ -59,7 +59,6 @@ class SimpleStatistics(AbstractStatistics):
             self.equity_returns.append(round(pct, 4))
             # Calculate Drawdown.
             self.hwm.append(max(self.hwm[-1], self.equity[-1]))
-
             self.drawdowns.append(self.hwm[-1]-self.equity[-1])
 
     def get_results(self):
