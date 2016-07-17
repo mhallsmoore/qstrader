@@ -1,14 +1,24 @@
 from __future__ import print_function
 
 import click
+import csv
 import requests
 import datetime
+import os
 import pandas as pd
 from qstrader import settings
 
 def run(config, tickers):
+    """
+    Script fetches all daily bars from Yahoo between 2000 and today, and
+    formats correctly for immediate use with qstrader. Also allows user to
+    specify a CSV file of tickers as input, to allow for >100 tickers to be
+    downloaded easily.
+    """
     start = (2000,1,1)
     end = datetime.date.today().timetuple()[0:3]
+    failed_tickers = []
+    successful_downloads = 0
 
     for ticker in tickers:
         # Prepare the URL query
@@ -32,6 +42,8 @@ def run(config, tickers):
                 )
         except Exception as e:
             print("Exeption trying to download: %s" % e)
+            print("FAILED TICKER: " + ticker)
+            failed_tickers.append(ticker)
 
         # Format into a DataFrame because qstrader uses them elsewhere
         df = pd.DataFrame(
@@ -41,7 +53,11 @@ def run(config, tickers):
 
         # Write output to CSV
         df.to_csv(config.CSV_DATA_DIR + "/" + ticker + ".csv", index = False)
+        successful_downloads = successful_downloads + 1
         print("Written " + ticker + ".csv to data directory")
+
+    print("Downloaded %s files successfully." % successful_downloads)
+    print("Faied downloads: " + failed_tickers)
 
 
 
@@ -51,8 +67,18 @@ def run(config, tickers):
 
 def main(config, tickers):
     config = settings.from_file(config)
-    # TODO check if tickers was a CSV file
-    tickers = tickers.split(",")
+
+    if os.path.isfile(tickers):
+        try:
+            with open(tickers, 'r') as f:
+                reader = csv.reader(f)
+                tickers = list(reader)[0]
+        except Exception:
+            print("Could not load CSV file of ticker input correctly.")
+            return
+
+    else:
+        tickers = tickers.split(",")
     return run(config, tickers)
 
 if __name__ == "__main__":
