@@ -37,12 +37,12 @@ class SimpleStatistics(AbstractStatistics):
         Takes in a portfolio handler.
         """
         self.config = config
-        self.drawdowns=[0]
-        self.equity=[]
-        self.equity_returns=[]
+        self.drawdowns = [0]
+        self.equity = []
+        self.equity_returns = []
         # Initialize in order for first-step calculations to be correct.
         current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
-        self.hwm=[current_equity]
+        self.hwm = [current_equity]
         self.equity.append(current_equity)
 
     def update(self, timestamp, portfolio_handler):
@@ -53,25 +53,25 @@ class SimpleStatistics(AbstractStatistics):
         current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
         self.equity.append(current_equity)
 
-        if(len(self.equity)>1):
+        if(len(self.equity) > 1):
             # Calculate percentage return between current and previous equity value.
-            pct = ((self.equity[-1] - self.equity[-2]) / self.equity[-1])*100
+            pct = ((self.equity[-1] - self.equity[-2]) / self.equity[-1]) * 100
             self.equity_returns.append(round(pct, 4))
             # Calculate Drawdown.
             self.hwm.append(max(self.hwm[-1], self.equity[-1]))
-            self.drawdowns.append(self.hwm[-1]-self.equity[-1])
+            self.drawdowns.append(self.hwm[-1] - self.equity[-1])
 
     def get_results(self):
         """
         Return a dict with all important results & stats.
         """
-        statistics={}
-        statistics["sharpe"]=self.calculate_sharpe()
-        statistics["drawdowns"]=pd.Series(self.drawdowns)
-        statistics["max_drawdown"]=max(self.drawdowns)
-        statistics["max_drawdown_pct"]=self.calculate_max_drawdown_pct()
-        statistics["equity"]=pd.Series(self.equity)
-        statistics["equity_returns"]=pd.Series(self.equity_returns)
+        statistics = {}
+        statistics["sharpe"] = self.calculate_sharpe()
+        statistics["drawdowns"] = pd.Series(self.drawdowns)
+        statistics["max_drawdown"] = max(self.drawdowns)
+        statistics["max_drawdown_pct"] = self.calculate_max_drawdown_pct()
+        statistics["equity"] = pd.Series(self.equity)
+        statistics["equity_returns"] = pd.Series(self.equity_returns)
         return statistics
 
     def calculate_sharpe(self, benchmark_return=0.00):
@@ -101,8 +101,8 @@ class SimpleStatistics(AbstractStatistics):
         Calculate the percentage drop related to the "worst"
         drawdown seen.
         """
-        drawdown_series = pd.Series(self.drawdowns);
-        equity_series = pd.Series(self.equity);
+        drawdown_series = pd.Series(self.drawdowns)
+        equity_series = pd.Series(self.equity)
         bottom_index = drawdown_series.idxmax()
         top_index = equity_series[:bottom_index].idxmax()
 
@@ -125,9 +125,9 @@ class SimpleStatistics(AbstractStatistics):
         fig.patch.set_facecolor('white')
 
         df = pd.DataFrame()
-        df["equity"]=pd.Series(self.equity)
-        df["equity_returns"]=pd.Series(self.equity_returns)
-        df["drawdowns"]=pd.Series(self.drawdowns)
+        df["equity"] = pd.Series(self.equity)
+        df["equity_returns"] = pd.Series(self.equity_returns)
+        df["drawdowns"] = pd.Series(self.drawdowns)
 
         # Plot the equity curve
         ax1 = fig.add_subplot(311, ylabel='Equity Value')

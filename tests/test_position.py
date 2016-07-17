@@ -3,6 +3,7 @@ import unittest
 from qstrader.position import Position
 from qstrader.price_parser import PriceParser
 
+
 class TestRoundTripXOMPosition(unittest.TestCase):
     """
     Test a round-trip trade in Exxon-Mobil where the initial

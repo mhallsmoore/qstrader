@@ -1,10 +1,11 @@
 import unittest
 from qstrader.price_parser import PriceParser
 
+
 class TestPriceParser(unittest.TestCase):
     def setUp(self):
         self.int = 200
-        self.float  = 10.1234567
+        self.float = 10.1234567
         self.rounded_float = 10.0
         self.vol = 30
 
@@ -20,7 +21,8 @@ class TestPriceParser(unittest.TestCase):
 
     def test_rounded_float(self):
         parsed = PriceParser.parse(self.rounded_float)
-        self.assertEqual(parsed, 100000000) #100mn
+        # Expect 100,000,000
+        self.assertEqual(parsed, 100000000)
         self.assertIsInstance(parsed, int)
 
     def test_display(self):

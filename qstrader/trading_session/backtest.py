@@ -1,8 +1,5 @@
 from __future__ import print_function
 
-import time
-from decimal import Decimal
-
 from ..compat import queue
 from ..event import EventType
 
@@ -18,7 +15,6 @@ class Backtest(object):
         execution_handler,
         position_sizer, risk_manager,
         statistics, equity,
-        heartbeat=0.0, max_iters=10000000000
     ):
         """
         Set up the backtest variables according to
@@ -32,7 +28,6 @@ class Backtest(object):
         self.risk_manager = risk_manager
         self.statistics = statistics
         self.equity = equity
-        self.max_iters = max_iters
         self.events_queue = price_handler.events_queue
         self.cur_time = None
 
@@ -41,12 +36,10 @@ class Backtest(object):
         Carries out an infinite while loop that polls the
         events queue and directs each event to either the
         strategy component of the execution handler. The
-        loop will then pause for "heartbeat" seconds and
-        continue unti the maximum number of iterations is
-        exceeded.
+        loop continue until the event queue has been
+        emptied.
         """
         print("Running Backtest...")
-        iters = 0
         while self.price_handler.continue_backtest:
             try:
                 event = self.events_queue.get(False)

@@ -1,7 +1,5 @@
 import click
 
-from decimal import Decimal
-
 from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_parser import PriceParser
