@@ -74,7 +74,7 @@ def run(config, testing, tickers, filename):
 @click.command()
 @click.option('--config', default=settings.DEFAULT_CONFIG_FILENAME, help='Config filename')
 @click.option('--testing/--no-testing', default=False, help='Enable testing mode')
-@click.option('--tickers', default='SP500TR', help='Tickers (use comma)')
+@click.option('--tickers', default='test_SP500TR', help='Tickers (use comma)')
 @click.option('--filename', default='', help='Pickle (.pkl) statistics filename')
 def main(config, testing, tickers, filename):
     tickers = tickers.split(",")
