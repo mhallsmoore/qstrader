@@ -129,7 +129,6 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
 
         # Obtain all elements of the bar from the dataframe
         ticker = row["Ticker"]
-
         open_price = PriceParser.parse(row["Open"])
         high_price = PriceParser.parse(row["High"])
         low_price = PriceParser.parse(row["Low"])

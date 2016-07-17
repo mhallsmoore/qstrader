@@ -98,8 +98,8 @@ class Position(object):
             self.avg_sld = (self.avg_sld * self.sells + price * quantity) // (self.sells + quantity)
             if self.action != "BOT":
                 self.avg_price = (self.avg_price * self.sells + price * quantity - commission) // (self.sells + quantity)
-                self.sells += quantity
-                self.total_sld = self.sells * self.avg_sld
+            self.sells += quantity
+            self.total_sld = self.sells * self.avg_sld
 
         # Adjust net values, including commissions
         self.net = self.buys - self.sells
