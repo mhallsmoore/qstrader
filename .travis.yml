@@ -15,6 +15,7 @@ env:
 
 install:
   - pip install -qq flake8
+  - pip install -qq multipledispatch
   # You may want to periodically update this, although the conda update
   # conda line below will keep everything up-to-date.  We do this
   # conditionally because it saves us some downloading if the version is
