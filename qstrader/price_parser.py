@@ -18,32 +18,32 @@ class PriceParser(object):
     # 10,000,000
     PRICE_MULTIPLIER = 10000000
 
-    @dispatch(int)
     @staticmethod
+    @dispatch(int)
     def parse(x):  # flake8: noqa
         return x
 
-    @dispatch(float)
     @staticmethod
+    @dispatch(float)
     def parse(x):  # flake8: noqa
         return int(x * PriceParser.PRICE_MULTIPLIER)
 
-    @dispatch(int)
     @staticmethod
+    @dispatch(int)
     def display(x):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, 2)
 
-    @dispatch(float)
     @staticmethod
+    @dispatch(float)
     def display(x):  # flake8: noqa
         return round(x, 2)
 
-    @dispatch(int, int)
     @staticmethod
+    @dispatch(int, int)
     def display(x, dp):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, dp)
 
-    @dispatch(float, int)
     @staticmethod
+    @dispatch(float, int)
     def display(x, dp):  # flake8: noqa
         return round(x, dp)
