@@ -11,7 +11,7 @@ The software is provided under a permissive "MIT" license (see below).
 
 # Current Features
 
-* **Open-Source** - QSTrader has been released under an extremely permissive open-source MIT License, which allows full usage in both research and commercial applications, without restriction, but with no warranty of any kind whatsoever.
+* **Open-Source** - QSTrader has been released under an extremely permissive open-source MIT License, which allows full usage in both research and commercial applications, without restriction, but with no warranty of any kind whatsoever. Thus you can use it at home to carry out retail trading or within a quant fund as a basis for your research and/or order management system.
 
 * **Free** - QSTrader is completely free and costs nothing to download or use.
 
@@ -21,9 +21,11 @@ The software is provided under a permissive "MIT" license (see below).
 
 * **Event-Driven Architecture** - QSTrader is completely event-driven both for backtesting and live trading, which leads to straightforward transitioning of strategies from a research/testing phase to a live trading implementation.
 
-* **Backtesting** - QSTrader supports intraday tick-resolution (top of order book bid/ask) datasets.
+* **Backtesting** - QSTrader supports both intraday tick-resolution (top of order book bid/ask) datasets as well as OHLCV "bar" resolution data on various time scales.
 
 * **Private Components** - QSTrader allows you to include a repository of your own private strategies or components. Simply checkout your own repository within the root of QSTrader and rename the directory to `private_files`. This will ensure the QSTrader repository can be easily kept up to date without interfering with your private repository.
+
+* **Performance Metrics** - QSTrader will supports basic strategy/portfolio performance measurement and equity curve visualisation via the Matplotlib and Seaborn visualisation libraries.
 
 # Planned Features
 
@@ -31,57 +33,67 @@ The software is provided under a permissive "MIT" license (see below).
 
 * **Trading** - QSTrader will support live intraday trading using the Interactive Brokers API across a set of equities/ETFs.
 
-* **Performance Metrics** - QSTrader will support extensive strategy/portfolio performance measurement and equity curve visualisation via the Matplotlib and Seaborn visualisation libraries.
+# Installation and Example Usage
 
-# Installation and Usage
+QSTrader is in an extremely early alpha state at the moment and should only be used for exploratory backtesting research. The installation procedure is a little more involved than a standard Python package as it has not been added to the Python package repository yet.
 
-QSTrader is in an extremely early alpha state at the moment and should only be used for exploratory backtesting research.
+Ubuntu is the recommended platform on which to install QSTrader, but it will also work on Windows or Mac OSX under the Anaconda distribution ().
 
-1) Clone this git repository into a suitable location on your machine using the following command in your terminal: ```git clone https://github.com/mhallsmoore/qstrader.git```.
+For those that wish to create their own virtual environment, the following steps are necessary to run a basic Buy And Hold strategy.
 
-2) Create a virtual environment ("virtualenv") for the QSTrader code and utilise pip to install the requirements. For instance in a Unix-based system (Mac or Linux) you might create such a directory as follows by entering the following commands in the terminal:
+An example virtual environment directory ```~/venv/qstraderp3``` has been used for this example. If you wish to change this directory then re-name it in the following steps.
 
-```
-mkdir -p ~/venv/qstrader
-cd ~/venv/qstrader
-virtualenv .
-```
-
-This will create a new virtual environment to install the packages into. Assuming you downloaded the QSTrader git repository into an example directory such as ```~/projects/qstrader/``` (change this directory below to wherever you installed QSTrader), then in order to install the packages you will need to run the following commands:
+The following steps will create a virtual environment directory with Python 3 and then activate the environment:
 
 ```
-source ~/venv/qstrader/bin/activate
-pip install -r ~/projects/qstrader/requirements.txt
+mkdir -p ~/venv/qstraderp3
+cd ~/venv/qstraderp3
+virtualenv --no-site-packages -p /usr/bin/python3 .
+source ~/venv/qstraderp3/bin/activate
 ```
 
-This will take some time as NumPy, SciPy and Pandas must be compiled. There are many packages required for this to work, so please take a look at these two articles for more information:
-
-* https://www.quantstart.com/articles/Quick-Start-Python-Quantitative-Research-Environment-on-Ubuntu-14-04
-* https://www.quantstart.com/articles/Easy-Multi-Platform-Installation-of-a-Scientific-Python-Stack-Using-Anaconda
-
-3) You will also need to create a symbolic link from your ```site-packages``` directory to your QSTrader installation directory in order to be able to call ```import qstrader``` within the code. To do this you will need a command similar to the following (make sure to change python3.5 to your specific Python version):
+At this point it is necessary to use pip to install QSTrader as a library and then manually install the requirements. The following steps will take some time as QSTrader relies on NumPy, SciPy, Pandas, Matplotlib as well as many other libraries and hence they will all need to compile:
 
 ```
-ln -s ~/projects/qstrader/ ~/venv/qstrader/lib/python3.5/site-packages/qstrader
+pip install git+git://github.com/mhallsmoore/qstrader.git
+pip install -r https://raw.githubusercontent.com/mhallsmoore/qstrader/master/requirements.txt
 ```
 
-Make sure to change ```~/projects/qstrader``` to your installation directory and ```~/venv/qstrader/lib/python3.5/site-packages/``` to your virtualenv site packages directory.
+Now that the library itself and requirements have been installed it is necessary to create the default directories for the data and output. In addition it is possible to download the necessary data and example code to run a simple backtest of a Buy And Hold strategy on the S&P500 total return index:
 
-You will now be able to run the python programs correctly.
+```
+mkdir -p ~/qstrader/examples ~/data
+cd ~/data
+wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/data/SP500TR.csv
+cd ~/qstrader/examples
+wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/examples/buy_and_hold_backtest.py 
+```
 
-At this stage there is only one simple backtest example in ```examples/test_strategy_backtest.py```. This test itself requires some equities testing data. In the future the codebase will come with some sophisticated equity data simulators, so that any strategies can be tested without having to fetch external data, prior to a realistic test.
+Finally, we can run the backtest itself: 
 
-Future versions will also make use of a ```settings.py``` file to specify local input and output directories, as well as any authentication information required by a brokerage to authenticate against their API for live trading.
+```
+python buy_and_hold_backtest.py
+```
+
+Once complete you will see performance charts indicating:
+
+* Equity curve
+* Period returns
+* Drawdown
+
+The chart will look similar to:
+
+![alt tag](https://s3.amazonaws.com/quantstart/media/images/qstrader-buy-and-hold.png)
 
 The project is constantly being developed, so unfortunately it is likely that the current API will experience backwards incompatibility until a mature beta version has been produced.
 
-If you have any questions about the installation then please feel free to email feedback@quantstart.com.
+If you have any questions about the installation then please feel free to email support@quantstart.com.
 
 If you notice any bugs or other issues that you think may be due to the codebase specifically, feel free to open a Github issue here: https://github.com/mhallsmoore/qstrader/issues
 
 # License Terms
 
-Copyright (c) 2016 Michael Halls-Moore
+Copyright (c) 2015-2016 Michael Halls-Moore
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
