@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from .position import Position
 
 
@@ -28,8 +26,8 @@ class Portfolio(object):
         """
         self.cur_cash = self.init_cash
         self.equity = self.cur_cash
-        self.unrealised_pnl = Decimal('0.00')
-        self.realised_pnl = Decimal('0.00')
+        self.unrealised_pnl = 0
+        self.realised_pnl = 0
 
     def _update_portfolio(self):
         """

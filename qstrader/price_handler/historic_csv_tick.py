@@ -1,12 +1,12 @@
 from __future__ import print_function
 
-from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
 
 import pandas as pd
 
 from .base import AbstractTickPriceHandler
 from ..event import TickEvent
+from ..price_parser import PriceParser
 
 
 class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
@@ -67,8 +67,8 @@ class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
                 ticker_prices = {
-                    "bid": Decimal(str(row0["Bid"])),
-                    "ask": Decimal(str(row0["Ask"])),
+                    "bid": PriceParser.parse(row0["Bid"]),
+                    "ask": PriceParser.parse(row0["Ask"]),
                     "timestamp": dft.index[0]
                 }
                 self.tickers[ticker] = ticker_prices
@@ -122,14 +122,9 @@ class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
             self.continue_backtest = False
             return
 
-        getcontext().rounding = ROUND_HALF_DOWN
         ticker = row["Ticker"]
-        bid = Decimal(str(row["Bid"])).quantize(
-            Decimal("0.00001")
-        )
-        ask = Decimal(str(row["Ask"])).quantize(
-            Decimal("0.00001")
-        )
+        bid = PriceParser.parse(row["Bid"])
+        ask = PriceParser.parse(row["Ask"])
 
         # Create decimalised prices for traded pair
         self.tickers[ticker]["bid"] = bid

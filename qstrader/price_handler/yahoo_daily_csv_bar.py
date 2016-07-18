@@ -1,8 +1,8 @@
-from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
 
 import pandas as pd
 
+from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
 from ..event import BarEvent
 
@@ -68,13 +68,13 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
                 self._open_ticker_price_csv(ticker)
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
+
+                close = PriceParser.parse(row0["Close"])
+                adj_close = PriceParser.parse(row0["Adj Close"])
+
                 ticker_prices = {
-                    "close": Decimal(
-                        str(row0["Close"])
-                    ).quantize(Decimal("0.00001")),
-                    "adj_close": Decimal(
-                        str(row0["Adj Close"])
-                    ).quantize(Decimal("0.00001")),
+                    "close": close,
+                    "adj_close": adj_close,
                     "timestamp": dft.index[0]
                 }
                 self.tickers[ticker] = ticker_prices
@@ -128,17 +128,15 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
             return
 
         # Obtain all elements of the bar from the dataframe
-        getcontext().rounding = ROUND_HALF_DOWN
         ticker = row["Ticker"]
-        open_price = Decimal(str(row["Open"])).quantize(Decimal("0.00001"))
-        high_price = Decimal(str(row["High"])).quantize(Decimal("0.00001"))
-        low_price = Decimal(str(row["Low"])).quantize(Decimal("0.00001"))
-        close_price = Decimal(str(row["Close"])).quantize(Decimal("0.00001"))
-        adj_close_price = Decimal(str(row["Adj Close"])).quantize(Decimal("0.00001"))
+        open_price = PriceParser.parse(row["Open"])
+        high_price = PriceParser.parse(row["High"])
+        low_price = PriceParser.parse(row["Low"])
+        close_price = PriceParser.parse(row["Close"])
+        adj_close_price = PriceParser.parse(row["Adj Close"])
         volume = int(row["Volume"])
 
-        # Create decimalised prices for
-        # closing price and adjusted closing price
+        # Create prices for closing price and adjusted closing price
         self.tickers[ticker]["close"] = close_price
         self.tickers[ticker]["adj_close"] = adj_close_price
         self.tickers[ticker]["timestamp"] = index
