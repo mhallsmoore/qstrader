@@ -37,7 +37,7 @@ The software is provided under a permissive "MIT" license (see below).
 
 QSTrader is in an extremely early alpha state at the moment and should only be used for exploratory backtesting research. The installation procedure is a little more involved than a standard Python package as it has not been added to the Python package repository yet.
 
-Ubuntu is the recommended platform on which to install QSTrader, but it will also work on Windows or Mac OSX under the Anaconda distribution ().
+Ubuntu is the recommended platform on which to install QSTrader, but it will also work on Windows or Mac OSX under the Anaconda distribution (https://www.continuum.io/downloads).
 
 For those that wish to create their own virtual environment, the following steps are necessary to run a basic Buy And Hold strategy.
 
