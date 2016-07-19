@@ -40,6 +40,11 @@ class TestSimpleStatistics(unittest.TestCase):
         portfolio_handler = PortfolioHandlerMock(self.portfolio)
         statistics = SimpleStatistics(self.config, portfolio_handler)
 
+        # Check initialization was correct
+        self.assertEqual(PriceParser.display(statistics.equity[0]), 500000.00)
+        self.assertEqual(PriceParser.display(statistics.drawdowns[0]), 00)
+        self.assertEqual(statistics.equity_returns[0], 0.0)
+
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
             "BOT", "AMZN", 100,
@@ -49,7 +54,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[1]), 499807.00)
         self.assertEqual(PriceParser.display(statistics.drawdowns[1]), 193.00)
-        self.assertEqual(statistics.equity_returns[0], -0.0386)
+        self.assertEqual(statistics.equity_returns[1], -0.0386)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -60,7 +65,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[2]), 499455.00)
         self.assertEqual(PriceParser.display(statistics.drawdowns[2]), 545.00)
-        self.assertEqual(statistics.equity_returns[1], -0.0705)
+        self.assertEqual(statistics.equity_returns[2], -0.0705)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -71,7 +76,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[3]), 499046.00)
         self.assertEqual(PriceParser.display(statistics.drawdowns[3]), 954.00)
-        self.assertEqual(statistics.equity_returns[2], -0.0820)
+        self.assertEqual(statistics.equity_returns[3], -0.0820)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -82,7 +87,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[4]), 499164.00)
         self.assertEqual(PriceParser.display(statistics.drawdowns[4]), 836.00)
-        self.assertEqual(statistics.equity_returns[3], 0.0236)
+        self.assertEqual(statistics.equity_returns[4], 0.0236)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -93,7 +98,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[5]), 499146.00)
         self.assertEqual(PriceParser.display(statistics.drawdowns[5]), 854.00)
-        self.assertEqual(statistics.equity_returns[4], -0.0036)
+        self.assertEqual(statistics.equity_returns[5], -0.0036)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -104,7 +109,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[6]), 499335.00)
         self.assertEqual(PriceParser.display(statistics.drawdowns[6]), 665.00)
-        self.assertEqual(statistics.equity_returns[5], 0.0379)
+        self.assertEqual(statistics.equity_returns[6], 0.0379)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -115,7 +120,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[7]), 499580.00)
         self.assertEqual(PriceParser.display(statistics.drawdowns[7]), 420.00)
-        self.assertEqual(statistics.equity_returns[6], 0.0490)
+        self.assertEqual(statistics.equity_returns[7], 0.0490)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -126,7 +131,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[8]), 499824.00)
         self.assertEqual(PriceParser.display(statistics.drawdowns[8]), 176.00)
-        self.assertEqual(statistics.equity_returns[7], 0.0488)
+        self.assertEqual(statistics.equity_returns[8], 0.0488)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -137,7 +142,7 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[9]), 500069.50)
         self.assertEqual(PriceParser.display(statistics.drawdowns[9]), 00.00)
-        self.assertEqual(statistics.equity_returns[8], 0.0491)
+        self.assertEqual(statistics.equity_returns[9], 0.0491)
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
@@ -148,13 +153,13 @@ class TestSimpleStatistics(unittest.TestCase):
         statistics.update(t, portfolio_handler)
         self.assertEqual(PriceParser.display(statistics.equity[10]), 500300.50)
         self.assertEqual(PriceParser.display(statistics.drawdowns[10]), 00.00)
-        self.assertEqual(statistics.equity_returns[9], 0.0462)
+        self.assertEqual(statistics.equity_returns[10], 0.0462)
 
         # Test that results are calculated correctly.
         results = statistics.get_results()
         self.assertEqual(results["max_drawdown"], 954.00)
         self.assertEqual(results["max_drawdown_pct"], 0.1908)
-        self.assertAlmostEqual(float(results["sharpe"]), 1.8353)
+        self.assertAlmostEqual(float(results["sharpe"]), 1.7575)
 
 if __name__ == "__main__":
     unittest.main()
