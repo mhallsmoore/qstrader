@@ -1,12 +1,12 @@
 from .base import AbstractStatistics
 from ..compat import pickle
+from ..price_parser import PriceParser
 
 import datetime
 import os
 import pandas as pd
 import numpy as np
 import matplotlib
-from decimal import Decimal
 try:
     matplotlib.use('TkAgg')
 except:
@@ -37,40 +37,29 @@ class SimpleStatistics(AbstractStatistics):
         Takes in a portfolio handler.
         """
         self.config = config
-        self.drawdowns = pd.Series()
-        self.equity = pd.Series()
-        self.equity_returns = pd.Series()
+        self.drawdowns = [0]
+        self.equity = []
+        self.equity_returns = []
         # Initialize in order for first-step calculations to be correct.
-        self.hwm = [float(portfolio_handler.portfolio.equity)]
-        self.equity.ix["0000-00-00 00:00:00"] = float(portfolio_handler.portfolio.equity)
+        current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
+        self.hwm = [current_equity]
+        self.equity.append(current_equity)
 
     def update(self, timestamp, portfolio_handler):
         """
         Update all statistics that must be tracked over time.
         """
         # Retrieve equity value of Portfolio
-        self.equity.ix[timestamp] = float(portfolio_handler.portfolio.equity)
-        current_index = len(self.equity) - 1
+        current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
+        self.equity.append(current_equity)
 
-        # Calculate percentage return between current and previous equity value.
-        self.equity_returns.ix[timestamp] = (
-            (Decimal(self.equity.ix[current_index]) - Decimal(self.equity.ix[current_index - 1])) /
-            Decimal(self.equity.ix[current_index])
-        ) * 100
-        self.equity_returns.ix[timestamp] = \
-            Decimal(self.equity_returns.ix[timestamp]).quantize(Decimal("0.0001"))
-
-        # Calculate Drawdown.
-        # Note that we have pre-seeded HWM to be starting equity value,
-        # so we don't seed it twice, else we'd add one-too-many values.
-        if(current_index > 0):
-            self.hwm.append(
-                max(self.hwm[current_index - 1], self.equity.ix[timestamp])
-            )
-
-        self.drawdowns.ix[timestamp] = (
-            self.hwm[current_index] - self.equity.ix[timestamp]
-        )
+        if(len(self.equity) > 1):
+            # Calculate percentage return between current and previous equity value.
+            pct = ((self.equity[-1] - self.equity[-2]) / self.equity[-1]) * 100
+            self.equity_returns.append(round(pct, 4))
+            # Calculate Drawdown.
+            self.hwm.append(max(self.hwm[-1], self.equity[-1]))
+            self.drawdowns.append(self.hwm[-1] - self.equity[-1])
 
     def get_results(self):
         """
@@ -78,11 +67,11 @@ class SimpleStatistics(AbstractStatistics):
         """
         statistics = {}
         statistics["sharpe"] = self.calculate_sharpe()
-        statistics["drawdowns"] = self.drawdowns
+        statistics["drawdowns"] = pd.Series(self.drawdowns)
         statistics["max_drawdown"] = max(self.drawdowns)
         statistics["max_drawdown_pct"] = self.calculate_max_drawdown_pct()
-        statistics["equity"] = self.equity
-        statistics["equity_returns"] = self.equity_returns
+        statistics["equity"] = pd.Series(self.equity)
+        statistics["equity_returns"] = pd.Series(self.equity_returns)
         return statistics
 
     def calculate_sharpe(self, benchmark_return=0.00):
@@ -90,10 +79,8 @@ class SimpleStatistics(AbstractStatistics):
         Calculate the sharpe ratio of our equity_returns.
 
         Expects benchmark_return to be, for example, 0.01 for 1%
-
-        TOOD TEST
         """
-        excess_returns = self.equity_returns.astype(float) - benchmark_return / 252
+        excess_returns = pd.Series(self.equity_returns) - benchmark_return / 252
 
         # Return the annualised Sharpe ratio based on the excess daily returns
         return round(self.annualised_sharpe(excess_returns), 4)
@@ -107,20 +94,23 @@ class SimpleStatistics(AbstractStatistics):
         The function assumes that the returns are the excess of
         those compared to a benchmark.
         """
-        return Decimal(np.sqrt(N) * returns.mean() / returns.std()).quantize(Decimal("0.0001"))
+        return np.sqrt(N) * returns.mean() / returns.std()
 
     def calculate_max_drawdown_pct(self):
         """
         Calculate the percentage drop related to the "worst"
         drawdown seen.
         """
-        bottom_index = self.drawdowns.idxmax()
-        top_index = self.equity[:bottom_index].idxmax()
+        drawdown_series = pd.Series(self.drawdowns)
+        equity_series = pd.Series(self.equity)
+        bottom_index = drawdown_series.idxmax()
+        top_index = equity_series[:bottom_index].idxmax()
+
         pct = (
-            (self.equity.ix[top_index] - self.equity.ix[bottom_index]) /
-            self.equity.ix[top_index] * 100
+            (equity_series.ix[top_index] - equity_series.ix[bottom_index]) /
+            equity_series.ix[top_index] * 100
         )
-        return Decimal(pct).quantize(Decimal("0.0001"))
+        return round(pct, 4)
 
     def plot_results(self):
         """
@@ -135,9 +125,9 @@ class SimpleStatistics(AbstractStatistics):
         fig.patch.set_facecolor('white')
 
         df = pd.DataFrame()
-        df["equity"] = self.equity
-        df["equity_returns"] = self.equity_returns
-        df["drawdowns"] = self.drawdowns
+        df["equity"] = pd.Series(self.equity)
+        df["equity_returns"] = pd.Series(self.equity_returns)
+        df["drawdowns"] = pd.Series(self.drawdowns)
 
         # Plot the equity curve
         ax1 = fig.add_subplot(311, ylabel='Equity Value')
@@ -145,7 +135,7 @@ class SimpleStatistics(AbstractStatistics):
 
         # Plot the returns
         ax2 = fig.add_subplot(312, ylabel='Equity Returns')
-        df['equity_returns'].astype(float).plot(ax=ax2, color=sns.color_palette()[1])
+        df['equity_returns'].plot(ax=ax2, color=sns.color_palette()[1])
 
         # drawdown, max_dd, dd_duration = self.create_drawdowns(df["Equity"])
         ax3 = fig.add_subplot(313, ylabel='Drawdowns')
@@ -165,5 +155,4 @@ class SimpleStatistics(AbstractStatistics):
         filename = self.get_filename(filename)
         print("Save results to '%s'" % filename)
         with open(filename, 'wb') as fd:
-            # pickle.dump(self.get_results(), fd)
             pickle.dump(self, fd)

@@ -1,7 +1,7 @@
-from decimal import Decimal
 import unittest
 
 from qstrader.position import Position
+from qstrader.price_parser import PriceParser
 
 
 class TestRoundTripXOMPosition(unittest.TestCase):
@@ -15,9 +15,9 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         Set up the Position object that will store the PnL.
         """
         self.position = Position(
-            "BOT", "XOM", Decimal('100'),
-            Decimal("74.78"), Decimal("1.00"),
-            Decimal('74.78'), Decimal('74.80')
+            "BOT", "XOM", 100,
+            PriceParser.parse(74.78), PriceParser.parse(1.00),
+            PriceParser.parse(74.78), PriceParser.parse(74.80)
         )
 
     def test_calculate_round_trip(self):
@@ -29,39 +29,47 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         via Interactive Brokers' Trader Workstation (TWS).
         """
         self.position.transact_shares(
-            "BOT", Decimal('100'), Decimal('74.63'), Decimal('1.00')
+            "BOT", 100, PriceParser.parse(74.63), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "BOT", Decimal('250'), Decimal('74.620'), Decimal('1.25')
+            "BOT", 250, PriceParser.parse(74.620), PriceParser.parse(1.25)
         )
         self.position.transact_shares(
-            "SLD", Decimal('200'), Decimal('74.58'), Decimal('1.00')
+            "SLD", 200, PriceParser.parse(74.58), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "SLD", Decimal('250'), Decimal('75.26'), Decimal('1.25')
+            "SLD", 250, PriceParser.parse(75.26), PriceParser.parse(1.25)
         )
-        self.position.update_market_value(Decimal("77.75"), Decimal("77.77"))
+        self.position.update_market_value(
+            PriceParser.parse(77.75), PriceParser.parse(77.77)
+        )
 
         self.assertEqual(self.position.action, "BOT")
         self.assertEqual(self.position.ticker, "XOM")
-        self.assertEqual(self.position.quantity, Decimal("0"))
+        self.assertEqual(self.position.quantity, 0)
 
-        self.assertEqual(self.position.buys, Decimal("450"))
-        self.assertEqual(self.position.sells, Decimal("450"))
-        self.assertEqual(self.position.net, Decimal("0"))
-        self.assertEqual(self.position.avg_bot, Decimal("74.65778"))
-        self.assertEqual(self.position.avg_sld, Decimal("74.95778"))
-        self.assertEqual(self.position.total_bot, Decimal("33596.00"))
-        self.assertEqual(self.position.total_sld, Decimal("33731.00"))
-        self.assertEqual(self.position.net_total, Decimal("135.00"))
-        self.assertEqual(self.position.total_commission, Decimal("5.50"))
-        self.assertEqual(self.position.net_incl_comm, Decimal("129.50"))
+        self.assertEqual(self.position.buys, 450)
+        self.assertEqual(self.position.sells, 450)
+        self.assertEqual(self.position.net, 0)
+        self.assertEqual(
+            PriceParser.display(self.position.avg_bot, 5), 74.65778
+        )
+        self.assertEqual(
+            PriceParser.display(self.position.avg_sld, 5), 74.95778
+        )
+        self.assertEqual(PriceParser.display(self.position.total_bot), 33596.00)
+        self.assertEqual(PriceParser.display(self.position.total_sld), 33731.00)
+        self.assertEqual(PriceParser.display(self.position.net_total), 135.00)
+        self.assertEqual(PriceParser.display(self.position.total_commission), 5.50)
+        self.assertEqual(PriceParser.display(self.position.net_incl_comm), 129.50)
 
-        self.assertEqual(self.position.avg_price, Decimal("74.665"))
-        self.assertEqual(self.position.cost_basis, Decimal("0.00"))
-        self.assertEqual(self.position.market_value, Decimal("0.00"))
-        self.assertEqual(self.position.unrealised_pnl, Decimal("0.00"))
-        self.assertEqual(self.position.realised_pnl, Decimal("129.50"))
+        self.assertEqual(
+            PriceParser.display(self.position.avg_price, 3), 74.665
+        )
+        self.assertEqual(PriceParser.display(self.position.cost_basis), 0.00)
+        self.assertEqual(PriceParser.display(self.position.market_value), 0.00)
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), 0.00)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), 129.50)
 
 
 class TestRoundTripPGPosition(unittest.TestCase):
@@ -72,9 +80,9 @@ class TestRoundTripPGPosition(unittest.TestCase):
     """
     def setUp(self):
         self.position = Position(
-            "SLD", "PG", Decimal('100'),
-            Decimal("77.69"), Decimal("1.00"),
-            Decimal('77.68'), Decimal('77.70')
+            "SLD", "PG", 100,
+            PriceParser.parse(77.69), PriceParser.parse(1.00),
+            PriceParser.parse(77.68), PriceParser.parse(77.70)
         )
 
     def test_calculate_round_trip(self):
@@ -86,39 +94,47 @@ class TestRoundTripPGPosition(unittest.TestCase):
         via Interactive Brokers' Trader Workstation (TWS).
         """
         self.position.transact_shares(
-            "SLD", Decimal('100'), Decimal('77.68'), Decimal('1.00')
+            "SLD", 100, PriceParser.parse(77.68), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "SLD", Decimal('50'), Decimal('77.70'), Decimal('1.00')
+            "SLD", 50, PriceParser.parse(77.70), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "BOT", Decimal('100'), Decimal('77.77'), Decimal('1.00')
+            "BOT", 100, PriceParser.parse(77.77), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "BOT", Decimal('150'), Decimal('77.73'), Decimal('1.00')
+            "BOT", 150, PriceParser.parse(77.73), PriceParser.parse(1.00)
         )
-        self.position.update_market_value(Decimal("77.72"), Decimal("77.72"))
+        self.position.update_market_value(
+            PriceParser.parse(77.72), PriceParser.parse(77.72)
+        )
 
         self.assertEqual(self.position.action, "SLD")
         self.assertEqual(self.position.ticker, "PG")
-        self.assertEqual(self.position.quantity, Decimal("0"))
+        self.assertEqual(self.position.quantity, 0)
 
-        self.assertEqual(self.position.buys, Decimal("250"))
-        self.assertEqual(self.position.sells, Decimal("250"))
-        self.assertEqual(self.position.net, Decimal("0"))
-        self.assertEqual(self.position.avg_bot, Decimal("77.746"))
-        self.assertEqual(self.position.avg_sld, Decimal("77.688"))
-        self.assertEqual(self.position.total_bot, Decimal("19436.50"))
-        self.assertEqual(self.position.total_sld, Decimal("19422.00"))
-        self.assertEqual(self.position.net_total, Decimal("-14.50"))
-        self.assertEqual(self.position.total_commission, Decimal("5.00"))
-        self.assertEqual(self.position.net_incl_comm, Decimal("-19.50"))
+        self.assertEqual(self.position.buys, 250)
+        self.assertEqual(self.position.sells, 250)
+        self.assertEqual(self.position.net, 0)
+        self.assertEqual(
+            PriceParser.display(self.position.avg_bot, 3), 77.746
+        )
+        self.assertEqual(
+            PriceParser.display(self.position.avg_sld, 3), 77.688
+        )
+        self.assertEqual(PriceParser.display(self.position.total_bot), 19436.50)
+        self.assertEqual(PriceParser.display(self.position.total_sld), 19422.00)
+        self.assertEqual(PriceParser.display(self.position.net_total), -14.50)
+        self.assertEqual(PriceParser.display(self.position.total_commission), 5.00)
+        self.assertEqual(PriceParser.display(self.position.net_incl_comm), -19.50)
 
-        self.assertEqual(self.position.avg_price, Decimal("77.67600"))
-        self.assertEqual(self.position.cost_basis, Decimal("0.00"))
-        self.assertEqual(self.position.market_value, Decimal("0.00"))
-        self.assertEqual(self.position.unrealised_pnl, Decimal("0.00"))
-        self.assertEqual(self.position.realised_pnl, Decimal("-19.50"))
+        self.assertEqual(
+            PriceParser.display(self.position.avg_price, 5), 77.67600
+        )
+        self.assertEqual(PriceParser.display(self.position.cost_basis), 0.00)
+        self.assertEqual(PriceParser.display(self.position.market_value), 0.00)
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), 0.00)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), -19.50)
 
 
 if __name__ == "__main__":

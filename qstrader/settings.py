@@ -28,7 +28,7 @@ def from_env(key, default_value=None, root=ENV_VAR_ROOT):
 
 DEFAULT = munchify({
     "CSV_DATA_DIR": from_env("CSV_DATA_DIR", "~/data"),
-    "OUTPUT_DIR": from_env("OUTPUT_DIR", "~/qstrader")
+    "OUTPUT_DIR": from_env("OUTPUT_DIR", "~/out")
 })
 
 

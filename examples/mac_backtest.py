@@ -1,11 +1,11 @@
 import click
 
-from decimal import Decimal
-
 from qstrader import settings
 from qstrader.compat import queue
+from qstrader.price_parser import PriceParser
 from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
 from qstrader.strategy.moving_average_cross_strategy import MovingAverageCrossStrategy
+from qstrader.strategy import Strategies, DisplayStrategy
 from qstrader.position_sizer.fixed import FixedPositionSizer
 from qstrader.risk_manager.example import ExampleRiskManager
 from qstrader.portfolio_handler import PortfolioHandler
@@ -20,9 +20,7 @@ def run(config, testing, tickers, filename):
     # Set up variables needed for backtest
     events_queue = queue.Queue()
     csv_dir = config.CSV_DATA_DIR
-    initial_equity = Decimal("500000.00")
-    # heartbeat = 0.0
-    # max_iters = 10000000000
+    initial_equity = PriceParser.parse(500000.00)
 
     # Use Yahoo Daily Price Handler
     price_handler = YahooDailyCsvBarPriceHandler(
@@ -31,6 +29,7 @@ def run(config, testing, tickers, filename):
 
     # Use the MAC Strategy
     strategy = MovingAverageCrossStrategy(tickers, events_queue)
+    strategy = Strategies(strategy, DisplayStrategy())
 
     # Use an example Position Sizer,
     position_sizer = FixedPositionSizer()
@@ -57,12 +56,10 @@ def run(config, testing, tickers, filename):
 
     # Set up the backtest
     backtest = Backtest(
-        tickers, price_handler,
-        strategy, portfolio_handler,
-        execution_handler,
+        price_handler, strategy,
+        portfolio_handler, execution_handler,
         position_sizer, risk_manager,
-        statistics,
-        initial_equity
+        statistics, initial_equity
     )
     results = backtest.simulate_trading(testing=testing)
     statistics.save(filename)

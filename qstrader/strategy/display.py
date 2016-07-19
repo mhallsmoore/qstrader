@@ -5,6 +5,7 @@ import time
 from .base import AbstractStrategy
 from ..profiling import s_speed
 from ..event import EventType
+from ..price_parser import PriceParser
 
 
 class DisplayStrategy(AbstractStrategy):
@@ -23,6 +24,13 @@ class DisplayStrategy(AbstractStrategy):
 
     def calculate_signals(self, event):
         if event.type in [EventType.TICK, EventType.BAR]:
+            # Format the event for human display
+            event.open_price = PriceParser.display(event.open_price)
+            event.high_price = PriceParser.display(event.high_price)
+            event.low_price = PriceParser.display(event.low_price)
+            event.close_price = PriceParser.display(event.close_price)
+            event.adj_close_price = PriceParser.display(event.adj_close_price)
+
             if self.i % self.n == 0 and self.i != 0:
                 print(s_speed(event, self.i, self.t0))
                 print("")

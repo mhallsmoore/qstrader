@@ -1,7 +1,6 @@
-from decimal import Decimal
-
 from .base import AbstractExecutionHandler
 from ..event import (FillEvent, EventType)
+from ..price_parser import PriceParser
 
 
 class IBSimulatedExecutionHandler(AbstractExecutionHandler):
@@ -34,7 +33,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
         a transaction. At this stage, simply add in $1.00
         for transaction costs, irrespective of lot size.
         """
-        return Decimal("1.00")
+        return PriceParser.parse(1.00)
 
     def execute_order(self, event):
         """
@@ -55,12 +54,12 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
             if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
                 if event.action == "BOT":
-                    fill_price = Decimal(str(ask))
+                    fill_price = ask
                 else:
-                    fill_price = Decimal(str(bid))
+                    fill_price = bid
             else:
                 close_price = self.price_handler.get_last_close(ticker)
-                fill_price = Decimal(str(close_price))
+                fill_price = close_price
 
             # Set a dummy exchange and calculate trade commission
             exchange = "ARCA"

@@ -2,6 +2,7 @@
 *.py[co]
 .DS_Store
 __pycache__
+out
 
 # Packages
 *.egg

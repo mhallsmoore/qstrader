@@ -40,6 +40,7 @@ install:
   - pip install nose-timer
   - pip install munch
   - pip install coveralls --quiet
+  - pip install multipledispatch
   - conda list
   - python setup.py install
 
