@@ -50,12 +50,12 @@ class SimpleStatistics(AbstractStatistics):
         """
         Update all statistics that must be tracked over time.
         """
-        # Retrieve equity value of Portfolio
-        current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
-        self.equity.append(current_equity)
-        self.timeseries.append(timestamp)
+        if timestamp != self.timeseries[-1]:
+            # Retrieve equity value of Portfolio
+            current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
+            self.equity.append(current_equity)
+            self.timeseries.append(timestamp)
 
-        if(len(self.equity) > 1):
             # Calculate percentage return between current and previous equity value.
             pct = ((self.equity[-1] - self.equity[-2]) / self.equity[-1]) * 100
             self.equity_returns.append(round(pct, 4))
@@ -74,6 +74,7 @@ class SimpleStatistics(AbstractStatistics):
         statistics["max_drawdown_pct"] = self.calculate_max_drawdown_pct()
         statistics["equity"] = pd.Series(self.equity, index=self.timeseries)
         statistics["equity_returns"] = pd.Series(self.equity_returns, index=self.timeseries)
+
         return statistics
 
     def calculate_sharpe(self, benchmark_return=0.00):
