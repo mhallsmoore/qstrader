@@ -3,7 +3,7 @@ Test examples
 
 One example can be test individually using:
 
-$ nosetests -s -v tests/test_examples.py:TestExamples.test_strategy_backtest
+$ nosetests -s -v examples/test_examples.py:TestExamples.test_strategy_backtest
 
 """
 import os
@@ -37,7 +37,7 @@ class TestExamples(unittest.TestCase):
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "buy_and_hold_backtest.pkl")
         results = examples.buy_and_hold_backtest.run(self.config, self.testing, tickers, filename)
         for (key, expected) in [
-            ('sharpe', 0.5969),
+            ('sharpe', 0.5968),
             ('max_drawdown_pct', 5.0308),
             ('max_drawdown', 30174.01)
         ]:
@@ -54,7 +54,7 @@ class TestExamples(unittest.TestCase):
             # self.assertAlmostEqual(float(values.iloc[-1]), expected['last']) # TODO FAILING BY 1 CENT
         stats = load(filename)
         results = stats.get_results()
-        self.assertAlmostEqual(float(results['sharpe']), 0.5969)
+        self.assertAlmostEqual(float(results['sharpe']), 0.5968)
 
     def test_mac_backtest(self):
         """
@@ -63,7 +63,7 @@ class TestExamples(unittest.TestCase):
         tickers = ["SP500TR"]
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "mac_backtest.pkl")
         results = examples.mac_backtest.run(self.config, self.testing, tickers, filename)
-        self.assertAlmostEqual(float(results['sharpe']), 0.6018)
+        self.assertAlmostEqual(float(results['sharpe']), 0.6016)
 
     def test_strategy_backtest(self):
         """
@@ -72,4 +72,4 @@ class TestExamples(unittest.TestCase):
         tickers = ["GOOG"]
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "strategy_backtest.pkl")
         results = examples.strategy_backtest.run(self.config, self.testing, tickers, filename)
-        self.assertAlmostEqual(float(results['sharpe']), -7.5299)
+        self.assertAlmostEqual(float(results['sharpe']), -7.1351)

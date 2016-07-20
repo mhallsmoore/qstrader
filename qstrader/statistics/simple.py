@@ -39,7 +39,8 @@ class SimpleStatistics(AbstractStatistics):
         self.config = config
         self.drawdowns = [0]
         self.equity = []
-        self.equity_returns = []
+        self.equity_returns = [0.0]
+        self.timeseries = ["0000-00-00 00:00:00"]
         # Initialize in order for first-step calculations to be correct.
         current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
         self.hwm = [current_equity]
@@ -49,11 +50,12 @@ class SimpleStatistics(AbstractStatistics):
         """
         Update all statistics that must be tracked over time.
         """
-        # Retrieve equity value of Portfolio
-        current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
-        self.equity.append(current_equity)
+        if timestamp != self.timeseries[-1]:
+            # Retrieve equity value of Portfolio
+            current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
+            self.equity.append(current_equity)
+            self.timeseries.append(timestamp)
 
-        if(len(self.equity) > 1):
             # Calculate percentage return between current and previous equity value.
             pct = ((self.equity[-1] - self.equity[-2]) / self.equity[-1]) * 100
             self.equity_returns.append(round(pct, 4))
@@ -67,11 +69,12 @@ class SimpleStatistics(AbstractStatistics):
         """
         statistics = {}
         statistics["sharpe"] = self.calculate_sharpe()
-        statistics["drawdowns"] = pd.Series(self.drawdowns)
+        statistics["drawdowns"] = pd.Series(self.drawdowns, index=self.timeseries)
         statistics["max_drawdown"] = max(self.drawdowns)
         statistics["max_drawdown_pct"] = self.calculate_max_drawdown_pct()
-        statistics["equity"] = pd.Series(self.equity)
-        statistics["equity_returns"] = pd.Series(self.equity_returns)
+        statistics["equity"] = pd.Series(self.equity, index=self.timeseries)
+        statistics["equity_returns"] = pd.Series(self.equity_returns, index=self.timeseries)
+
         return statistics
 
     def calculate_sharpe(self, benchmark_return=0.00):
@@ -125,9 +128,9 @@ class SimpleStatistics(AbstractStatistics):
         fig.patch.set_facecolor('white')
 
         df = pd.DataFrame()
-        df["equity"] = pd.Series(self.equity)
-        df["equity_returns"] = pd.Series(self.equity_returns)
-        df["drawdowns"] = pd.Series(self.drawdowns)
+        df["equity"] = pd.Series(self.equity, index=self.timeseries)
+        df["equity_returns"] = pd.Series(self.equity_returns, index=self.timeseries)
+        df["drawdowns"] = pd.Series(self.drawdowns, index=self.timeseries)
 
         # Plot the equity curve
         ax1 = fig.add_subplot(311, ylabel='Equity Value')
@@ -140,6 +143,9 @@ class SimpleStatistics(AbstractStatistics):
         # drawdown, max_dd, dd_duration = self.create_drawdowns(df["Equity"])
         ax3 = fig.add_subplot(313, ylabel='Drawdowns')
         df['drawdowns'].plot(ax=ax3, color=sns.color_palette()[2])
+
+        # Rotate dates
+        fig.autofmt_xdate()
 
         # Plot the figure
         plt.show()
