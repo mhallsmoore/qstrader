@@ -7,10 +7,12 @@ $ nosetests -s -v examples/test_examples.py:TestExamples.test_strategy_backtest
 
 """
 import os
+import math
 import unittest
 
 from qstrader import settings
 from qstrader.statistics import load
+import examples.display_prices_backtest
 import examples.buy_and_hold_backtest
 import examples.mac_backtest
 import examples.strategy_backtest
@@ -26,6 +28,18 @@ class TestExamples(unittest.TestCase):
         """
         self.config = settings.TEST
         self.testing = True
+
+    def test_display_prices_backtest(self):
+        """
+        Test display_prices_backtest
+        Bar 0, at 2010-01-04 00:00:00
+        Bar 1628, at 2016-06-22 00:00:00
+        """
+        tickers = ["SP500TR"]
+        filename = os.path.join(settings.TEST.OUTPUT_DIR, "display_prices.pkl")
+        results = examples.display_prices_backtest.run(self.config, self.testing, tickers, filename, 100, 5)
+        self.assertTrue(math.isnan(results['sharpe']))
+        self.assertAlmostEqual(results['max_drawdown'], 0)
 
     def test_buy_and_hold_backtest(self):
         """
