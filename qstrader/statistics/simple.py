@@ -102,13 +102,15 @@ class SimpleStatistics(AbstractStatistics):
         drawdown_series = pd.Series(self.drawdowns)
         equity_series = pd.Series(self.equity)
         bottom_index = drawdown_series.idxmax()
-        top_index = equity_series[:bottom_index].idxmax()
-
-        pct = (
-            (equity_series.ix[top_index] - equity_series.ix[bottom_index]) /
-            equity_series.ix[top_index] * 100
-        )
-        return round(pct, 4)
+        try:
+            top_index = equity_series[:bottom_index].idxmax()
+            pct = (
+                (equity_series.ix[top_index] - equity_series.ix[bottom_index]) /
+                equity_series.ix[top_index] * 100
+            )
+            return round(pct, 4)
+        except ValueError:
+            return np.nan
 
     def plot_results(self):
         """
