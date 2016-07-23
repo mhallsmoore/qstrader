@@ -7,11 +7,9 @@ $ nosetests -s -v examples/test_examples.py:TestExamples.test_strategy_backtest
 
 """
 import os
-import math
 import unittest
 
 from qstrader import settings
-from qstrader.statistics import load
 import examples.pandas.pandas_bar_display_prices_backtest
 import examples.pandas.pandas_tick_strategy_backtest
 
