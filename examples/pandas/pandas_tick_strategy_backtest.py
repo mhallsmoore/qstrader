@@ -7,7 +7,7 @@ import pandas as pd
 from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_parser import PriceParser
-from qstrader.price_handler import GenericHandler
+from qstrader.price_handler import GenericPriceHandler
 from qstrader.price_handler.iterator.pandas import PandasTickEventIterator
 from qstrader.strategy import DisplayStrategy, Strategies
 from qstrader.strategy.example import ExampleStrategy
@@ -49,7 +49,7 @@ def run(config, testing, tickers, filename, n, n_window):
 
     # Use Generic Tick Handler with Pandas Tick Iterator
     price_event_iterator = PandasTickEventIterator(data, tickers[0])
-    price_handler = GenericHandler(events_queue, price_event_iterator)
+    price_handler = GenericPriceHandler(events_queue, price_event_iterator)
 
     # Use the Display Strategy and ExampleStrategy
     strategy1 = DisplayStrategy(n=n, n_window=n_window)

@@ -8,7 +8,7 @@ import pandas_datareader.data as web
 from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_parser import PriceParser
-from qstrader.price_handler import GenericHandler
+from qstrader.price_handler import GenericPriceHandler
 from qstrader.price_handler.iterator.pandas import PandasBarEventIterator
 from qstrader.strategy import DisplayStrategy, Strategies
 from qstrader.strategy.buy_and_hold import BuyAndHoldStrategy
@@ -54,7 +54,7 @@ def run(cache_name, cache_backend, expire_after, data_source, start, end, config
 
     # Use Generic Bar Handler with Pandas Bar Iterator
     price_event_iterator = PandasBarEventIterator(data, period, tickers[0])
-    price_handler = GenericHandler(events_queue, price_event_iterator)
+    price_handler = GenericPriceHandler(events_queue, price_event_iterator)
 
     # Use the Display Strategy
     strategy1 = DisplayStrategy(n=n, n_window=n_window)

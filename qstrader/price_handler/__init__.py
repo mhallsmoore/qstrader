@@ -1,3 +1,3 @@
 # flake8: noqa
 
-from .generic import GenericHandler
+from .generic import GenericPriceHandler

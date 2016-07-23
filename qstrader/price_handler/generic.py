@@ -39,7 +39,7 @@ class GenericTickHandler(AbstractGenericHandler, AbstractTickPriceHandler):
     pass
 
 
-def GenericHandler(events_queue, price_event_iterator):
+def GenericPriceHandler(events_queue, price_event_iterator):
     if isinstance(price_event_iterator, AbstractBarEventIterator):
         return GenericBarHandler(events_queue, price_event_iterator)
     elif isinstance(price_event_iterator, AbstractTickEventIterator):
