@@ -55,7 +55,7 @@ source ~/venv/qstraderp3/bin/activate
 At this point it is necessary to use pip to install QSTrader as a library and then manually install the requirements. The following steps will take some time as QSTrader relies on NumPy, SciPy, Pandas, Matplotlib as well as many other libraries and hence they will all need to compile:
 
 ```
-pip install git+git://github.com/mhallsmoore/qstrader.git
+pip install git+https://github.com/mhallsmoore/qstrader.git
 pip install -r https://raw.githubusercontent.com/mhallsmoore/qstrader/master/requirements.txt
 ```
 
