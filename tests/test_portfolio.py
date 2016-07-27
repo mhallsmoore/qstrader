@@ -92,6 +92,8 @@ class TestAmazonGooglePortfolio(unittest.TestCase):
         # The figures below are derived from Interactive Brokers
         # demo account using the above trades with prices provided
         # by their demo feed.
+        self.assertEqual(len(self.portfolio.positions), 0)
+        self.assertEqual(len(self.portfolio.closed_positions), 2)
         self.assertEqual(PriceParser.display(self.portfolio.cur_cash), 499100.50)
         self.assertEqual(PriceParser.display(self.portfolio.equity), 499100.50)
         self.assertEqual(PriceParser.display(self.portfolio.unrealised_pnl), 0.00)

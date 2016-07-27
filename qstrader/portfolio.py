@@ -7,11 +7,17 @@ class Portfolio(object):
         On creation, the Portfolio object contains no
         positions and all values are "reset" to the initial
         cash, with no PnL - realised or unrealised.
+
+        Note that realised_pnl is the running tally pnl from closed
+        positions (closed_pnl), as well as realised_pnl
+        from currently open positions.
         """
         self.price_handler = price_handler
         self.init_cash = cash
         self.cur_cash = cash
         self.positions = {}
+        self.closed_positions = {}
+        self.closed_pnl = 0
         self._reset_values()
 
     def _reset_values(self):
@@ -26,8 +32,8 @@ class Portfolio(object):
         """
         self.cur_cash = self.init_cash
         self.equity = self.cur_cash
-        self.unrealised_pnl = 0
         self.realised_pnl = 0
+        self.unrealised_pnl = 0
 
     def _update_portfolio(self):
         """
@@ -37,6 +43,9 @@ class Portfolio(object):
 
         This method is called after every Position modification.
         """
+        self.equity = self.closed_pnl
+        self.equity += self.cur_cash
+
         for ticker in self.positions:
             pt = self.positions[ticker]
             if self.price_handler.istick():
@@ -47,7 +56,6 @@ class Portfolio(object):
                 ask = close_price
             pt.update_market_value(bid, ask)
             self.unrealised_pnl += pt.unrealised_pnl
-            self.realised_pnl += pt.realised_pnl
             self.cur_cash -= pt.cost_basis
             pnl_diff = pt.realised_pnl - pt.unrealised_pnl
             self.cur_cash += pnl_diff
@@ -113,6 +121,13 @@ class Portfolio(object):
                 bid = close_price
                 ask = close_price
             self.positions[ticker].update_market_value(bid, ask)
+
+            if self.positions[ticker].quantity == 0:
+                closed = self.positions.pop(ticker)
+                self.closed_pnl += closed.realised_pnl
+                # TODO what if this overrides a position... ? Maybe list better than dict. For both. Also because
+                self.closed_positions[closed.ticker] = closed
+
             self._update_portfolio()
         else:
             print(
