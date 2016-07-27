@@ -30,8 +30,8 @@ class Portfolio(object):
         All cash is reset to the initial values and the
         PnL is set to zero.
         """
-        self.cur_cash = self.init_cash
-        self.equity = self.cur_cash
+        # self.cur_cash = self.init_cash
+        self.equity = self.init_cash
         self.realised_pnl = 0
         self.unrealised_pnl = 0
 
@@ -44,7 +44,7 @@ class Portfolio(object):
         This method is called after every Position modification.
         """
         self.equity = self.closed_pnl
-        self.equity += self.cur_cash
+        self.equity += self.init_cash
 
         for ticker in self.positions:
             pt = self.positions[ticker]
@@ -56,9 +56,9 @@ class Portfolio(object):
                 ask = close_price
             pt.update_market_value(bid, ask)
             self.unrealised_pnl += pt.unrealised_pnl
-            self.cur_cash -= pt.cost_basis
+            # self.cur_cash -= pt.cost_basis
             pnl_diff = pt.realised_pnl - pt.unrealised_pnl
-            self.cur_cash += pnl_diff
+            # self.cur_cash += pnl_diff
             self.equity += (
                 pt.market_value - pt.cost_basis + pnl_diff
             )
@@ -147,6 +147,12 @@ class Portfolio(object):
         Hence, this single method will be called by the
         PortfolioHandler to update the Portfolio itself.
         """
+
+        if action == "BOT":
+            self.cur_cash -= ((quantity * price) + commission)
+        elif action == "SLD":
+            self.cur_cash += ((quantity * price) + commission)
+
         if ticker not in self.positions:
             self._add_position(
                 action, ticker, quantity,
