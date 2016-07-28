@@ -17,7 +17,7 @@ class Portfolio(object):
         self.cur_cash = cash
         self.positions = {}
         self.closed_positions = []
-        self.closed_pnl = 0
+        self.realised_pnl = 0
         self._reset_values()
 
     def _reset_values(self):
@@ -30,9 +30,7 @@ class Portfolio(object):
         All cash is reset to the initial values and the
         PnL is set to zero.
         """
-        # self.cur_cash = self.init_cash
         self.equity = self.init_cash
-        self.realised_pnl = 0
         self.unrealised_pnl = 0
 
     def _update_portfolio(self):
@@ -43,7 +41,7 @@ class Portfolio(object):
 
         This method is called after every Position modification.
         """
-        self.equity = self.closed_pnl
+        self.equity = self.realised_pnl
         self.equity += self.init_cash
 
         for ticker in self.positions:
@@ -124,7 +122,7 @@ class Portfolio(object):
 
             if self.positions[ticker].quantity == 0:
                 closed = self.positions.pop(ticker)
-                self.closed_pnl += closed.realised_pnl
+                self.realised_pnl += closed.realised_pnl
                 self.closed_positions.append(closed)
 
             self._update_portfolio()
@@ -150,7 +148,7 @@ class Portfolio(object):
         if action == "BOT":
             self.cur_cash -= ((quantity * price) + commission)
         elif action == "SLD":
-            self.cur_cash += ((quantity * price) + commission)
+            self.cur_cash += ((quantity * price) - commission)
 
         if ticker not in self.positions:
             self._add_position(
