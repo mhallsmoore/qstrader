@@ -16,7 +16,7 @@ class Portfolio(object):
         self.init_cash = cash
         self.cur_cash = cash
         self.positions = {}
-        self.closed_positions = {}
+        self.closed_positions = []
         self.closed_pnl = 0
         self._reset_values()
 
@@ -125,8 +125,7 @@ class Portfolio(object):
             if self.positions[ticker].quantity == 0:
                 closed = self.positions.pop(ticker)
                 self.closed_pnl += closed.realised_pnl
-                # TODO what if this overrides a position... ? Maybe list better than dict. For both. Also because
-                self.closed_positions[closed.ticker] = closed
+                self.closed_positions.append(closed)
 
             self._update_portfolio()
         else:
