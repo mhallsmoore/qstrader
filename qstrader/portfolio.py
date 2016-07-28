@@ -14,33 +14,18 @@ class Portfolio(object):
         """
         self.price_handler = price_handler
         self.init_cash = cash
+        self.equity = cash
         self.cur_cash = cash
         self.positions = {}
         self.closed_positions = []
         self.realised_pnl = 0
-        self._reset_values()
-
-    def _reset_values(self):
-        """
-        This is called after every position addition or
-        modification. It allows the calculations to be
-        carried out "from scratch" in order to minimise
-        errors.
-
-        All cash is reset to the initial values and the
-        PnL is set to zero.
-        """
-        self.equity = self.init_cash
-        self.unrealised_pnl = 0
 
     def _update_portfolio(self):
         """
-        Updates the Portfolio total values (cash, equity,
-        unrealised PnL, realised PnL, cost basis etc.) based
-        on all of the current ticker values.
-
-        This method is called after every Position modification.
+        Updates the value of all positions that are currently open.
+        Value of closed positions is tallied as self.realised_pnl.
         """
+        self.unrealised_pnl = 0
         self.equity = self.realised_pnl
         self.equity += self.init_cash
 
@@ -54,9 +39,7 @@ class Portfolio(object):
                 ask = close_price
             pt.update_market_value(bid, ask)
             self.unrealised_pnl += pt.unrealised_pnl
-            # self.cur_cash -= pt.cost_basis
             pnl_diff = pt.realised_pnl - pt.unrealised_pnl
-            # self.cur_cash += pnl_diff
             self.equity += (
                 pt.market_value - pt.cost_basis + pnl_diff
             )
@@ -74,7 +57,6 @@ class Portfolio(object):
         Once the Position is added, the Portfolio values
         are updated.
         """
-        self._reset_values()
         if ticker not in self.positions:
             if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
@@ -107,7 +89,6 @@ class Portfolio(object):
         Once the Position is modified, the Portfolio values
         are updated.
         """
-        self._reset_values()
         if ticker in self.positions:
             self.positions[ticker].transact_shares(
                 action, quantity, price, commission
@@ -160,19 +141,3 @@ class Portfolio(object):
                 action, ticker, quantity,
                 price, commission
             )
-
-    def create_portfolio_state_dict(self):
-        """
-        Creates a dictionary containing the best estimated
-        market value of all positions within the Portfolio,
-        along with the cash and equity amount.
-        """
-        self._reset_values()
-        self._update_portfolio()
-        state_dict = {
-            "cash": self.cur_cash,
-            "equity": self.equity
-        }
-        for ticker in self.positions:
-            state_dict[ticker] = self.positions[ticker].market_value
-        return state_dict
