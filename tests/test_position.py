@@ -136,6 +136,7 @@ class TestRoundTripPGPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.unrealised_pnl), 0.00)
         self.assertEqual(PriceParser.display(self.position.realised_pnl), -19.50)
 
+
 class TestThreeTransactionsXOMPosition(unittest.TestCase):
     """
     Tests the followign scenario:
@@ -185,8 +186,9 @@ class TestThreeTransactionsXOMPosition(unittest.TestCase):
                                       )       
                                       
         # made 98 cents but you lose 3x1 for comissions
-        self.assertAlmostEqual(PriceParser.display(self.position), 
+        self.assertAlmostEqual(PriceParser.display(self.position.realised_pnl), 
                               200 * (75.78 - 74.80) - 3)
+        
         
 class TestThreeTransactionsPGPosition(unittest.TestCase):
     """
