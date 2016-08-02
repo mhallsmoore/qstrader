@@ -35,6 +35,7 @@ class SimpleStatistics(AbstractStatistics):
         self.drawdowns = [0]
         self.equity = []
         self.equity_returns = [0.0]
+        # Initialize timeseries. Correct timestamp not available yet.
         self.timeseries = ["0000-00-00 00:00:00"]
         # Initialize in order for first-step calculations to be correct.
         current_equity = PriceParser.display(portfolio_handler.portfolio.equity)
@@ -62,13 +63,19 @@ class SimpleStatistics(AbstractStatistics):
         """
         Return a dict with all important results & stats.
         """
+
+        # Modify timeseries in local scope only. We initialize with 0-date,
+        # but would rather show a realistic starting date.
+        timeseries = self.timeseries
+        timeseries[0] = timeseries[1] - pd.Timedelta(days=1)
+
         statistics = {}
         statistics["sharpe"] = self.calculate_sharpe()
-        statistics["drawdowns"] = pd.Series(self.drawdowns, index=self.timeseries)
+        statistics["drawdowns"] = pd.Series(self.drawdowns, index=timeseries)
         statistics["max_drawdown"] = max(self.drawdowns)
         statistics["max_drawdown_pct"] = self.calculate_max_drawdown_pct()
-        statistics["equity"] = pd.Series(self.equity, index=self.timeseries)
-        statistics["equity_returns"] = pd.Series(self.equity_returns, index=self.timeseries)
+        statistics["equity"] = pd.Series(self.equity, index=timeseries)
+        statistics["equity_returns"] = pd.Series(self.equity_returns, index=timeseries)
 
         return statistics
 
