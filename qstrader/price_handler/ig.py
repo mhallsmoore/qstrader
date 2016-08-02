@@ -23,14 +23,14 @@ class IGTickPriceHandler(AbstractTickPriceHandler):
             mode="MERGE",
             items=tickers,
             fields=["UPDATE_TIME", "BID", "OFFER", "CHANGE", "MARKET_STATE"],
-            )
-            #adapter="QUOTE_ADAPTER")
+            # adapter="QUOTE_ADAPTER",
+        )
 
         # Adding the "on_price_update" function to Subscription
         subcription_prices.addlistener(self.on_prices_update)
 
         # Registering the Subscription
-        sub_key_prices = self.ig_stream_service.ls_client.subscribe(subcription_prices)
+        self.ig_stream_service.ls_client.subscribe(subcription_prices)
 
     def on_prices_update(self, data):
         tev = self._create_event(data)
