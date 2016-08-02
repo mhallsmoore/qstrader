@@ -7,7 +7,7 @@ from ..event import TickEvent
 from .base import AbstractTickPriceHandler
 
 
-class IGPriceHandler(AbstractTickPriceHandler):
+class IGTickPriceHandler(AbstractTickPriceHandler):
     def __init__(self, events_queue, ig_stream_service, tickers):
         self.price_event = None
         self.events_queue = events_queue

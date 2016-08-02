@@ -3,7 +3,7 @@ import click
 from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_parser import PriceParser
-from qstrader.price_handler.ig import IGPriceHandler
+from qstrader.price_handler.ig import IGTickPriceHandler
 from qstrader.strategy import DisplayStrategy
 from qstrader.position_sizer.fixed import FixedPositionSizer
 from qstrader.risk_manager.example import ExampleRiskManager
@@ -31,8 +31,8 @@ def run(config, testing, tickers, filename, n, n_window):
 
     initial_equity = PriceParser.parse(500000.00)
 
-    # Use IG Price Handler
-    price_handler = IGPriceHandler(
+    # Use IG Tick Price Handler
+    price_handler = IGTickPriceHandler(
         events_queue, ig_stream_service, tickers
     )
 
