@@ -10,8 +10,8 @@ import os
 import unittest
 
 from qstrader import settings
-import examples.pandas.pandas_bar_display_prices_backtest
-import examples.pandas.pandas_tick_strategy_backtest
+import examples.pandas_examples.pandas_bar_display_prices_backtest
+import examples.pandas_examples.pandas_tick_strategy_backtest
 
 
 class TestPandasExamples(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestPandasExamples(unittest.TestCase):
         end = '2016-06-22'
         tickers = ["^GSPC"]
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "pandas_bar_display_prices_backtest.pkl")
-        results = examples.pandas.pandas_bar_display_prices_backtest.run(self.cache_name, self.cache_backend, self.expire_after, data_source, start, end, self.config, self.testing, tickers, filename, self.n, self.n_window)
+        results = examples.pandas_examples.pandas_bar_display_prices_backtest.run(self.cache_name, self.cache_backend, self.expire_after, data_source, start, end, self.config, self.testing, tickers, filename, self.n, self.n_window)
         self.assertAlmostEqual(float(results['sharpe']), 0.5968)
 
     def test_pandas_bar_display_prices_backtest_multi(self):
@@ -46,17 +46,17 @@ class TestPandasExamples(unittest.TestCase):
         end = '2016-06-22'
         tickers = ["MSFT", "GOOG"]
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "pandas_bar_display_prices_backtest_multi.pkl")
-        results = examples.pandas.pandas_bar_display_prices_backtest.run(self.cache_name, self.cache_backend, self.expire_after, data_source, start, end, self.config, self.testing, tickers, filename, self.n, self.n_window)
+        results = examples.pandas_examples.pandas_bar_display_prices_backtest.run(self.cache_name, self.cache_backend, self.expire_after, data_source, start, end, self.config, self.testing, tickers, filename, self.n, self.n_window)
         self.assertAlmostEqual(float(results['sharpe']), 0.3544)
 
     def test_pandas_tick_strategy_backtest(self):
         tickers = ["GOOG"]
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "pandas_tick_strategy_backtest.pkl")
-        results = examples.pandas.pandas_tick_strategy_backtest.run(self.config, self.testing, tickers, filename, self.n, self.n_window)
+        results = examples.pandas_examples.pandas_tick_strategy_backtest.run(self.config, self.testing, tickers, filename, self.n, self.n_window)
         self.assertAlmostEqual(float(results['sharpe']), -7.1351)
 
     def test_pandas_tick_strategy_backtest_multi(self):
         tickers = ["GOOG", "MSFT"]
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "pandas_tick_strategy_backtest_multi.pkl")
-        results = examples.pandas.pandas_tick_strategy_backtest.run(self.config, self.testing, tickers, filename, self.n, self.n_window)
+        results = examples.pandas_examples.pandas_tick_strategy_backtest.run(self.config, self.testing, tickers, filename, self.n, self.n_window)
         self.assertAlmostEqual(float(results['sharpe']), -5.0262)
