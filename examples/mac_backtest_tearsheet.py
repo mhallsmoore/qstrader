@@ -20,10 +20,11 @@ def run(config, testing, tickers, filename):
     benchmark = 'SP500TR'
 
     # Set up variables needed for backtest
-    title = ['Moving Average Crossover Example',
-             __file__,
-             ','.join(tickers) + ': 100x400'
-            ]
+    title = [
+        'Moving Average Crossover Example',
+        __file__,
+        ','.join(tickers) + ': 100x400'
+    ]
     events_queue = queue.Queue()
     csv_dir = config.CSV_DATA_DIR
     initial_equity = PriceParser.parse(500000.00)
