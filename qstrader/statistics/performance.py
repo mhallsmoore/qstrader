@@ -37,7 +37,7 @@ def create_cagr(equity, periods=252):
     periods - Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
     """
     years = len(equity) / float(periods)
-    return (equity[-1]**(1.0/years))-1.0
+    return (equity[-1] ** (1.0 / years)) - 1.0
 
 
 def create_sharpe_ratio(returns, periods=252):
@@ -88,9 +88,9 @@ def create_drawdowns(returns):
 
     # Loop over the index range
     for t in range(1, len(idx)):
-        hwm.append(max(hwm[t-1], returns.ix[t]))
+        hwm.append(max(hwm[t - 1], returns.ix[t]))
         drawdown.ix[t] = (hwm[t] - returns.ix[t]) / hwm[t]
-        duration.ix[t] = (0 if drawdown.ix[t] == 0 else duration.ix[t-1] + 1)
+        duration.ix[t] = (0 if drawdown.ix[t] == 0 else duration.ix[t - 1] + 1)
 
     return drawdown, drawdown.max(), duration.max()
 
