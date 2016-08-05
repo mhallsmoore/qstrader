@@ -67,7 +67,7 @@ class SimpleStatistics(AbstractStatistics):
         # Modify timeseries in local scope only. We initialize with 0-date,
         # but would rather show a realistic starting date.
         timeseries = self.timeseries
-        timeseries[0] = timeseries[1] - pd.Timedelta(days=1)
+        timeseries[0] = pd.to_datetime(timeseries[1]) - pd.Timedelta(days=1)
 
         statistics = {}
         statistics["sharpe"] = self.calculate_sharpe()
