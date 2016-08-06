@@ -15,6 +15,7 @@ from qstrader.statistics import load
 import examples.display_prices_backtest
 import examples.buy_and_hold_backtest
 import examples.mac_backtest
+import examples.mac_backtest_tearsheet
 import examples.strategy_backtest
 
 
@@ -78,6 +79,15 @@ class TestExamples(unittest.TestCase):
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "mac_backtest.pkl")
         results = examples.mac_backtest.run(self.config, self.testing, tickers, filename)
         self.assertAlmostEqual(float(results['sharpe']), 0.6016)
+
+    def test_mac_backtest_tearsheet(self):
+        """
+        Test mac_backtest_tearsheet example
+        """
+        tickers = ["SP500TR"]
+        filename = os.path.join(settings.TEST.OUTPUT_DIR, "mac_backtest_tearsheet.pkl")
+        results = examples.mac_backtest_tearsheet.run(self.config, self.testing, tickers, filename)
+        self.assertAlmostEqual(float(results['sharpe']), 0.639220566475)
 
     def test_strategy_backtest(self):
         """

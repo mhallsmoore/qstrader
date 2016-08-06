@@ -3,6 +3,7 @@ from ..price_parser import PriceParser
 
 from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
+from datetime import datetime
 
 import qstrader.statistics.performance as perf
 
@@ -12,6 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.dates as mdates
 import seaborn as sns
+import os
 
 
 class TearsheetStatistics(AbstractStatistics):
@@ -478,7 +480,7 @@ class TearsheetStatistics(AbstractStatistics):
         ax.axis([0, 10, 0, 10])
         return ax
 
-    def plot_results(self):
+    def plot_results(self, filename=None):
         """
         Plot the Tearsheet
         """
@@ -527,3 +529,17 @@ class TearsheetStatistics(AbstractStatistics):
 
         # Plot the figure
         plt.show()
+
+        if filename is not None:
+            fig.savefig(filename)
+
+    def get_filename(self, filename=""):
+        if filename == "":
+            now = datetime.utcnow()
+            filename = "tearsheet_" + now.strftime("%Y-%m-%d_%H%M%S") + ".png"
+            filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
+        return filename
+
+    def save(self, filename=""):
+        filename = self.get_filename(filename)
+        self.plot_results

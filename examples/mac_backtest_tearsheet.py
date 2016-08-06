@@ -70,6 +70,7 @@ def run(config, testing, tickers, filename):
         statistics, initial_equity
     )
     results = backtest.simulate_trading(testing=testing)
+    statistics.save(filename)
     return results
 
 
