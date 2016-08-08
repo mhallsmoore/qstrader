@@ -40,9 +40,10 @@ class TearsheetStatistics(AbstractStatistics):
         self.equity[timestamp] = PriceParser.display(
             self.portfolio_handler.portfolio.equity
         )
-        self.equity_benchmark[timestamp] = PriceParser.display(
-            self.price_handler.get_last_close(self.benchmark)
-        )
+        if self.benchmark is not None:
+            self.equity_benchmark[timestamp] = PriceParser.display(
+                self.price_handler.get_last_close(self.benchmark)
+            )
 
     def get_results(self):
         """
@@ -133,7 +134,6 @@ class TearsheetStatistics(AbstractStatistics):
             return '%.2f' % x
 
         equity = stats['cum_returns']
-        benchmark = stats['cum_returns_b']
 
         if ax is None:
             ax = plt.gca()
@@ -145,6 +145,7 @@ class TearsheetStatistics(AbstractStatistics):
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 
         if self.benchmark is not None:
+            benchmark = stats['cum_returns_b']
             benchmark.plot(
                 lw=2, color='gray', label=self.benchmark, alpha=0.60,
                 ax=ax, **kwargs
