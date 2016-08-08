@@ -89,33 +89,23 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
                 "as is already subscribed." % ticker
             )
 
-    def get_last_close(self, ticker):
+    def _create_event(self, index, period, ticker, row):
         """
-        Returns the most recent actual (unadjusted) closing price.
+        Obtain all elements of the bar from a row of dataframe
+        and return a BarEvent
         """
-        if ticker in self.tickers:
-            close_price = self.tickers[ticker]["close"]
-            return close_price
-        else:
-            print(
-                "Close price for ticker %s is not "
-                "available from the YahooDailyBarPriceHandler."
-            )
-            return None
-
-    def get_last_timestamp(self, ticker):
-        """
-        Returns the most recent actual timestamp for a given ticker
-        """
-        if ticker in self.tickers:
-            timestamp = self.tickers[ticker]["timestamp"]
-            return timestamp
-        else:
-            print(
-                "Timestamp for ticker %s is not "
-                "available from the %s." % (ticker, self.__class__.__name__)
-            )
-            return None
+        open_price = PriceParser.parse(row["Open"])
+        high_price = PriceParser.parse(row["High"])
+        low_price = PriceParser.parse(row["Low"])
+        close_price = PriceParser.parse(row["Close"])
+        adj_close_price = PriceParser.parse(row["Adj Close"])
+        volume = int(row["Volume"])
+        bev = BarEvent(
+            ticker, index, period, open_price,
+            high_price, low_price, close_price,
+            volume, adj_close_price
+        )
+        return bev
 
     def stream_next(self):
         """
@@ -126,26 +116,12 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
         except StopIteration:
             self.continue_backtest = False
             return
-
         # Obtain all elements of the bar from the dataframe
         ticker = row["Ticker"]
-        open_price = PriceParser.parse(row["Open"])
-        high_price = PriceParser.parse(row["High"])
-        low_price = PriceParser.parse(row["Low"])
-        close_price = PriceParser.parse(row["Close"])
-        adj_close_price = PriceParser.parse(row["Adj Close"])
-        volume = int(row["Volume"])
-
-        # Create prices for closing price and adjusted closing price
-        self.tickers[ticker]["close"] = close_price
-        self.tickers[ticker]["adj_close"] = adj_close_price
-        self.tickers[ticker]["timestamp"] = index
-
-        # Create the tick event for the queue
         period = 86400  # Seconds in a day
-        bev = BarEvent(
-            ticker, index, period, open_price,
-            high_price, low_price, close_price,
-            volume, adj_close_price
-        )
+        # Create the tick event for the queue
+        bev = self._create_event(index, period, ticker, row)
+        # Store event
+        self._store_event(bev)
+        # Send event to queue
         self.events_queue.put(bev)
