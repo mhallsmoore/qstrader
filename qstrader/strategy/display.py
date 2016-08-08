@@ -25,11 +25,15 @@ class DisplayStrategy(AbstractStrategy):
     def calculate_signals(self, event):
         if event.type in [EventType.TICK, EventType.BAR]:
             # Format the event for human display
-            event.open_price = PriceParser.display(event.open_price)
-            event.high_price = PriceParser.display(event.high_price)
-            event.low_price = PriceParser.display(event.low_price)
-            event.close_price = PriceParser.display(event.close_price)
-            event.adj_close_price = PriceParser.display(event.adj_close_price)
+            if event.type == EventType.BAR:
+                event.open_price = PriceParser.display(event.open_price)
+                event.high_price = PriceParser.display(event.high_price)
+                event.low_price = PriceParser.display(event.low_price)
+                event.close_price = PriceParser.display(event.close_price)
+                event.adj_close_price = PriceParser.display(event.adj_close_price)
+            else:  # event.type == EventType.TICK
+                event.bid = PriceParser.display(event.bid)
+                event.ask = PriceParser.display(event.ask)
 
             if self.i % self.n == 0 and self.i != 0:
                 print(s_speed(event, self.i, self.t0))

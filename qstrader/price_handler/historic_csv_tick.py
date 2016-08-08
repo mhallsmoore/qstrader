@@ -83,34 +83,15 @@ class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
                 "as is already subscribed." % ticker
             )
 
-    def get_best_bid_ask(self, ticker):
+    def _create_event(self, index, ticker, row):
         """
-        Returns the most recent bid/ask price for a ticker.
+        Obtain all elements of the bar a row of dataframe
+        and return a TickEvent
         """
-        if ticker in self.tickers:
-            bid = self.tickers[ticker]["bid"]
-            ask = self.tickers[ticker]["ask"]
-            return bid, ask
-        else:
-            print(
-                "Bid/ask values for ticker %s are not "
-                "available from the PriceHandler." % ticker
-            )
-            return None, None
-
-    def get_last_timestamp(self, ticker):
-        """
-        Returns the most recent actual timestamp for a given ticker
-        """
-        if ticker in self.tickers:
-            timestamp = self.tickers[ticker]["timestamp"]
-            return timestamp
-        else:
-            print(
-                "Timestamp for ticker %s is not "
-                "available from the %s." % (ticker, self.__class__.__name__)
-            )
-            return None
+        bid = PriceParser.parse(row["Bid"])
+        ask = PriceParser.parse(row["Ask"])
+        tev = TickEvent(ticker, index, bid, ask)
+        return tev
 
     def stream_next(self):
         """
@@ -121,16 +102,7 @@ class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
         except StopIteration:
             self.continue_backtest = False
             return
-
         ticker = row["Ticker"]
-        bid = PriceParser.parse(row["Bid"])
-        ask = PriceParser.parse(row["Ask"])
-
-        # Create decimalised prices for traded pair
-        self.tickers[ticker]["bid"] = bid
-        self.tickers[ticker]["ask"] = ask
-        self.tickers[ticker]["timestamp"] = index
-
-        # Create the tick event for the queue
-        tev = TickEvent(ticker, index, bid, ask)
+        tev = self._create_event(index, ticker, row)
+        self._store_event(tev)
         self.events_queue.put(tev)
