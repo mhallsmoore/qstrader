@@ -1,5 +1,8 @@
 from __future__ import division
 from multipledispatch import dispatch
+import six
+
+int_t = six.integer_types
 
 
 class PriceParser(object):
@@ -20,7 +23,7 @@ class PriceParser(object):
     PRICE_MULTIPLIER = 10000000
 
     @staticmethod
-    @dispatch(int)
+    @dispatch(int_t)
     def parse(x):  # flake8: noqa
         return x
 
@@ -30,7 +33,7 @@ class PriceParser(object):
         return int(x * PriceParser.PRICE_MULTIPLIER)
 
     @staticmethod
-    @dispatch(int)
+    @dispatch(int_t)
     def display(x):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, 2)
 
@@ -40,11 +43,11 @@ class PriceParser(object):
         return round(x, 2)
 
     @staticmethod
-    @dispatch(int, int)
+    @dispatch(int_t, int_t)
     def display(x, dp):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, dp)
 
     @staticmethod
-    @dispatch(float, int)
+    @dispatch(float, int_t)
     def display(x, dp):  # flake8: noqa
         return round(x, dp)
