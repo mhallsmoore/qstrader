@@ -24,7 +24,7 @@ class PandasDataFrameTickEventIterator(AbstractTickEventIterator):
         """
         self.data = df
         self.ticker = ticker
-        self.tickers_lst = [ticker]
+        self.tickers_list = [ticker]
         self._itr_bar = self.data.iterrows()
 
     def __next__(self):
@@ -49,7 +49,7 @@ class PandasPanelTickEventIterator(AbstractTickEventIterator):
     def __init__(self, panel):
         self.data = panel
         self._itr_ticker_bar = self.data.transpose(1, 0, 2).iteritems()
-        self.tickers_lst = self.data.minor_axis
+        self.tickers_list = self.data.minor_axis
         self._next_ticker_bar()
 
     def _next_ticker_bar(self):

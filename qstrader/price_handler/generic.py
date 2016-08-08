@@ -9,7 +9,7 @@ class AbstractGenericHandler(AbstractPriceHandler):
         self.price_event_iterator = price_event_iterator
         self.continue_backtest = True
         self.tickers = {}
-        for ticker in self.tickers_lst:
+        for ticker in self.tickers_list:
             self.tickers[ticker] = {}
 
     def stream_next(self):
@@ -27,8 +27,8 @@ class AbstractGenericHandler(AbstractPriceHandler):
         self.events_queue.put(price_event)
 
     @property
-    def tickers_lst(self):
-        return self.price_event_iterator.tickers_lst
+    def tickers_list(self):
+        return self.price_event_iterator.tickers_list
 
 
 class GenericBarHandler(AbstractGenericHandler, AbstractBarPriceHandler):
