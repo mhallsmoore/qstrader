@@ -42,7 +42,7 @@ class IBCallback(EWrapper):
     # Swigibpy defaults to printing exception. Raise it instead.
     def pyError(self, exception, value, traceback):
         print("EXCEPTION: %s" % value)
-        raise Exception()
+        raise exception(value)
 
     # Implementation required
     def managedAccounts(self, message):
