@@ -13,6 +13,7 @@ class IBError(Exception):
 class IBSystemError(Exception):
     pass
 
+
 class IBCallback(EWrapper):
     # Raise exceptions for any errors which occur.
     def error(self, id, errorCode, errorString):
@@ -51,7 +52,6 @@ class IBCallback(EWrapper):
     # Implementation required
     def nextValidId(self, orderId):
         print("IBCallback.nextValidId: %s" % orderId)
-
 
 
 class IBClient(object):
