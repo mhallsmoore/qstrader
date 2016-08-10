@@ -1,11 +1,10 @@
 import unittest
-
 from qstrader import settings
 from qstrader.ib import IBCallback, IBClient
-
 """
 TODO - currently actually requires a connection to IBGateway running. Should mock.
 """
+
 
 class TestIBSetupCase(unittest.TestCase):
     """
