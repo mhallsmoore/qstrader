@@ -13,11 +13,10 @@ class IBError(Exception):
 class IBSystemError(Exception):
     pass
 
-
 class IBCallback(EWrapper):
-
     # Raise exceptions for any errors which occur.
     def error(self, id, errorCode, errorString):
+        import pdb; pdb.set_trace()
         """TODO - Log info/warnings/exceptions correctly."""
         if errorCode == 165:  # Historical data sevice message
             sys.stderr.write("TWS INFO - %s: %s\n" % (errorCode, errorString))
@@ -42,7 +41,17 @@ class IBCallback(EWrapper):
 
     # Swigibpy defaults to printing exception. Raise it instead.
     def pyError(self, exception, value, traceback):
-        raise exception(value)
+        print("EXCEPTION: %s" % value)
+        raise Exception()
+
+    # Implementation required
+    def managedAccounts(self, message):
+        print("IBCallback.managedAccounts: %s" % message)
+
+    # Implementation required
+    def nextValidId(self, orderId):
+        print("IBCallback.nextValidId: %s" % orderId)
+
 
 
 class IBClient(object):
@@ -52,34 +61,3 @@ class IBClient(object):
 
         self.gateway = gateway
         self.cb = callback
-
-    def speaking_clock(self):
-        pass
-        # print ("Getting the time... ")
-        #
-        # self.gateway.reqCurrentTime()
-        #
-        # start_time=time.time()
-        #
-        # self.cb.init_error()
-        #
-        # iserror=False
-        #
-        # while not iserror:
-        #     isfinished = hasattr(self.cb, 'data_the_time_now_is')
-        #     if isfinished:
-        #         break
-        #
-        #     iserror=self.cb.flag_iserror
-        #
-        #     if (time.time() - start_time) > 30:
-        #         not_finished=False
-        #
-        #     if iserror:
-        #         not_finished=False
-        #
-        # if iserror:
-        #     print ("Error happened")
-        #     print (self.cb.error_msg)
-        #
-        # return self.cb.data_the_time_now_is

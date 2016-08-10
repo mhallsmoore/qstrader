@@ -15,8 +15,7 @@ class TestIBSetupCase(unittest.TestCase):
         self.ib_client = IBClient(self.ib_cb, settings.TEST)
 
     def test_can_connect(self):
-        print(self.ib_client.speaking_clock())
-        pass
+        self.assertEqual(self.ib_client.gateway.isConnected(), True)
 
 if __name__ == "__main__":
     unittest.main()
