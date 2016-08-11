@@ -9,7 +9,7 @@ class TestPriceParser(unittest.TestCase):
         self.int = 200
 
         if PY2:
-            self.long = long(self.int)
+            self.long = long(self.int)  # noqa
         else:
             self.long = self.int
 
@@ -34,7 +34,7 @@ class TestPriceParser(unittest.TestCase):
         parsed = PriceParser.parse(self.long)
         self.assertEqual(parsed, 200)
         if PY2:
-            self.assertIsInstance(parsed, long)
+            self.assertIsInstance(parsed, long)  # noqa
         else:
             self.assertIsInstance(parsed, int)
 
