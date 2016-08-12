@@ -1,6 +1,12 @@
 from __future__ import division
 from multipledispatch import dispatch
+from .compat import PY2
 import numpy as np
+
+if PY2:
+    int_t = (int, long, np.int64)
+else:
+    int_t = (int, np.int64)
 
 
 class PriceParser(object):
@@ -23,12 +29,7 @@ class PriceParser(object):
     """Parse Methods. Multiplies a float out into an int if needed."""
 
     @staticmethod
-    @dispatch(int)
-    def parse(x):  # flake8: noqa
-        return x
-
-    @staticmethod
-    @dispatch(np.int64)
+    @dispatch(int_t)
     def parse(x):  # flake8: noqa
         return x
 
@@ -45,12 +46,7 @@ class PriceParser(object):
     """Display Methods. Multiplies a float out into an int if needed."""
 
     @staticmethod
-    @dispatch(int)
-    def display(x):  # flake8: noqa
-        return round(x / PriceParser.PRICE_MULTIPLIER, 2)
-
-    @staticmethod
-    @dispatch(np.int64)
+    @dispatch(int_t)
     def display(x):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, 2)
 
@@ -60,7 +56,7 @@ class PriceParser(object):
         return round(x, 2)
 
     @staticmethod
-    @dispatch(int, int)
+    @dispatch(int_t, int)
     def display(x, dp):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, dp)
 
