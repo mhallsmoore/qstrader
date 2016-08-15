@@ -74,7 +74,7 @@ class TestRoundTripXOMPosition(unittest.TestCase):
 
 class TestRoundTripPGPosition(unittest.TestCase):
     """
-    Test a round-trip trade in Proctor & Gamble where the initial
+    Test a round-trip trade in Procter & Gamble where the initial
     trade is a sell/short of 100 shares of PG, at a price of
     $77.69, with $1.00 commission.
     """
@@ -136,6 +136,108 @@ class TestRoundTripPGPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.unrealised_pnl), 0.00)
         self.assertEqual(PriceParser.display(self.position.realised_pnl), -19.50)
 
+
+class TestThreeTransactionsXOMPosition(unittest.TestCase):
+    """
+    Tests the followign scenario:
+        1.) an opening buy for 200 in Exxon-Mobil @ $74.78,
+        2.) a partial close (sell 100  @ $75.78)
+        3.) a final closeout (sell 100 @ 75.78)
+    """
+    def setUp(self):
+        """
+        Set up the Position object.
+        """
+        self.position = Position(action="BOT", 
+                                 ticker="XOM", 
+                                 init_quantity=200,
+                                 init_price=PriceParser.parse(74.80),
+                                 init_commission=PriceParser.parse(1.00),
+                                 bid=PriceParser.parse(74.78), 
+                                 ask=PriceParser.parse(74.80))
+                                
+    def test_transact_test(self):
+        """
+        """
+        # -$1 for commission and -$2 for ask-midpoint on 200 shares
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -3.0)
+        
+        # you haven't closed anything yet, so it should be 0
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), 0)
+        
+        # sell off half the position, makign $.98
+        self.position.transact_shares(action='SLD', 
+                                      quantity=100, 
+                                      price=PriceParser.parse(75.78), 
+                                      commission=PriceParser.parse(1.00))
+                                      
+        # share initial commissions
+        self.assertAlmostEqual(PriceParser.display(self.position.realised_pnl), 
+                               100 * (75.78 - 74.80) - 1 - (.5*1))
+        
+        # doesn't change because we never called update_market_value()
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -3.0)
+        
+        # close everything out
+        self.position.transact_shares(action='SLD', 
+                                      quantity=100, 
+                                      price=PriceParser.parse(75.78), 
+                                      commission=PriceParser.parse(1.00)
+                                      )       
+                                      
+        # made 98 cents but you lose 3x1 for comissions
+        self.assertAlmostEqual(PriceParser.display(self.position.realised_pnl), 
+                              200 * (75.78 - 74.80) - 3)
+        
+        
+class TestThreeTransactionsPGPosition(unittest.TestCase):
+    """
+    Tests the following scenario:
+        1.) an opening sell for 200 in Procter & Gamble @ $32.24,
+        2.) a partial close (buy 100  @ 31.24)
+        3. close everytthing (buy 100 @ 31.24)
+    """
+    def setUp(self):
+        """
+        Set up the Position object.
+        """
+        self.position = Position(action="SLD", 
+                                 ticker="PG", 
+                                 init_quantity=200,
+                                 init_price=PriceParser.parse(32.24),
+                                 init_commission=PriceParser.parse(1.00),
+                                 bid=PriceParser.parse(32.24), 
+                                 ask=PriceParser.parse(32.26))
+                                
+    def test_transact_test(self):
+        """
+        """
+        # -$1 for commission and -$2 for ask-midpoint on 200 shares
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -3.0)
+        
+        # you haven't closed anything yet, so it should be 0
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), 0)
+        
+        # buy back half the position, make 10 cents
+        self.position.transact_shares(action='BOT', 
+                                      quantity=100, 
+                                      price=PriceParser.parse(32.14), 
+                                      commission=PriceParser.parse(1.00))
+                                      
+        # made .1, but lost commissions
+        self.assertAlmostEqual(PriceParser.display(self.position.realised_pnl), 100*(.1) - 1 - .5*(1))
+        
+        # shouldn't change because haven't called update_market_value()
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -3.0)
+        
+        # close everything out
+        self.position.transact_shares(action='BOT',
+                                      quantity=100,
+                                      price=PriceParser.parse(32.14),
+                                      commission=PriceParser.parse(1.00))
+                                      
+        # you should lose $3 in commissions (3 transactions)
+        self.assertAlmostEqual(PriceParser.display(self.position.realised_pnl), 200*(32.24 - 32.14) - 3.)
 
 if __name__ == "__main__":
     unittest.main()

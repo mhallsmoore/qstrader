@@ -45,14 +45,16 @@ class Position(object):
             self.buys = self.quantity
             self.avg_bot = self.init_price
             self.total_bot = self.buys * self.avg_bot
+            # adjusted for commissions:
             self.avg_price = (self.init_price * self.quantity + self.init_commission) // self.quantity
-            self.cost_basis = self.quantity * self.avg_price
+            self.cost_basis = self.quantity * self.avg_price 
         else:  # action == "SLD"
             self.sells = self.quantity
             self.avg_sld = self.init_price
             self.total_sld = self.sells * self.avg_sld
+            # adjusted for commissions:
             self.avg_price = (self.init_price * self.quantity - self.init_commission) // self.quantity
-            self.cost_basis = -self.quantity * self.avg_price
+            self.cost_basis = self.quantity * self.avg_price
         self.net = self.buys - self.sells
         self.net_total = self.total_sld - self.total_bot
         self.net_incl_comm = self.net_total - self.init_commission
@@ -71,9 +73,11 @@ class Position(object):
         """
         midpoint = (bid + ask) // 2
         self.market_value = self.quantity * midpoint
-        self.unrealised_pnl = self.market_value - self.cost_basis
-        self.realised_pnl = self.market_value + self.net_incl_comm
-
+        if self.action == 'BOT':
+            self.unrealised_pnl = self.market_value - self.cost_basis
+        else:
+            self.unrealised_pnl = self.cost_basis - self.market_value 
+            
     def transact_shares(self, action, quantity, price, commission):
         """
         Calculates the adjustments to the Position that occur
@@ -88,22 +92,29 @@ class Position(object):
         # Adjust total bought and sold
         if action == "BOT":
             self.avg_bot = (self.avg_bot * self.buys + price * quantity) // (self.buys + quantity)
-            if self.action != "SLD":
+            if self.action != "SLD": # increasing long exposure
                 self.avg_price = (self.avg_price * self.buys + price * quantity + commission) // (self.buys + quantity)
+            else: # decreasing short exposure
+                assert quantity <= -(self.net) # don't want to double back and buy more than we should
+                self.realised_pnl += quantity*(self.avg_price - price) - commission
             self.buys += quantity
             self.total_bot = self.buys * self.avg_bot
 
         # action == "SLD"
         else:
             self.avg_sld = (self.avg_sld * self.sells + price * quantity) // (self.sells + quantity)
-            if self.action != "BOT":
+            if self.action != "BOT": #increasing short exposure
                 self.avg_price = (self.avg_price * self.sells + price * quantity - commission) // (self.sells + quantity)
+            else: # decreasing long exposure
+                assert quantity <= self.net #don't want to sell more than we own
+                self.realised_pnl += quantity*(price - self.avg_price) - commission
+                
             self.sells += quantity
             self.total_sld = self.sells * self.avg_sld
 
         # Adjust net values, including commissions
         self.net = self.buys - self.sells
-        self.quantity = self.net
+        self.quantity = self.net #should this be absolute value?
         self.net_total = self.total_sld - self.total_bot
         self.net_incl_comm = self.net_total - self.total_commission
 
