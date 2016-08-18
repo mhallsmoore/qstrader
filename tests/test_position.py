@@ -154,7 +154,7 @@ class TestShortPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.cost_basis), -7768.00)
         self.assertEqual(PriceParser.display(self.position.market_value), -7769.00)
         self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -1.00)
-        self.assertEqual(PriceParser.display(self.position.realised_pnl), 0.0)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), -1.0)
 
         self.position.update_market_value(
             PriceParser.parse(77.72), PriceParser.parse(77.72)
@@ -163,7 +163,7 @@ class TestShortPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.cost_basis), -7768.00)
         self.assertEqual(PriceParser.display(self.position.market_value), -7772.00)
         self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -4.00)
-        self.assertEqual(PriceParser.display(self.position.realised_pnl), 0.0)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), -4.0)
 
 
 if __name__ == "__main__":
