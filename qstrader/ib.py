@@ -1,5 +1,7 @@
 import sys
 from swigibpy import EWrapper, EPosixClientSocket
+from qstrader.compat import queue
+from qstrader.event import BarEvent
 
 
 class IBClientError(Exception):
@@ -15,9 +17,13 @@ class IBSystemError(Exception):
 
 
 class IBCallback(EWrapper):
+    # Create a multiprocess queue for us to store data that comes in.
+    def __init__(self):
+        super( IBCallback, self ).__init__()
+        self.mkt_data_queue = queue.Queue()
+
     # Raise exceptions for any errors which occur.
     def error(self, id, errorCode, errorString):
-        import pdb; pdb.set_trace()
         """TODO - Log info/warnings/exceptions correctly."""
         if errorCode == 165:  # Historical data sevice message
             sys.stderr.write("TWS INFO - %s: %s\n" % (errorCode, errorString))
@@ -52,6 +58,20 @@ class IBCallback(EWrapper):
     # Implementation required
     def nextValidId(self, orderId):
         print("IBCallback.nextValidId: %s" % orderId)
+
+    def historicalData(
+        self, reqId, date, open_price,
+        high_price, low_price, close_price,
+        volume, count, WAP, hasGaps
+    ):
+        # TODO get ticker from reqId
+        # TODO get proper period of bar
+        # TODO turn data into integers
+        event = BarEvent(
+            reqId, date, 300, open_price,
+            high_price, low_price, close_price, volume
+        )
+        self.mkt_data_queue.put(event)
 
 
 class IBClient(object):

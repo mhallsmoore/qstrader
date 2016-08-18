@@ -8,15 +8,17 @@ from qstrader import settings
 
 class TestPriceHandlerSimpleCase(unittest.TestCase):
     def setUp(self):
-        events_queue = queue.Queue()
-        tickers = ["GOOG", "AMZN", "MSFT"]
+        self.events_queue = queue.Queue()
+        tickers = ["RBS", "AMZN"]
         self.price_handler = IBBarPriceHandler(
-            events_queue, tickers, settings.TEST
+            self.events_queue, tickers, settings.TEST
         )
 
-    def test_stream_tick(self):
+    def test_historic_bar(self):
         self.price_handler.stream_next()
-        self.assertEqual(1,1)
+        event = self.events_queue.get()
+        print(event)
+        self.assertNotEqual(event, None)
 
 
 if __name__ == "__main__":
