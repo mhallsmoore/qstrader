@@ -1,24 +1,27 @@
-import os
-
-import pandas as pd
-
-from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
-from ..event import BarEvent
 from qstrader.ib import IBCallback, IBClient
 from swigibpy import Contract, TagValueList
 
 
 class IBBarPriceHandler(AbstractBarPriceHandler):
     """
-    TODO nice comments.
+    This class largely acts as an interface between qstrader and ib.py.
+    ib.py implements all the core functionality of communicating with the IB API.
+
+    This class is limited to streaming the maximum number of concurrent
+    tickers available for your IB connection.
     """
     def __init__(self, events_queue, tickers, settings, mode="historic"):
-        self.ib_cb = IBCallback()
+        self.ib_cb = IBCallback(mkt_data_queue=events_queue)
         self.ib_client = IBClient(self.ib_cb, settings)
-        self.tickers = tickers
+        self.tickers = []
         self.events_queue = events_queue
+        self.mode = mode
         for ticker in tickers:
+            self.subscribe_ticker(ticker)
+
+    def subscribe_ticker(self, ticker):
+        if ticker not in self.tickers:
             # Set up the IB Contract
             contract = Contract()
             contract.exchange = "SMART"
@@ -26,7 +29,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             contract.secType = "STK"
             contract.currency = "USD"
 
-            if mode == "historic":
+            if self.mode == "historic":
                 self.ib_client.gateway.reqHistoricalData(
                     # TODO first val should be unique
                     1, contract, "20160818 17:30:30", "1 D", "5 mins", "TRADES",
@@ -37,13 +40,12 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
                     # TODO first val should be unique
                     1, contract, 5, "TRADES", True, TagValueList()
                 )
+            self.tickers.append(ticker)
 
     def stream_next(self):
         """
-        Gets the next bit of data sitting on the IBCallback queue,
-        create an event from it and place it on the events queue
+        This class does not place any events onto the events_queue.
+        When the IB API sends a market data event to ib.py, ib.py adds the event
+        to the events_queue.
         """
-        # TODO test and get rid of the sleep here
-        import time; time.sleep(5);
-        event = self.ib_cb.mkt_data_queue.get()
-        self.events_queue.put(event)
+        pass

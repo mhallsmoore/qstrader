@@ -1,6 +1,5 @@
 import unittest
 
-from qstrader.price_parser import PriceParser
 from qstrader.price_handler.ib_bar import IBBarPriceHandler
 from qstrader.compat import queue
 from qstrader import settings

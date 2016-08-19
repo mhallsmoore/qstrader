@@ -1,6 +1,5 @@
 import sys
 from swigibpy import EWrapper, EPosixClientSocket
-from qstrader.compat import queue
 from qstrader.event import BarEvent
 
 
@@ -18,9 +17,10 @@ class IBSystemError(Exception):
 
 class IBCallback(EWrapper):
     # Create a multiprocess queue for us to store data that comes in.
-    def __init__(self):
-        super( IBCallback, self ).__init__()
-        self.mkt_data_queue = queue.Queue()
+    def __init__(self, mkt_data_queue=None):
+        super(IBCallback, self).__init__()
+        if mkt_data_queue is not None:
+            self.mkt_data_queue = mkt_data_queue
 
     # Raise exceptions for any errors which occur.
     def error(self, id, errorCode, errorString):
