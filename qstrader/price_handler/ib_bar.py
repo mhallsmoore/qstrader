@@ -17,6 +17,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self.tickers = []
         self.events_queue = events_queue
         self.mode = mode
+        self.continue_backtest = True
         for ticker in tickers:
             self.subscribe_ticker(ticker)
 
@@ -47,5 +48,8 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         This class does not place any events onto the events_queue.
         When the IB API sends a market data event to ib.py, ib.py adds the event
         to the events_queue.
+
+        TODO - stop backtest when we receive a 'finished' event from IB?
         """
-        pass
+        if self.events_queue.empty():
+            self.continue_backtest = False
