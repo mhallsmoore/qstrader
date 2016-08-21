@@ -1,3 +1,6 @@
+from numpy import sign
+
+
 class Position(object):
     def __init__(
         self, action, ticker, init_quantity,
@@ -70,7 +73,7 @@ class Position(object):
         and loss of any transactions.
         """
         midpoint = (bid + ask) // 2
-        self.market_value = self.quantity * midpoint
+        self.market_value = self.quantity * midpoint * sign(self.net)
         self.unrealised_pnl = self.market_value - self.cost_basis
         self.realised_pnl = self.market_value + self.net_incl_comm
 

@@ -137,5 +137,34 @@ class TestRoundTripPGPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.realised_pnl), -19.50)
 
 
+class TestShortPosition(unittest.TestCase):
+    """
+    Test a short position in Proctor & Gamble where the initial
+    trade is a sell/short of 100 shares of PG, at a price of
+    $77.69, with $1.00 commission.
+    """
+    def setUp(self):
+        self.position = Position(
+            "SLD", "PG", 100,
+            PriceParser.parse(77.69), PriceParser.parse(1.00),
+            PriceParser.parse(77.68), PriceParser.parse(77.70)
+        )
+
+    def test_open_short_position(self):
+        self.assertEqual(PriceParser.display(self.position.cost_basis), -7768.00)
+        self.assertEqual(PriceParser.display(self.position.market_value), -7769.00)
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -1.00)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), -1.0)
+
+        self.position.update_market_value(
+            PriceParser.parse(77.72), PriceParser.parse(77.72)
+        )
+
+        self.assertEqual(PriceParser.display(self.position.cost_basis), -7768.00)
+        self.assertEqual(PriceParser.display(self.position.market_value), -7772.00)
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -4.00)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), -4.0)
+
+
 if __name__ == "__main__":
     unittest.main()
