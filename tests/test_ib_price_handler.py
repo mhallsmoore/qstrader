@@ -8,7 +8,7 @@ from qstrader import settings
 class TestPriceHandlerSimpleCase(unittest.TestCase):
     def setUp(self):
         self.events_queue = queue.Queue()
-        tickers = ["FB", "AMZN"]
+        tickers = ["CBA", "BHP"]
         self.price_handler = IBBarPriceHandler(
             self.events_queue, tickers, settings.TEST
         )
