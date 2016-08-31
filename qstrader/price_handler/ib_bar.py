@@ -80,12 +80,16 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         )
 
     def stream_next(self):
-        import pdb; pdb.set_trace()
         """
         This class does not place any events onto the events_queue.
         When the IB API sends a market data event to ib.py, ib.py adds the event
         to the events_queue.
+
+        TODO lock/wait until IB has populated the data we requested
         """
+        if self.ib_cb.is_hist_data_ready == False and self.mode == "historic":
+            self.ib_cb.prep_hist_data()
+
         mkt_event = self.ib_cb.mkt_data_queue.get()
         if self.ib_cb.mkt_data_queue.empty() or mkt_event[1].startswith("finished"):
             self.continue_backtest = False

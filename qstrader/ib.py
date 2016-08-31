@@ -20,6 +20,8 @@ class IBCallback(EWrapper):
     # Create a multiprocess queue for us to store data that comes in.
     def __init__(self):
         super(IBCallback, self).__init__()
+        self.hist_data = []
+        self.is_hist_data_ready = False # TODO lock/wait/sync mechanism instead
         self.mkt_data_queue = queue.Queue()
 
     # Raise exceptions for any errors which occur.
@@ -64,9 +66,18 @@ class IBCallback(EWrapper):
         high_price, low_price, close_price,
         volume, count, WAP, hasGaps
     ):
-        self.mkt_data_queue.put(
+        self.hist_data.append(
             (reqId, date, open_price, high_price, low_price, close_price, volume, count, WAP, hasGaps)
         )
+
+    def prep_hist_data(self):
+        """
+        Sorts all historical data by timestamp and places into mkt_data_queue.
+        """
+        sorted_data = sorted(self.hist_data, key=lambda x: x[1])
+        for data in sorted_data:
+            self.mkt_data_queue.put(data)
+        self.is_hist_data_ready = True
 
 
 class IBClient(object):
