@@ -24,6 +24,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self.ib_cb = IBCallback()
         self.ib_client = IBClient(self.ib_cb, settings)
         self.tickers = {} # The position of a ticker in this dict is used as it's IB ID. TODO how to handle unsubscribe? TODO probably quite inefficient
+        self.ticker_lookup = {}
         self.events_queue = events_queue
         self.mode = mode
         self.continue_backtest = True
@@ -55,13 +56,15 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
                 self.ib_client.gateway.reqRealTimeBars(
                     len(self.tickers), contract, 5, "TRADES", True, TagValueList()
                 )
+
+            self.ticker_lookup[len(self.tickers)] = ticker
             self.tickers[ticker] = {}
 
     def _create_event(self, mkt_event):
         """
         # mkt_event will be a tuple populated according to https://www.interactivebrokers.com/en/software/api/apiguide/java/historicaldata.htm
         """
-        ticker = "CBA"
+        ticker = self.ticker_lookup[mkt_event[0]]
         time = datetime.datetime.fromtimestamp(float(mkt_event[1]))
         open_price = PriceParser.parse(mkt_event[2])
         high_price = PriceParser.parse(mkt_event[3])
@@ -77,6 +80,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         )
 
     def stream_next(self):
+        import pdb; pdb.set_trace()
         """
         This class does not place any events onto the events_queue.
         When the IB API sends a market data event to ib.py, ib.py adds the event

@@ -65,7 +65,7 @@ class IBCallback(EWrapper):
         volume, count, WAP, hasGaps
     ):
         self.mkt_data_queue.put(
-            (reqId, date, open_price, high_price, close_price, volume, count, WAP, hasGaps)
+            (reqId, date, open_price, high_price, low_price, close_price, volume, count, WAP, hasGaps)
         )
 
 
