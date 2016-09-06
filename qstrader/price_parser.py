@@ -28,6 +28,11 @@ class PriceParser(object):
         return x
 
     @staticmethod
+    @dispatch(str)
+    def parse(x):  # flake8: noqa
+        return int(float(x) * PriceParser.PRICE_MULTIPLIER)
+
+    @staticmethod
     @dispatch(float)
     def parse(x):  # flake8: noqa
         return int(x * PriceParser.PRICE_MULTIPLIER)

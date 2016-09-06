@@ -28,13 +28,19 @@ def from_env(key, default_value=None, root=ENV_VAR_ROOT):
 
 DEFAULT = munchify({
     "CSV_DATA_DIR": from_env("CSV_DATA_DIR", "~/data"),
-    "OUTPUT_DIR": from_env("OUTPUT_DIR", "~/out")
+    "OUTPUT_DIR": from_env("OUTPUT_DIR", "~/out"),
+    "IB_HOST": from_env("IB_HOST", ""),
+    "IB_PORT": from_env("IB_PORT", 4001),
+    "IB_CLIENT": from_env("IB_CLIENT", 999)
 })
 
 
 TEST = munchify({
     "CSV_DATA_DIR": "data",
-    "OUTPUT_DIR": "out"
+    "OUTPUT_DIR": "out",
+    "IB_HOST": "",
+    "IB_PORT": 4001,
+    "IB_CLIENT": 999
 })
 
 

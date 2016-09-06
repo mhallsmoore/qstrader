@@ -32,6 +32,20 @@ class AbstractPriceHandler(object):
                 "as it was never subscribed." % ticker
             )
 
+    def get_last_timestamp(self, ticker):
+        """
+        Returns the most recent actual timestamp for a given ticker
+        """
+        if ticker in self.tickers:
+            timestamp = self.tickers[ticker]["timestamp"]
+            return timestamp
+        else:
+            print(
+                "Timestamp for ticker %s is not "
+                "available from the %s." % (ticker, self.__class__.__name__)
+            )
+            return None
+
 
 class AbstractTickPriceHandler(AbstractPriceHandler):
     def istick(self):
@@ -40,6 +54,30 @@ class AbstractTickPriceHandler(AbstractPriceHandler):
     def isbar(self):
         return False
 
+    def _store_event(self, event):
+        """
+        Store price event for bid/ask
+        """
+        ticker = event.ticker
+        self.tickers[ticker]["bid"] = event.bid
+        self.tickers[ticker]["ask"] = event.ask
+        self.tickers[ticker]["timestamp"] = event.time
+
+    def get_best_bid_ask(self, ticker):
+        """
+        Returns the most recent bid/ask price for a ticker.
+        """
+        if ticker in self.tickers:
+            bid = self.tickers[ticker]["bid"]
+            ask = self.tickers[ticker]["ask"]
+            return bid, ask
+        else:
+            print(
+                "Bid/ask values for ticker %s are not "
+                "available from the PriceHandler." % ticker
+            )
+            return None, None
+
 
 class AbstractBarPriceHandler(AbstractPriceHandler):
     def istick(self):
@@ -47,3 +85,26 @@ class AbstractBarPriceHandler(AbstractPriceHandler):
 
     def isbar(self):
         return True
+
+    def _store_event(self, event):
+        """
+        Store price event for closing price and adjusted closing price
+        """
+        ticker = event.ticker
+        self.tickers[ticker]["close"] = event.close_price
+        self.tickers[ticker]["adj_close"] = event.adj_close_price
+        self.tickers[ticker]["timestamp"] = event.time
+
+    def get_last_close(self, ticker):
+        """
+        Returns the most recent actual (unadjusted) closing price.
+        """
+        if ticker in self.tickers:
+            close_price = self.tickers[ticker]["close"]
+            return close_price
+        else:
+            print(
+                "Close price for ticker %s is not "
+                "available from the YahooDailyBarPriceHandler."
+            )
+            return None

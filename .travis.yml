@@ -41,6 +41,8 @@ install:
   - pip install munch
   - pip install coveralls --quiet
   - pip install multipledispatch
+  - pip install requests_cache
+  - pip install pandas_datareader
   - conda list
   - python setup.py install
 
