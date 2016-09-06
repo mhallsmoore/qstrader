@@ -1,4 +1,5 @@
 import sys
+import threading
 from swigibpy import EWrapper, EPosixClientSocket
 from qstrader.event import BarEvent
 from qstrader.compat import queue
@@ -21,7 +22,7 @@ class IBCallback(EWrapper):
     def __init__(self):
         super(IBCallback, self).__init__()
         self.hist_data = []
-        self.is_hist_data_ready = False # TODO lock/wait/sync mechanism instead
+        self.hist_data_callbacks = []
         self.mkt_data_queue = queue.Queue()
 
     # Raise exceptions for any errors which occur.
@@ -69,6 +70,7 @@ class IBCallback(EWrapper):
         self.hist_data.append(
             (reqId, date, open_price, high_price, low_price, close_price, volume, count, WAP, hasGaps)
         )
+        self.hist_data_callbacks[reqId].set()
 
     def prep_hist_data(self):
         """

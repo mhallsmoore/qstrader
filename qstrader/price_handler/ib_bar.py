@@ -1,4 +1,5 @@
 import datetime
+import threading
 
 from .base import AbstractBarPriceHandler
 from qstrader.ib import IBCallback, IBClient
@@ -21,6 +22,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self, events_queue, tickers, settings, mode="historic",
         hist_end_date=datetime.datetime.now() - datetime.timedelta(days=1), hist_duration="1 D", hist_barsize="5 mins"
     ):
+        self.callbacks = []
         self.ib_cb = IBCallback()
         self.ib_client = IBClient(self.ib_cb, settings)
         self.tickers = {} # The position of a ticker in this dict is used as it's IB ID. TODO how to handle unsubscribe? TODO probably quite inefficient
@@ -28,14 +30,16 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self.events_queue = events_queue
         self.mode = mode
         self.continue_backtest = True
-
-        if self.mode == "historic":
-            self.hist_end_date = hist_end_date
-            self.hist_duration = hist_duration
-            self.hist_barsize = hist_barsize
+        self.hist_end_date = hist_end_date
+        self.hist_duration = hist_duration
+        self.hist_barsize = hist_barsize
 
         for ticker in tickers:
             self.subscribe_ticker(ticker)
+
+        if self.mode == "historic":
+            self._wait_for_hist_population()
+            self.ib_cb.prep_hist_data()
 
     def subscribe_ticker(self, ticker):
         if ticker not in self.tickers:
@@ -47,11 +51,13 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             contract.currency = "AUD"
 
             if self.mode == "historic":
+                ib_ticker_id = len(self.tickers)
                 end_time = datetime.datetime.strftime(self.hist_end_date, "%Y%m%d 17:00:00")
                 self.ib_client.gateway.reqHistoricalData(
-                    len(self.tickers), contract, end_time, self.hist_duration, self.hist_barsize,
+                    ib_ticker_id, contract, end_time, self.hist_duration, self.hist_barsize,
                     "TRADES", True, 2, TagValueList()
                 )
+                self.ib_cb.hist_data_callbacks.append(threading.Event())
             else:
                 self.ib_client.gateway.reqRealTimeBars(
                     len(self.tickers), contract, 5, "TRADES", True, TagValueList()
@@ -84,12 +90,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         This class does not place any events onto the events_queue.
         When the IB API sends a market data event to ib.py, ib.py adds the event
         to the events_queue.
-
-        TODO lock/wait until IB has populated the data we requested
         """
-        if self.ib_cb.is_hist_data_ready == False and self.mode == "historic":
-            self.ib_cb.prep_hist_data()
-
         mkt_event = self.ib_cb.mkt_data_queue.get()
         if self.ib_cb.mkt_data_queue.empty() or mkt_event[1].startswith("finished"):
             self.continue_backtest = False
@@ -99,6 +100,15 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             # Store event
             self._store_event(bev)
             self.events_queue.put(bev)
+
+    def _wait_for_hist_population(self):
+        """
+        Waits for IB to finish populating all historical data.
+        """
+        print("Waiting for historic IB data ...")
+        for reqId, event in enumerate(self.ib_cb.hist_data_callbacks):
+            event.wait()
+            print("Got historic data for reqId: %s" % reqId)
 
     def _ib_barsize_to_secs(self, barsize):
         """
@@ -117,6 +127,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             "15 mins": 900,
             "30 mins": 1800,
             "1 hour": 3600,
+            "8 hours": 28800,
             "1 day": 86400
         }
         if barsize in lut:
