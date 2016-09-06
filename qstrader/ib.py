@@ -67,10 +67,12 @@ class IBCallback(EWrapper):
         high_price, low_price, close_price,
         volume, count, WAP, hasGaps
     ):
-        self.hist_data.append(
-            (reqId, date, open_price, high_price, low_price, close_price, volume, count, WAP, hasGaps)
-        )
-        self.hist_data_callbacks[reqId].set()
+        if date.startswith("finished"):
+            self.hist_data_callbacks[reqId].set()
+        else:
+            self.hist_data.append(
+                (reqId, date, open_price, high_price, low_price, close_price, volume, count, WAP, hasGaps)
+            )
 
     def prep_hist_data(self):
         """
@@ -79,7 +81,6 @@ class IBCallback(EWrapper):
         sorted_data = sorted(self.hist_data, key=lambda x: x[1])
         for data in sorted_data:
             self.mkt_data_queue.put(data)
-        self.is_hist_data_ready = True
 
 
 class IBClient(object):

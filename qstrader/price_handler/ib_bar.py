@@ -92,7 +92,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         to the events_queue.
         """
         mkt_event = self.ib_cb.mkt_data_queue.get()
-        if self.ib_cb.mkt_data_queue.empty() or mkt_event[1].startswith("finished"):
+        if self.ib_cb.mkt_data_queue.empty():
             self.continue_backtest = False
         else:
             # Create the tick event for the queue
