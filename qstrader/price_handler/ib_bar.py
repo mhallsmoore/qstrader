@@ -66,6 +66,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         """
         ticker = self.ticker_lookup[mkt_event[0]]
         time = datetime.datetime.fromtimestamp(float(mkt_event[1]))
+        barsize = self._ib_barsize_to_secs(self.hist_barsize)
         open_price = PriceParser.parse(mkt_event[2])
         high_price = PriceParser.parse(mkt_event[3])
         low_price = PriceParser.parse(mkt_event[4])
@@ -74,8 +75,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         volume = mkt_event[6]
 
         return BarEvent(
-            # TODO PERIOD LOOKUP CORRECTLY
-            ticker, time, 300, open_price, high_price,
+            ticker, time, barsize, open_price, high_price,
             low_price, close_price, volume, adj_close_price
         )
 
@@ -99,3 +99,27 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             # Store event
             self._store_event(bev)
             self.events_queue.put(bev)
+
+    def _ib_barsize_to_secs(self, barsize):
+        """
+        Takes an IB `barSizeSetting` as described in https://www.interactivebrokers.com/en/software/api/apiguide/java/reqhistoricaldata.htm,
+        and returns the correct number of seconds in that bar.
+        """
+        lut = {
+            "1 sec": 1,
+            "5 secs": 5,
+            "15 secs": 15,
+            "30 secs": 30,
+            "1 min": 60,
+            "2 mins": 120,
+            "3 mins": 180,
+            "5 mins": 300,
+            "15 mins": 900,
+            "30 mins": 1800,
+            "1 hour": 3600,
+            "1 day": 86400
+        }
+        if barsize in lut:
+            return lut[barsize]
+        else:
+            raise Exception("Invalid IB barsize passed: %s" % barsize)
