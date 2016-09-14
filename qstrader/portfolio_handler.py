@@ -41,7 +41,9 @@ class PortfolioHandler(object):
         RiskManager will either verify, modify or eliminate.
         """
         order = SuggestedOrder(
-            signal_event.ticker, signal_event.action
+            signal_event.ticker, 
+            signal_event.action,
+            quantity=signal_event.suggested_quantity
         )
         return order
 
