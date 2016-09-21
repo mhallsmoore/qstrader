@@ -40,10 +40,14 @@ class PortfolioHandler(object):
         At this stage they are simply "suggestions" that the
         RiskManager will either verify, modify or eliminate.
         """
+        if signal_event.suggested_quantity is None:
+            quantity = 0
+        else:
+            quantity = signal_event.suggested_quantity
         order = SuggestedOrder(
             signal_event.ticker,
             signal_event.action,
-            quantity=signal_event.suggested_quantity
+            quantity=quantity
         )
         return order
 
