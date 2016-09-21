@@ -156,7 +156,7 @@ class SignalEvent(Event):
         action - 'BOT' (for long) or 'SLD' (for short).
         suggested_quantity - Optional positively valued integer
             representing a suggested absolute quantity of units
-            of an asset to transact in, which is used by the 
+            of an asset to transact in, which is used by the
             PositionSizer and RiskManager.
         """
         self.type = EventType.SIGNAL
