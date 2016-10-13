@@ -10,9 +10,9 @@ class LiquidateRebalancePositionSizer(AbstractPositionSizer):
     the Portfolio.
 
     This is achieved by determining whether an order type type
-    is "EXIT" or "BOT/SLD". 
+    is "EXIT" or "BOT/SLD".
 
-    If the former, the current quantity of shares in the ticker 
+    If the former, the current quantity of shares in the ticker
     is determined and then BOT or SLD to net the position to zero.
 
     If the latter, the current quantity of shares to obtain is
@@ -44,11 +44,11 @@ class LiquidateRebalancePositionSizer(AbstractPositionSizer):
             weight = self.ticker_weights[ticker]
             # Determine total portfolio value, work out dollar weight
             # and finally determine integer quantity of shares to purchase
-            price = portfolio.price_handler.tickers[ticker]["adj_close"] 
+            price = portfolio.price_handler.tickers[ticker]["adj_close"]
             price /= PriceParser.PRICE_MULTIPLIER
             equity = portfolio.equity / PriceParser.PRICE_MULTIPLIER
             dollar_weight = weight * equity
-            weighted_quantity = int(floor(dollar_weight/price))
+            weighted_quantity = int(floor(dollar_weight / price))
             # Update quantity
             initial_order.quantity = weighted_quantity
         return initial_order

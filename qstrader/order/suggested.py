@@ -19,7 +19,7 @@ class SuggestedOrder(object):
 
         Parameters:
         ticker - The ticker symbol, e.g. 'GOOG'.
-        action - 'BOT' (for long) or 'SLD' (for short) 
+        action - 'BOT' (for long) or 'SLD' (for short)
             or 'EXIT' (for liquidation).
         quantity - The quantity of shares to transact.
         """

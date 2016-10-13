@@ -1,5 +1,4 @@
 import calendar
-import datetime
 
 from .base import AbstractStrategy
 
@@ -12,7 +11,7 @@ class MonthlyLiquidateRebalanceStrategy(AbstractStrategy):
     set of tickers, via full liquidation and dollar-weighting
     of new positions.
 
-    Must be used in conjunction with the 
+    Must be used in conjunction with the
     LiquidateRebalancePositionSizer object to work correctly.
     """
     def __init__(self, tickers, events_queue):
@@ -30,12 +29,12 @@ class MonthlyLiquidateRebalanceStrategy(AbstractStrategy):
 
     def _create_invested_list(self):
         """
-        Create a dictionary with each ticker as a key, with 
+        Create a dictionary with each ticker as a key, with
         a boolean value depending upon whether the ticker has
         been "invested" yet. This is necessary to avoid sending
         a liquidation signal on the first allocation.
         """
-        tickers_invested = {ticker:False for ticker in self.tickers}
+        tickers_invested = {ticker: False for ticker in self.tickers}
         return tickers_invested
 
     def calculate_signals(self, event):
@@ -46,7 +45,7 @@ class MonthlyLiquidateRebalanceStrategy(AbstractStrategy):
         for each ticker.
         """
         if (
-            event.type in [EventType.BAR, EventType.TICK] and 
+            event.type in [EventType.BAR, EventType.TICK] and
             self._end_of_month(event.time)
         ):
             ticker = event.ticker
