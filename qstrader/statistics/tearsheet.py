@@ -158,6 +158,7 @@ class TearsheetStatistics(AbstractStatistics):
         ax.set_ylabel('Cumulative returns')
         ax.legend(loc='best')
         ax.set_xlabel('')
+        plt.setp(ax.get_xticklabels(), visible=True, rotation=0, ha='center')
 
         if self.log_scale:
             ax.set_yscale('log')
@@ -183,6 +184,7 @@ class TearsheetStatistics(AbstractStatistics):
         underwater.plot(ax=ax, lw=2, kind='area', color='red', alpha=0.3, **kwargs)
         ax.set_ylabel('')
         ax.set_xlabel('')
+        plt.setp(ax.get_xticklabels(), visible=True, rotation=0, ha='center')
         ax.set_title('Drawdown (%)', fontweight='bold')
         return ax
 
@@ -506,14 +508,14 @@ class TearsheetStatistics(AbstractStatistics):
         sns.set_palette("deep", desat=.6)
 
         vertical_sections = 5
-        fig = plt.figure(figsize=(10, vertical_sections * 3))
-        fig.suptitle(self.title, y=0.96)
+        fig = plt.figure(figsize=(10, vertical_sections * 3.5))
+        fig.suptitle(self.title, y=0.94, weight='bold')
         gs = gridspec.GridSpec(vertical_sections, 3, wspace=0.25, hspace=0.5)
 
         stats = self.get_results()
 
         ax_equity = plt.subplot(gs[:2, :])
-        ax_drawdown = plt.subplot(gs[2, :], sharex=ax_equity)
+        ax_drawdown = plt.subplot(gs[2, :])
         ax_monthly_returns = plt.subplot(gs[3, :2])
         ax_yearly_returns = plt.subplot(gs[3, 2])
         ax_txt_curve = plt.subplot(gs[4, 0])
@@ -532,7 +534,7 @@ class TearsheetStatistics(AbstractStatistics):
         plt.show()
 
         if filename is not None:
-            fig.savefig(filename)
+            fig.savefig(filename, dpi=150, bbox_inches='tight')
 
     def get_filename(self, filename=""):
         if filename == "":
