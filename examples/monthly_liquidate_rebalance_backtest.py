@@ -1,10 +1,12 @@
+import datetime
+
 import click
 
 from qstrader import settings
 from qstrader.compat import queue
 from qstrader.price_parser import PriceParser
 from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
-from qstrader.strategy.monthly_liquidate_rebalance import MonthlyLiquidateRebalanceStrategy
+from qstrader.strategy.monthly_liquidate_rebalance_strategy import MonthlyLiquidateRebalanceStrategy
 from qstrader.strategy import Strategies, DisplayStrategy
 from qstrader.position_sizer.rebalance import LiquidateRebalancePositionSizer
 from qstrader.risk_manager.example import ExampleRiskManager
@@ -21,10 +23,13 @@ def run(config, testing, tickers, filename):
     events_queue = queue.Queue()
     csv_dir = config.CSV_DATA_DIR
     initial_equity = PriceParser.parse(500000.00)
+    start_date = datetime.datetime(2006, 11, 1)
+    end_date = datetime.datetime(2016, 10, 12)
 
     # Use Yahoo Daily Price Handler
     price_handler = YahooDailyCsvBarPriceHandler(
-        csv_dir, events_queue, tickers
+        csv_dir, events_queue, tickers,
+        start_date=start_date, end_date=end_date
     )
 
     # Use the monthly liquidate and rebalance strategy
@@ -78,7 +83,7 @@ def run(config, testing, tickers, filename):
 @click.command()
 @click.option('--config', default=settings.DEFAULT_CONFIG_FILENAME, help='Config filename')
 @click.option('--testing/--no-testing', default=False, help='Enable testing mode')
-@click.option('--tickers', default='SP500TR', help='Tickers (use comma)')
+@click.option('--tickers', default='SPY', help='Tickers (use comma)')
 @click.option('--filename', default='', help='Pickle (.pkl) statistics filename')
 def main(config, testing, tickers, filename):
     tickers = tickers.split(",")

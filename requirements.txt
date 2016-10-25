@@ -2,6 +2,7 @@ decorator==4.0.9
 ipython==4.2.0
 ipywidgets==5.1.5
 ipython-genutils==0.1.0
+matplotlib==1.5.3
 numpy==1.10.4
 pandas==0.18.1
 pandas_datareader==0.2.1

@@ -27,13 +27,18 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
         self.price_handler = price_handler
         self.compliance = compliance
 
-    def calculate_ib_commission(self):
+    def calculate_ib_commission(self, quantity, fill_price):
         """
         Calculate the Interactive Brokers commission for
-        a transaction. At this stage, simply add in $1.00
-        for transaction costs, irrespective of lot size.
+        a transaction. This is based on the US Fixed pricing,
+        the details of which can be found here:
+        https://www.interactivebrokers.co.uk/en/index.php?f=1590&p=stocks1
         """
-        return PriceParser.parse(1.00)
+        commission = min(
+            0.5 * fill_price * quantity,
+            max(1.0, 0.005 * quantity)
+        )
+        return PriceParser.parse(commission)
 
     def execute_order(self, event):
         """
@@ -63,7 +68,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
 
             # Set a dummy exchange and calculate trade commission
             exchange = "ARCA"
-            commission = self.calculate_ib_commission()
+            commission = self.calculate_ib_commission(quantity, fill_price)
 
             # Create the FillEvent and place on the events queue
             fill_event = FillEvent(

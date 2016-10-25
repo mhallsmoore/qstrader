@@ -14,7 +14,11 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
     for each requested financial instrument and stream those to
     the provided events queue as BarEvents.
     """
-    def __init__(self, csv_dir, events_queue, init_tickers=None):
+    def __init__(
+        self, csv_dir, events_queue,
+        init_tickers=None,
+        start_date=None, end_date=None
+    ):
         """
         Takes the CSV directory, the events queue and a possible
         list of initial ticker symbols then creates an (optional)
@@ -28,6 +32,8 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
         if init_tickers is not None:
             for ticker in init_tickers:
                 self.subscribe_ticker(ticker)
+        self.start_date = start_date
+        self.end_date = end_date
         self.bar_stream = self._merge_sort_ticker_data()
 
     def _open_ticker_price_csv(self, ticker):
@@ -55,9 +61,22 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
         Note that this is an idealised situation, utilised solely for
         backtesting. In live trading ticks may arrive "out of order".
         """
-        return pd.concat(
-            self.tickers_data.values()
-        ).sort_index().iterrows()
+        df = pd.concat(self.tickers_data.values()).sort_index()
+        start = None
+        end = None
+        if self.start_date is not None:
+            start = df.index.searchsorted(self.start_date)
+        if self.end_date is not None:
+            end = df.index.searchsorted(self.end_date)
+        # Determine how to slice
+        if start is None and end is None:
+            return df.iterrows()
+        elif start is not None and end is None:
+            return df.ix[start:].iterrows()
+        elif start is None and end is not None:
+            return df.ix[:end].iterrows()
+        else:
+            return df.ix[start:end].iterrows()
 
     def subscribe_ticker(self, ticker):
         """
