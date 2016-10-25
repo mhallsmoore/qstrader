@@ -31,12 +31,12 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
         """
         Calculate the Interactive Brokers commission for
         a transaction. This is based on the US Fixed pricing,
-        the details of which can be found here: 
+        the details of which can be found here:
         https://www.interactivebrokers.co.uk/en/index.php?f=1590&p=stocks1
         """
         commission = min(
-            0.5*fill_price*quantity,
-            max(1.0, 0.005*quantity)
+            0.5 * fill_price * quantity,
+            max(1.0, 0.005 * quantity)
         )
         return PriceParser.parse(commission)
 
@@ -69,7 +69,6 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
             # Set a dummy exchange and calculate trade commission
             exchange = "ARCA"
             commission = self.calculate_ib_commission(quantity, fill_price)
-
 
             # Create the FillEvent and place on the events queue
             fill_event = FillEvent(

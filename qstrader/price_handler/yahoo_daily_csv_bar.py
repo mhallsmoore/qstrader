@@ -15,8 +15,8 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
     the provided events queue as BarEvents.
     """
     def __init__(
-        self, csv_dir, events_queue, 
-        init_tickers=None, 
+        self, csv_dir, events_queue,
+        init_tickers=None,
         start_date=None, end_date=None
     ):
         """
@@ -68,7 +68,7 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
             start = df.index.searchsorted(self.start_date)
         if self.end_date is not None:
             end = df.index.searchsorted(self.end_date)
-        # Determine how to slice    
+        # Determine how to slice
         if start is None and end is None:
             return df.iterrows()
         elif start is not None and end is None:
