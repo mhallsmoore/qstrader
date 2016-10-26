@@ -141,8 +141,10 @@ class TearsheetStatistics(AbstractStatistics):
         y_axis_formatter = FuncFormatter(format_two_dec)
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
         ax.xaxis.set_tick_params(reset=True)
+        ax.yaxis.grid(linestyle=':')
         ax.xaxis.set_major_locator(mdates.YearLocator(1))
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+        ax.xaxis.grid(linestyle=':')
 
         if self.benchmark is not None:
             benchmark = stats['cum_returns_b']
@@ -179,6 +181,11 @@ class TearsheetStatistics(AbstractStatistics):
 
         y_axis_formatter = FuncFormatter(format_perc)
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
+        ax.yaxis.grid(linestyle=':')
+        ax.xaxis.set_tick_params(reset=True)
+        ax.xaxis.set_major_locator(mdates.YearLocator(1))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+        ax.xaxis.grid(linestyle=':')
 
         underwater = -100 * drawdown
         underwater.plot(ax=ax, lw=2, kind='area', color='red', alpha=0.3, **kwargs)
@@ -237,6 +244,7 @@ class TearsheetStatistics(AbstractStatistics):
 
         y_axis_formatter = FuncFormatter(format_perc)
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
+        ax.yaxis.grid(linestyle=':')
 
         yly_ret = perf.aggregate_returns(returns, 'yearly') * 100.0
         yly_ret.plot(ax=ax, kind="bar")
@@ -244,6 +252,7 @@ class TearsheetStatistics(AbstractStatistics):
         ax.set_ylabel('')
         ax.set_xlabel('')
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+        ax.xaxis.grid(False)
 
         return ax
 
@@ -357,7 +366,8 @@ class TearsheetStatistics(AbstractStatistics):
         avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] <= 0]["trade_pct"]))
         max_win_pct = '{:.2%}'.format(np.max(pos["trade_pct"]))
         max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"]))
-        max_loss_dt = ''  # pos[pos["trade_pct"] == np.min(pos["trade_pct"])].entry_date.values[0]
+        # TODO: Position class needs entry date
+        max_loss_dt = 'TBD'  # pos[pos["trade_pct"] == np.min(pos["trade_pct"])].entry_date.values[0]
         avg_dit = '0.0'  # = '{:.2f}'.format(np.mean(pos.time_in_pos))
 
         ax.text(0.5, 8.9, 'Trade Winning %', fontsize=8)
