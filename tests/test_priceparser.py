@@ -58,5 +58,6 @@ class TestPriceParser(unittest.TestCase):
         displayed = PriceParser.display(self.float)
         self.assertEqual(displayed, 10.12)
 
+
 if __name__ == "__main__":
     unittest.main()

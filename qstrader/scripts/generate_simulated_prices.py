@@ -99,5 +99,6 @@ def run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, mon
 def main(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, days, config=None):
     return run(outdir, ticker, init_price, seed, s0, spread, mu_dt, sigma_dt, year, month, days, config=config)
 
+
 if __name__ == "__main__":
     main()

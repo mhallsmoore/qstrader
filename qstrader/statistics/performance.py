@@ -1,3 +1,5 @@
+from itertools import groupby
+
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
@@ -76,27 +78,30 @@ def create_drawdowns(returns):
     Returns:
     drawdown, drawdown_max, duration
     """
-
     # Calculate the cumulative returns curve
     # and set up the High Water Mark
-    hwm = [0]
-
-    # Create the drawdown and duration series
     idx = returns.index
-    drawdown = pd.Series(index=idx)
-    duration = pd.Series(index=idx)
+    hwm = np.zeros(len(idx))
 
-    # Loop over the index range
+    # Create the high water mark
     for t in range(1, len(idx)):
-        hwm.append(max(hwm[t - 1], returns.ix[t]))
-        drawdown.ix[t] = (hwm[t] - returns.ix[t]) / hwm[t]
-        duration.ix[t] = (0 if drawdown.ix[t] == 0 else duration.ix[t - 1] + 1)
+        hwm[t] = max(hwm[t - 1], returns.ix[t])
 
-    return drawdown, drawdown.max(), duration.max()
+    # Calculate the drawdown and duration statistics
+    perf = pd.DataFrame(index=idx)
+    perf["Drawdown"] = (hwm - returns) / hwm
+    perf["Drawdown"].ix[0] = 0.0
+    perf["DurationCheck"] = np.where(perf["Drawdown"] == 0, 0, 1)
+    duration = max(
+        sum(1 for i in g if i == 1)
+        for k, g in groupby(perf["DurationCheck"])
+    )
+    return perf["Drawdown"], np.max(perf["Drawdown"]), duration
 
 
 def rsquared(x, y):
-    """ Return R^2 where x and y are array-like."""
-
+    """
+    Return R^2 where x and y are array-like.
+    """
     slope, intercept, r_value, p_value, std_err = linregress(x, y)
     return r_value**2

@@ -76,5 +76,6 @@ def main(config, testing, tickers, filename):
     config = settings.from_file(config, testing)
     run(config, testing, tickers, filename)
 
+
 if __name__ == "__main__":
     main()

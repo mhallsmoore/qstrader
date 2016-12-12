@@ -19,7 +19,10 @@ import os
 class TearsheetStatistics(AbstractStatistics):
     """
     """
-    def __init__(self, config, portfolio_handler, title=None, benchmark=None):
+    def __init__(
+        self, config, portfolio_handler,
+        title=None, benchmark=None, periods=252
+    ):
         """
         Takes in a portfolio handler.
         """
@@ -28,6 +31,7 @@ class TearsheetStatistics(AbstractStatistics):
         self.price_handler = portfolio_handler.price_handler
         self.title = '\n'.join(title)
         self.benchmark = benchmark
+        self.periods = periods
         self.equity = {}
         self.equity_benchmark = {}
         self.log_scale = False
@@ -64,7 +68,9 @@ class TearsheetStatistics(AbstractStatistics):
         statistics = {}
 
         # Equity statistics
-        statistics["sharpe"] = perf.create_sharpe_ratio(returns_s)
+        statistics["sharpe"] = perf.create_sharpe_ratio(
+            returns_s, self.periods
+        )
         statistics["drawdowns"] = dd_s
         # TODO: need to have max_drawdown so it can be printed at end of test
         statistics["max_drawdown"] = max_dd
@@ -274,9 +280,9 @@ class TearsheetStatistics(AbstractStatistics):
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
 
         tot_ret = cum_returns[-1] - 1.0
-        cagr = perf.create_cagr(cum_returns)
-        sharpe = perf.create_sharpe_ratio(returns)
-        sortino = perf.create_sortino_ratio(returns)
+        cagr = perf.create_cagr(cum_returns, self.periods)
+        sharpe = perf.create_sharpe_ratio(returns, self.periods)
+        sortino = perf.create_sortino_ratio(returns, self.periods)
         rsq = perf.rsquared(range(cum_returns.shape[0]), cum_returns)
         dd, dd_max, dd_dur = perf.create_drawdowns(cum_returns)
         trd_yr = positions.shape[0] / ((returns.index[-1] - returns.index[0]).days / 365.0)
