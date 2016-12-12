@@ -161,5 +161,6 @@ class TestSimpleStatistics(unittest.TestCase):
         self.assertEqual(results["max_drawdown_pct"], 0.1908)
         self.assertAlmostEqual(float(results["sharpe"]), 1.7575)
 
+
 if __name__ == "__main__":
     unittest.main()
