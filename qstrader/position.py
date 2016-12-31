@@ -1,4 +1,5 @@
 from numpy import sign
+from .action import Action
 
 
 class Position(object):
@@ -44,13 +45,13 @@ class Position(object):
         Finally, calculate the net total with and without commission.
         """
 
-        if self.action == "BOT":
+        if self.action == Action.BOT:
             self.buys = self.quantity
             self.avg_bot = self.init_price
             self.total_bot = self.buys * self.avg_bot
             self.avg_price = (self.init_price * self.quantity + self.init_commission) // self.quantity
             self.cost_basis = self.quantity * self.avg_price
-        else:  # action == "SLD"
+        else:  # action == Action.SLD
             self.sells = self.quantity
             self.avg_sld = self.init_price
             self.total_sld = self.sells * self.avg_sld
@@ -89,17 +90,17 @@ class Position(object):
         self.total_commission += commission
 
         # Adjust total bought and sold
-        if action == "BOT":
+        if action == Action.BOT:
             self.avg_bot = (self.avg_bot * self.buys + price * quantity) // (self.buys + quantity)
-            if self.action != "SLD":
+            if self.action != Action.SLD:
                 self.avg_price = (self.avg_price * self.buys + price * quantity + commission) // (self.buys + quantity)
             self.buys += quantity
             self.total_bot = self.buys * self.avg_bot
 
-        # action == "SLD"
+        # action == Action.SLD
         else:
             self.avg_sld = (self.avg_sld * self.sells + price * quantity) // (self.sells + quantity)
-            if self.action != "BOT":
+            if self.action != Action.BOT:
                 self.avg_price = (self.avg_price * self.sells + price * quantity - commission) // (self.sells + quantity)
             self.sells += quantity
             self.total_sld = self.sells * self.avg_sld

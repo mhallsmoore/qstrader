@@ -1,5 +1,6 @@
 import unittest
 
+from qstrader.action import Action
 from qstrader.position import Position
 from qstrader.price_parser import PriceParser
 
@@ -15,7 +16,7 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         Set up the Position object that will store the PnL.
         """
         self.position = Position(
-            "BOT", "XOM", 100,
+            Action.BOT, "XOM", 100,
             PriceParser.parse(74.78), PriceParser.parse(1.00),
             PriceParser.parse(74.78), PriceParser.parse(74.80)
         )
@@ -29,22 +30,22 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         via Interactive Brokers' Trader Workstation (TWS).
         """
         self.position.transact_shares(
-            "BOT", 100, PriceParser.parse(74.63), PriceParser.parse(1.00)
+            Action.BOT, 100, PriceParser.parse(74.63), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "BOT", 250, PriceParser.parse(74.620), PriceParser.parse(1.25)
+            Action.BOT, 250, PriceParser.parse(74.620), PriceParser.parse(1.25)
         )
         self.position.transact_shares(
-            "SLD", 200, PriceParser.parse(74.58), PriceParser.parse(1.00)
+            Action.SLD, 200, PriceParser.parse(74.58), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "SLD", 250, PriceParser.parse(75.26), PriceParser.parse(1.25)
+            Action.SLD, 250, PriceParser.parse(75.26), PriceParser.parse(1.25)
         )
         self.position.update_market_value(
             PriceParser.parse(77.75), PriceParser.parse(77.77)
         )
 
-        self.assertEqual(self.position.action, "BOT")
+        self.assertEqual(self.position.action, Action.BOT)
         self.assertEqual(self.position.ticker, "XOM")
         self.assertEqual(self.position.quantity, 0)
 
@@ -80,7 +81,7 @@ class TestRoundTripPGPosition(unittest.TestCase):
     """
     def setUp(self):
         self.position = Position(
-            "SLD", "PG", 100,
+            Action.SLD, "PG", 100,
             PriceParser.parse(77.69), PriceParser.parse(1.00),
             PriceParser.parse(77.68), PriceParser.parse(77.70)
         )
@@ -94,22 +95,22 @@ class TestRoundTripPGPosition(unittest.TestCase):
         via Interactive Brokers' Trader Workstation (TWS).
         """
         self.position.transact_shares(
-            "SLD", 100, PriceParser.parse(77.68), PriceParser.parse(1.00)
+            Action.SLD, 100, PriceParser.parse(77.68), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "SLD", 50, PriceParser.parse(77.70), PriceParser.parse(1.00)
+            Action.SLD, 50, PriceParser.parse(77.70), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "BOT", 100, PriceParser.parse(77.77), PriceParser.parse(1.00)
+            Action.BOT, 100, PriceParser.parse(77.77), PriceParser.parse(1.00)
         )
         self.position.transact_shares(
-            "BOT", 150, PriceParser.parse(77.73), PriceParser.parse(1.00)
+            Action.BOT, 150, PriceParser.parse(77.73), PriceParser.parse(1.00)
         )
         self.position.update_market_value(
             PriceParser.parse(77.72), PriceParser.parse(77.72)
         )
 
-        self.assertEqual(self.position.action, "SLD")
+        self.assertEqual(self.position.action, Action.SLD)
         self.assertEqual(self.position.ticker, "PG")
         self.assertEqual(self.position.quantity, 0)
 
@@ -145,7 +146,7 @@ class TestShortPosition(unittest.TestCase):
     """
     def setUp(self):
         self.position = Position(
-            "SLD", "PG", 100,
+            Action.SLD, "PG", 100,
             PriceParser.parse(77.69), PriceParser.parse(1.00),
             PriceParser.parse(77.68), PriceParser.parse(77.70)
         )

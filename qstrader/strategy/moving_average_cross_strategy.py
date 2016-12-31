@@ -5,6 +5,7 @@ from collections import deque
 import numpy as np
 
 from ..event import (SignalEvent, EventType)
+from ..action import Action
 
 
 class MovingAverageCrossStrategy(AbstractStrategy):
@@ -46,12 +47,12 @@ class MovingAverageCrossStrategy(AbstractStrategy):
                 # Trading signals based on moving average cross
                 if short_sma > long_sma and not self.invested:
                     print("LONG: %s" % event.time)
-                    signal = SignalEvent(ticker, "BOT")
+                    signal = SignalEvent(ticker, Action.BOT)
                     self.events_queue.put(signal)
                     self.invested = True
                 elif short_sma < long_sma and self.invested:
                     print("SHORT: %s" % event.time)
-                    signal = SignalEvent(ticker, "SLD")
+                    signal = SignalEvent(ticker, Action.SLD)
                     self.events_queue.put(signal)
                     self.invested = False
             self.bars += 1

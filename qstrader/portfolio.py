@@ -1,4 +1,5 @@
 from .position import Position
+from .action import Action
 
 
 class Portfolio(object):
@@ -126,9 +127,9 @@ class Portfolio(object):
         PortfolioHandler to update the Portfolio itself.
         """
 
-        if action == "BOT":
+        if action == Action.BOT:
             self.cur_cash -= ((quantity * price) + commission)
-        elif action == "SLD":
+        elif action == Action.SLD:
             self.cur_cash += ((quantity * price) - commission)
 
         if ticker not in self.positions:

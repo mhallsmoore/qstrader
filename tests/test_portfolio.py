@@ -3,6 +3,7 @@ import unittest
 from qstrader.portfolio import Portfolio
 from qstrader.price_parser import PriceParser
 from qstrader.price_handler.base import AbstractTickPriceHandler
+from qstrader.action import Action
 
 
 class PriceHandlerMock(AbstractTickPriceHandler):
@@ -42,50 +43,50 @@ class TestAmazonGooglePortfolio(unittest.TestCase):
         """
         # Buy 300 of AMZN over two transactions
         self.portfolio.transact_position(
-            "BOT", "AMZN", 100,
+            Action.BOT, "AMZN", 100,
             PriceParser.parse(566.56), PriceParser.parse(1.00)
         )
         self.portfolio.transact_position(
-            "BOT", "AMZN", 200,
+            Action.BOT, "AMZN", 200,
             PriceParser.parse(566.395), PriceParser.parse(1.00)
         )
         # Buy 200 GOOG over one transaction
         self.portfolio.transact_position(
-            "BOT", "GOOG", 200,
+            Action.BOT, "GOOG", 200,
             PriceParser.parse(707.50), PriceParser.parse(1.00)
         )
         # Add to the AMZN position by 100 shares
         self.portfolio.transact_position(
-            "SLD", "AMZN", 100,
+            Action.SLD, "AMZN", 100,
             PriceParser.parse(565.83), PriceParser.parse(1.00)
         )
         # Add to the GOOG position by 200 shares
         self.portfolio.transact_position(
-            "BOT", "GOOG", 200,
+            Action.BOT, "GOOG", 200,
             PriceParser.parse(705.545), PriceParser.parse(1.00)
         )
         # Sell 200 of the AMZN shares
         self.portfolio.transact_position(
-            "SLD", "AMZN", 200,
+            Action.SLD, "AMZN", 200,
             PriceParser.parse(565.59), PriceParser.parse(1.00)
         )
         # Multiple transactions bundled into one (in IB)
         # Sell 300 GOOG from the portfolio
         self.portfolio.transact_position(
-            "SLD", "GOOG", 100,
+            Action.SLD, "GOOG", 100,
             PriceParser.parse(704.92), PriceParser.parse(1.00)
         )
         self.portfolio.transact_position(
-            "SLD", "GOOG", 100,
+            Action.SLD, "GOOG", 100,
             PriceParser.parse(704.90), PriceParser.parse(0.00)
         )
         self.portfolio.transact_position(
-            "SLD", "GOOG", 100,
+            Action.SLD, "GOOG", 100,
             PriceParser.parse(704.92), PriceParser.parse(0.50)
         )
         # Finally, sell the remaining GOOG 100 shares
         self.portfolio.transact_position(
-            "SLD", "GOOG", 100,
+            Action.SLD, "GOOG", 100,
             PriceParser.parse(704.78), PriceParser.parse(1.00)
         )
 

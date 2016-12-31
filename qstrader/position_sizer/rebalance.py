@@ -1,7 +1,8 @@
 from math import floor
 
 from .base import AbstractPositionSizer
-from qstrader.price_parser import PriceParser
+from ..price_parser import PriceParser
+from ..action import Action
 
 
 class LiquidateRebalancePositionSizer(AbstractPositionSizer):
@@ -29,14 +30,14 @@ class LiquidateRebalancePositionSizer(AbstractPositionSizer):
         ticker weights.
         """
         ticker = initial_order.ticker
-        if initial_order.action == "EXIT":
+        if initial_order.action == Action.EXIT:
             # Obtain current quantity and liquidate
             cur_quantity = portfolio.positions[ticker].quantity
             if cur_quantity > 0:
-                initial_order.action = "SLD"
+                initial_order.action = Action.SLD
                 initial_order.quantity = cur_quantity
             elif cur_quantity < 0:
-                initial_order.action = "BOT"
+                initial_order.action = Action.BOT
                 initial_order.quantity = cur_quantity
             else:
                 initial_order.quantity = 0

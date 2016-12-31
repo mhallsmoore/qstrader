@@ -1,6 +1,7 @@
 from .base import AbstractExecutionHandler
 from ..event import (FillEvent, EventType)
 from ..price_parser import PriceParser
+from ..action import Action
 
 
 class IBSimulatedExecutionHandler(AbstractExecutionHandler):
@@ -58,7 +59,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
             # Obtain the fill price
             if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
-                if event.action == "BOT":
+                if event.action == Action.BOT:
                     fill_price = ask
                 else:
                     fill_price = bid

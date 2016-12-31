@@ -4,6 +4,7 @@ from test_portfolio import PriceHandlerMock
 
 from qstrader import settings
 from qstrader.price_parser import PriceParser
+from qstrader.action import Action
 from qstrader.portfolio import Portfolio
 from qstrader.statistics.simple import SimpleStatistics
 
@@ -47,7 +48,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "BOT", "AMZN", 100,
+            Action.BOT, "AMZN", 100,
             PriceParser.parse(566.56), PriceParser.parse(1.00)
         )
         t = "2000-01-01 00:00:00"
@@ -58,7 +59,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "BOT", "AMZN", 200,
+            Action.BOT, "AMZN", 200,
             PriceParser.parse(566.395), PriceParser.parse(1.00)
         )
         t = "2000-01-02 00:00:00"
@@ -69,7 +70,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "BOT", "GOOG", 200,
+            Action.BOT, "GOOG", 200,
             PriceParser.parse(707.50), PriceParser.parse(1.00)
         )
         t = "2000-01-03 00:00:00"
@@ -80,7 +81,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "SLD", "AMZN", 100,
+            Action.SLD, "AMZN", 100,
             PriceParser.parse(565.83), PriceParser.parse(1.00)
         )
         t = "2000-01-04 00:00:00"
@@ -91,7 +92,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "BOT", "GOOG", 200,
+            Action.BOT, "GOOG", 200,
             PriceParser.parse(705.545), PriceParser.parse(1.00)
         )
         t = "2000-01-05 00:00:00"
@@ -102,7 +103,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "SLD", "AMZN", 200,
+            Action.SLD, "AMZN", 200,
             PriceParser.parse(565.59), PriceParser.parse(1.00)
         )
         t = "2000-01-06 00:00:00"
@@ -113,7 +114,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "SLD", "GOOG", 100,
+            Action.SLD, "GOOG", 100,
             PriceParser.parse(707.92), PriceParser.parse(1.00)
         )
         t = "2000-01-07 00:00:00"
@@ -124,7 +125,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "SLD", "GOOG", 100,
+            Action.SLD, "GOOG", 100,
             PriceParser.parse(707.90), PriceParser.parse(0.00)
         )
         t = "2000-01-08 00:00:00"
@@ -135,7 +136,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "SLD", "GOOG", 100,
+            Action.SLD, "GOOG", 100,
             PriceParser.parse(707.92), PriceParser.parse(0.50)
         )
         t = "2000-01-09 00:00:00"
@@ -146,7 +147,7 @@ class TestSimpleStatistics(unittest.TestCase):
 
         # Perform transaction and test statistics at this tick
         self.portfolio.transact_position(
-            "SLD", "GOOG", 100,
+            Action.SLD, "GOOG", 100,
             PriceParser.parse(707.78), PriceParser.parse(1.00)
         )
         t = "2000-01-10 00:00:00"

@@ -1,6 +1,7 @@
 from .base import AbstractStrategy
 
 from ..event import (SignalEvent, EventType)
+from ..action import Action
 
 
 class ExampleStrategy(AbstractStrategy):
@@ -23,11 +24,11 @@ class ExampleStrategy(AbstractStrategy):
         if event.type == EventType.TICK and event.ticker == ticker:
             if self.ticks % 5 == 0:
                 if not self.invested:
-                    signal = SignalEvent(ticker, "BOT")
+                    signal = SignalEvent(ticker, Action.BOT)
                     self.events_queue.put(signal)
                     self.invested = True
                 else:
-                    signal = SignalEvent(ticker, "SLD")
+                    signal = SignalEvent(ticker, Action.SLD)
                     self.events_queue.put(signal)
                     self.invested = False
             self.ticks += 1

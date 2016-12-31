@@ -1,6 +1,7 @@
 from .base import AbstractStrategy
 
 from ..event import (SignalEvent, EventType)
+from ..action import Action
 
 
 class BuyAndHoldStrategy(AbstractStrategy):
@@ -19,7 +20,7 @@ class BuyAndHoldStrategy(AbstractStrategy):
         ticker = self.tickers[0]
         if event.type in [EventType.BAR, EventType.TICK] and event.ticker == ticker:
             if not self.invested and self.ticks == 0:
-                signal = SignalEvent(ticker, "BOT")
+                signal = SignalEvent(ticker, Action.BOT)
                 self.events_queue.put(signal)
                 self.invested = True
             self.ticks += 1

@@ -3,6 +3,7 @@ import calendar
 from .base import AbstractStrategy
 
 from ..event import (SignalEvent, EventType)
+from ..action import Action
 
 
 class MonthlyLiquidateRebalanceStrategy(AbstractStrategy):
@@ -50,8 +51,8 @@ class MonthlyLiquidateRebalanceStrategy(AbstractStrategy):
         ):
             ticker = event.ticker
             if self.tickers_invested[ticker]:
-                liquidate_signal = SignalEvent(ticker, "EXIT")
+                liquidate_signal = SignalEvent(ticker, Action.EXIT)
                 self.events_queue.put(liquidate_signal)
-            long_signal = SignalEvent(ticker, "BOT")
+            long_signal = SignalEvent(ticker, Action.BOT)
             self.events_queue.put(long_signal)
             self.tickers_invested[ticker] = True
