@@ -1,6 +1,7 @@
 import datetime
 import os
 import csv
+from qstrader.price_parser import PriceParser
 
 from .base import AbstractCompliance
 
@@ -53,6 +54,6 @@ class ExampleCompliance(AbstractCompliance):
             writer.writerow([
                 fill.timestamp, fill.ticker,
                 fill.action, fill.quantity,
-                fill.exchange, fill.price,
-                fill.commission
+                fill.exchange, PriceParser.display(fill.price, 4),
+                PriceParser.display(fill.commission, 4)
             ])
