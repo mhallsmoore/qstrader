@@ -1,14 +1,20 @@
 import os
 
 import pandas as pd
-import MySQLdb as mdb
 
+from sqlalchemy import create_engine
 from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
 from ..event import BarEvent
 
-class MySQLDailyCsvBarPriceHandler(AbstractBarPriceHandler):
-    
+class MySQLDailyBarPriceHandler(AbstractBarPriceHandler):
+    """
+    MySQLDailyBarPriceHandler is designed to read the securities_master
+    databaseb schema defined at
+    https://www.quantstart.com/articles/Securities-Master-Database-with-MySQL-and-Python
+    for each requested financial instrument and stream those to
+    the provided events queue as BarEvents.
+    """
     def __init__(
         self, events_queue,
         db_user, db_pass,
@@ -35,11 +41,10 @@ class MySQLDailyCsvBarPriceHandler(AbstractBarPriceHandler):
 
     def _open_ticker_price(self, ticker):
         """
-        Opens the CSV files containing the equities ticks from
-        the specified CSV data directory, converting them into
-        them into a pandas DataFrame, stored in a dictionary.
-        """
-        
+        Executes an sql query on the database, converting
+        the result into a pandas DataFrame, stored in a
+        dictionary.
+        """        
         sql = """SELECT	daily_price.price_date,
                         daily_price.open_price,
                         daily_price.high_price,
@@ -59,14 +64,15 @@ class MySQLDailyCsvBarPriceHandler(AbstractBarPriceHandler):
                                                self.db_host,
                                                self.db_name)
         
-        self.tickers_data[ticker] = pd.read_sql_query(sql, con,
-                                                      index_col="price_date")
+        #engine = create_engine(con, echo=False)        
+        self.tickers_data[ticker] = pd.read_sql(sql, con)
         
         self.tickers_data[ticker].columns = [
                 "Date", "Open", "High", "Low",
                 "Close", "Volume", "Adj Close"
             ]
         
+        self.tickers_data[ticker] = self.tickers_data[ticker].set_index("Date")
         self.tickers_data[ticker]["Ticker"] = ticker
 
     def _merge_sort_ticker_data(self):
