@@ -3,7 +3,7 @@ from __future__ import print_function
 from enum import Enum
 
 
-EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL")
+EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL SENTIMENT")
 
 
 class Event(object):
@@ -233,3 +233,26 @@ class FillEvent(Event):
         self.exchange = exchange
         self.price = price
         self.commission = commission
+
+
+class SentimentEvent(Event):
+    """
+    Handles the event of streaming a "Sentiment" value associated
+    with a ticker. Can be used for a generic "date-ticker-sentiment"
+    service, often provided by many data vendors.
+    """
+    def __init__(self, timestamp, ticker, sentiment):
+        """
+        Initialises the SentimentEvent.
+
+        Parameters:
+        timestamp - The timestamp when the sentiment was generated.
+        ticker - The ticker symbol, e.g. 'GOOG'.
+        sentiment - A string, float or integer value of "sentiment",
+            e.g. "bullish", -1, 5.4, etc.
+        """
+        self.type = EventType.SENTIMENT
+        self.timestamp = timestamp
+        self.ticker = ticker
+        self.sentiment = sentiment
+               
