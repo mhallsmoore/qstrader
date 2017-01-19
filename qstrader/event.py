@@ -255,4 +255,3 @@ class SentimentEvent(Event):
         self.timestamp = timestamp
         self.ticker = ticker
         self.sentiment = sentiment
-               

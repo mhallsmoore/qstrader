@@ -14,7 +14,7 @@ class Backtest(object):
         strategy, portfolio_handler,
         execution_handler,
         position_sizer, risk_manager,
-        statistics, equity, 
+        statistics, equity,
         sentiment_handler=None
     ):
         """

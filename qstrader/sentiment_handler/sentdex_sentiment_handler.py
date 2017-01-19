@@ -13,13 +13,13 @@ class SentdexSentimentHandler(AbstractSentimentHandler):
     provider (http://sentdex.com/financial-analysis/).
 
     It uses a CSV file with date-ticker-sentiment tuples/rows.
-    Hence in order to avoid implicit lookahead bias a specific 
-    method is provided "stream_sentiment_events_on_date" that only 
+    Hence in order to avoid implicit lookahead bias a specific
+    method is provided "stream_sentiment_events_on_date" that only
     allows sentiment signals to be retrieved for a particular date.
     """
     def __init__(
         self, csv_dir, filename,
-        events_queue, tickers=None, 
+        events_queue, tickers=None,
         start_date=None, end_date=None
     ):
         self.csv_dir = csv_dir
@@ -38,7 +38,7 @@ class SentdexSentimentHandler(AbstractSentimentHandler):
         """
         sentiment_path = os.path.join(self.csv_dir, self.filename)
         sent_df = pd.read_csv(
-            sentiment_path, parse_dates=True, 
+            sentiment_path, parse_dates=True,
             header=0, index_col=0,
             names=("Date", "Ticker", "Sentiment")
         )
