@@ -62,7 +62,7 @@ pip install -r https://raw.githubusercontent.com/mhallsmoore/qstrader/master/req
 Now that the library itself and requirements have been installed it is necessary to create the default directories for the data and output. In addition it is possible to download the necessary data and example code to run a simple backtest of a Buy And Hold strategy on the S&P500 total return index:
 
 ```
-mkdir -p ~/qstrader/examples ~/data
+mkdir -p ~/qstrader/examples ~/data ~/out
 cd ~/data
 wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/data/SP500TR.csv
 cd ~/qstrader/examples
