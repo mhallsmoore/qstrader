@@ -15,6 +15,7 @@ class Backtest(object):
         execution_handler,
         position_sizer, risk_manager,
         statistics, equity,
+        sentiment_handler=None
     ):
         """
         Set up the backtest variables according to
@@ -28,6 +29,7 @@ class Backtest(object):
         self.risk_manager = risk_manager
         self.statistics = statistics
         self.equity = equity
+        self.sentiment_handler = sentiment_handler
         self.events_queue = price_handler.events_queue
         self.cur_time = None
 
@@ -49,9 +51,16 @@ class Backtest(object):
                 if event is not None:
                     if event.type == EventType.TICK or event.type == EventType.BAR:
                         self.cur_time = event.time
+                        # Generate any sentiment events here
+                        if self.sentiment_handler is not None:
+                            self.sentiment_handler.stream_next(
+                                stream_date=self.cur_time
+                            )
                         self.strategy.calculate_signals(event)
                         self.portfolio_handler.update_portfolio_value()
                         self.statistics.update(event.time, self.portfolio_handler)
+                    elif event.type == EventType.SENTIMENT:
+                        self.strategy.calculate_signals(event)
                     elif event.type == EventType.SIGNAL:
                         self.portfolio_handler.on_signal(event)
                     elif event.type == EventType.ORDER:
