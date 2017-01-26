@@ -17,7 +17,8 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
     def __init__(
         self, csv_dir, events_queue,
         init_tickers=None,
-        start_date=None, end_date=None
+        start_date=None, end_date=None,
+        calc_adj_returns=False
     ):
         """
         Takes the CSV directory, the events queue and a possible
@@ -35,6 +36,9 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
         self.start_date = start_date
         self.end_date = end_date
         self.bar_stream = self._merge_sort_ticker_data()
+        self.calc_adj_returns = calc_adj_returns
+        if self.calc_adj_returns:
+            self.adj_close_returns = []
 
     def _open_ticker_price_csv(self, ticker):
         """
@@ -125,6 +129,28 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
             volume, adj_close_price
         )
         return bev
+
+    def _store_event(self, event):
+        """
+        Store price event for closing price and adjusted closing price
+        """
+        ticker = event.ticker
+        # If the calc_adj_returns flag is True, then calculate
+        # and store the full list of adjusted closing price
+        # percentage returns in a list
+        # TODO: Make this faster
+        if self.calc_adj_returns:
+            prev_adj_close = self.tickers[ticker][
+                "adj_close"
+            ] / PriceParser.PRICE_MULTIPLIER
+            cur_adj_close = event.adj_close_price / PriceParser.PRICE_MULTIPLIER
+            self.tickers[ticker][
+                "adj_close_ret"
+            ] = cur_adj_close / prev_adj_close - 1.0
+            self.adj_close_returns.append(self.tickers[ticker]["adj_close_ret"])
+        self.tickers[ticker]["close"] = event.close_price
+        self.tickers[ticker]["adj_close"] = event.adj_close_price
+        self.tickers[ticker]["timestamp"] = event.time
 
     def stream_next(self):
         """
