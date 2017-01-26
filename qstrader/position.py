@@ -4,8 +4,7 @@ from numpy import sign
 class Position(object):
     def __init__(
         self, action, ticker, init_quantity,
-        init_price, init_commission,
-        bid, ask
+        init_price, init_commission, ob
     ):
         """
         Set up the initial "account" of the Position to be
@@ -33,7 +32,7 @@ class Position(object):
         self.total_commission = init_commission
 
         self._calculate_initial_value()
-        self.update_market_value(bid, ask)
+        self.update_market_value(ob)
 
     def _calculate_initial_value(self):
         """
@@ -60,7 +59,7 @@ class Position(object):
         self.net_total = self.total_sld - self.total_bot
         self.net_incl_comm = self.net_total - self.init_commission
 
-    def update_market_value(self, bid, ask):
+    def update_market_value(self, ob):
         """
         The market value is tricky to calculate as we only have
         access to the top of the order book through Interactive
@@ -72,7 +71,7 @@ class Position(object):
         allows calculation of the unrealised and realised profit
         and loss of any transactions.
         """
-        midpoint = (bid + ask) // 2
+        midpoint = ob.midpoint()  # ToFix
         self.market_value = self.quantity * midpoint * sign(self.net)
         self.unrealised_pnl = self.market_value - self.cost_basis
         self.realised_pnl = self.market_value + self.net_incl_comm

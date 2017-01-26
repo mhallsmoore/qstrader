@@ -8,7 +8,7 @@ from qstrader.price_handler.base import AbstractTickPriceHandler
 from qstrader.compat import queue
 
 
-class PriceHandlerMock(AbstractTickPriceHandler):
+class PriceHandlerTickMock(AbstractTickPriceHandler):
     def __init__(self):
         pass
 
@@ -64,7 +64,7 @@ class TestSimpleSignalOrderFillCycleForPortfolioHandler(unittest.TestCase):
         """
         initial_cash = Decimal("500000.00")
         events_queue = queue.Queue()
-        price_handler = PriceHandlerMock()
+        price_handler = PriceHandlerTickMock()
         position_sizer = PositionSizerMock()
         risk_manager = RiskManagerMock()
         # Create the PortfolioHandler object from the rest

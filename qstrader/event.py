@@ -3,7 +3,7 @@ from __future__ import print_function
 from enum import Enum
 
 
-EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL SENTIMENT")
+EventType = Enum("EventType", "ORDERBOOK TICK BAR SIGNAL ORDER FILL SENTIMENT")
 
 
 class Event(object):
@@ -43,6 +43,35 @@ class TickEvent(Event):
         return "Type: %s, Ticker: %s, Time: %s, Bid: %s, Ask: %s" % (
             str(self.type), str(self.ticker),
             str(self.time), str(self.bid), str(self.ask)
+        )
+
+    def __repr__(self):
+        return str(self)
+
+
+class OrderBookEvent(Event):
+    """
+    Handles the event of receiving a new market update (orderbook is changing),
+    which is defined as a ticker symbol and associated order book.
+    """
+    def __init__(self, ticker, time, orderbook):
+        """
+        Initialises the OrderBookEvent.
+
+        Parameters:
+        ticker - The ticker symbol, e.g. 'GOOG'.
+        time - The timestamp of the tick
+        orderbook - The orderbook
+        """
+        self.type = EventType.ORDERBOOK
+        self.ticker = ticker
+        self.time = time
+        self.orderbook = orderbook
+
+    def __str__(self):
+        return "Type: %s, Ticker: %s, Time: %s, OrderBook: %s" % (
+            str(self.type), str(self.ticker),
+            str(self.time), str(self.orderbook)
         )
 
     def __repr__(self):

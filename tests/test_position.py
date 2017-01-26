@@ -2,6 +2,7 @@ import unittest
 
 from qstrader.position import Position
 from qstrader.price_parser import PriceParser
+from qstrader.orderbook import InfiniteDepthOrderBook
 
 
 class TestRoundTripXOMPosition(unittest.TestCase):
@@ -14,10 +15,10 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         """
         Set up the Position object that will store the PnL.
         """
+        ob = InfiniteDepthOrderBook(PriceParser.parse(74.80), PriceParser.parse(74.78))
         self.position = Position(
             "BOT", "XOM", 100,
-            PriceParser.parse(74.78), PriceParser.parse(1.00),
-            PriceParser.parse(74.78), PriceParser.parse(74.80)
+            PriceParser.parse(74.78), PriceParser.parse(1.00), ob
         )
 
     def test_calculate_round_trip(self):
@@ -40,9 +41,8 @@ class TestRoundTripXOMPosition(unittest.TestCase):
         self.position.transact_shares(
             "SLD", 250, PriceParser.parse(75.26), PriceParser.parse(1.25)
         )
-        self.position.update_market_value(
-            PriceParser.parse(77.75), PriceParser.parse(77.77)
-        )
+        ob = InfiniteDepthOrderBook(PriceParser.parse(77.77), PriceParser.parse(77.75))
+        self.position.update_market_value(ob)
 
         self.assertEqual(self.position.action, "BOT")
         self.assertEqual(self.position.ticker, "XOM")
@@ -79,10 +79,10 @@ class TestRoundTripPGPosition(unittest.TestCase):
     $77.69, with $1.00 commission.
     """
     def setUp(self):
+        ob = InfiniteDepthOrderBook(PriceParser.parse(77.70), PriceParser.parse(77.68))
         self.position = Position(
             "SLD", "PG", 100,
-            PriceParser.parse(77.69), PriceParser.parse(1.00),
-            PriceParser.parse(77.68), PriceParser.parse(77.70)
+            PriceParser.parse(77.69), PriceParser.parse(1.00), ob
         )
 
     def test_calculate_round_trip(self):
@@ -106,7 +106,7 @@ class TestRoundTripPGPosition(unittest.TestCase):
             "BOT", 150, PriceParser.parse(77.73), PriceParser.parse(1.00)
         )
         self.position.update_market_value(
-            PriceParser.parse(77.72), PriceParser.parse(77.72)
+            InfiniteDepthOrderBook(PriceParser.parse(77.72), PriceParser.parse(77.72))
         )
 
         self.assertEqual(self.position.action, "SLD")
@@ -147,7 +147,7 @@ class TestShortPosition(unittest.TestCase):
         self.position = Position(
             "SLD", "PG", 100,
             PriceParser.parse(77.69), PriceParser.parse(1.00),
-            PriceParser.parse(77.68), PriceParser.parse(77.70)
+            InfiniteDepthOrderBook(PriceParser.parse(77.70), PriceParser.parse(77.68))
         )
 
     def test_open_short_position(self):
@@ -156,9 +156,8 @@ class TestShortPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -1.00)
         self.assertEqual(PriceParser.display(self.position.realised_pnl), -1.0)
 
-        self.position.update_market_value(
-            PriceParser.parse(77.72), PriceParser.parse(77.72)
-        )
+        ob = InfiniteDepthOrderBook(PriceParser.parse(77.72), PriceParser.parse(77.72))
+        self.position.update_market_value(ob)
 
         self.assertEqual(PriceParser.display(self.position.cost_basis), -7768.00)
         self.assertEqual(PriceParser.display(self.position.market_value), -7772.00)

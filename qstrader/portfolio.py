@@ -1,4 +1,5 @@
 from .position import Position
+from .orderbook import InfiniteDepthOrderBook
 
 
 class Portfolio(object):
@@ -33,11 +34,13 @@ class Portfolio(object):
             pt = self.positions[ticker]
             if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
+                ob = InfiniteDepthOrderBook(ask, bid)
+            elif self.price_handler.isorderbook():
+                ob = self.price_handler.get_orderbook(ticker)
             else:
                 close_price = self.price_handler.get_last_close(ticker)
-                bid = close_price
-                ask = close_price
-            pt.update_market_value(bid, ask)
+                ob = InfiniteDepthOrderBook(close_price)
+            pt.update_market_value(ob)
             self.unrealised_pnl += pt.unrealised_pnl
             pnl_diff = pt.realised_pnl - pt.unrealised_pnl
             self.equity += (
@@ -60,13 +63,15 @@ class Portfolio(object):
         if ticker not in self.positions:
             if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
+                ob = InfiniteDepthOrderBook(ask, bid)
+            elif self.price_handler.isorderbook():
+                ob = self.price_handler.get_orderbook(ticker)
             else:
                 close_price = self.price_handler.get_last_close(ticker)
-                bid = close_price
-                ask = close_price
+                ob = InfiniteDepthOrderBook(close_price)
             position = Position(
                 action, ticker, quantity,
-                price, commission, bid, ask
+                price, commission, ob
             )
             self.positions[ticker] = position
             self._update_portfolio()
@@ -95,11 +100,13 @@ class Portfolio(object):
             )
             if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
+                ob = InfiniteDepthOrderBook(ask, bid)
+            elif self.price_handler.isorderbook():
+                ob = self.price_handler.get_orderbook(ticker)
             else:
                 close_price = self.price_handler.get_last_close(ticker)
-                bid = close_price
-                ask = close_price
-            self.positions[ticker].update_market_value(bid, ask)
+                ob = InfiniteDepthOrderBook(close_price)
+            self.positions[ticker].update_market_value(ob)
 
             if self.positions[ticker].quantity == 0:
                 closed = self.positions.pop(ticker)
