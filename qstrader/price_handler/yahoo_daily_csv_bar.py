@@ -140,9 +140,13 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
         # percentage returns in a list
         # TODO: Make this faster
         if self.calc_adj_returns:
-            prev_adj_close = self.tickers[ticker]["adj_close"]/PriceParser.PRICE_MULTIPLIER
-            cur_adj_close = event.adj_close_price/PriceParser.PRICE_MULTIPLIER
-            self.tickers[ticker]["adj_close_ret"] = cur_adj_close / prev_adj_close - 1.0
+            prev_adj_close = self.tickers[ticker][
+                "adj_close"
+            ] / PriceParser.PRICE_MULTIPLIER
+            cur_adj_close = event.adj_close_price / PriceParser.PRICE_MULTIPLIER
+            self.tickers[ticker][
+                "adj_close_ret"
+            ] = cur_adj_close / prev_adj_close - 1.0
             self.adj_close_returns.append(self.tickers[ticker]["adj_close_ret"])
         self.tickers[ticker]["close"] = event.close_price
         self.tickers[ticker]["adj_close"] = event.adj_close_price
