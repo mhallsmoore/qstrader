@@ -62,6 +62,12 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
                     fill_price = ask
                 else:
                     fill_price = bid
+            elif self.price_handler.isorderbook():
+                ob = self.price_handler.get_orderbook(ticker)
+                if event.action == "BOT":
+                    fill_price = ob.ask(quantity)
+                else:
+                    fill_price = ob.bid(quantity)
             else:
                 close_price = self.price_handler.get_last_close(ticker)
                 fill_price = close_price

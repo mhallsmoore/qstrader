@@ -4,12 +4,13 @@ import os
 
 import pandas as pd
 
-from .base import AbstractTickPriceHandler
-from ..event import TickEvent
+from .base import AbstractOrderBookPriceHandler
+from ..event import OrderBookEvent
+from ..orderbook import InfiniteDepthOrderBook
 from ..price_parser import PriceParser
 
 
-class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
+class HistoricCSVTickPriceHandler(AbstractOrderBookPriceHandler):
     """
     HistoricCSVPriceHandler is designed to read CSV files of
     tick data for each requested financial instrument and
@@ -66,12 +67,9 @@ class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
                 self._open_ticker_price_csv(ticker)
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
-                ticker_prices = {
-                    "bid": PriceParser.parse(row0["Bid"]),
-                    "ask": PriceParser.parse(row0["Ask"]),
-                    "timestamp": dft.index[0]
-                }
-                self.tickers[ticker] = ticker_prices
+                index = dft.index[0]
+                evt = self._create_event(index, ticker, row0)
+                self.tickers[ticker] = evt
             except OSError:
                 print(
                     "Could not subscribe ticker %s "
@@ -90,8 +88,10 @@ class HistoricCSVTickPriceHandler(AbstractTickPriceHandler):
         """
         bid = PriceParser.parse(row["Bid"])
         ask = PriceParser.parse(row["Ask"])
-        tev = TickEvent(ticker, index, bid, ask)
-        return tev
+        # evt = TickEvent(ticker, index, bid, ask)
+        ob = InfiniteDepthOrderBook(ask, bid)
+        evt = OrderBookEvent(ticker, index, ob)
+        return evt
 
     def stream_next(self):
         """

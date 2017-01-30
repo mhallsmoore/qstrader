@@ -20,7 +20,7 @@ class ExampleStrategy(AbstractStrategy):
 
     def calculate_signals(self, event):
         ticker = self.tickers[0]
-        if event.type == EventType.TICK and event.ticker == ticker:
+        if event.type in [EventType.TICK, EventType.ORDERBOOK] and event.ticker == ticker:
             if self.ticks % 5 == 0:
                 if not self.invested:
                     signal = SignalEvent(ticker, "BOT")

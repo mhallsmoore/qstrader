@@ -54,6 +54,9 @@ class AbstractTickPriceHandler(AbstractPriceHandler):
     def isbar(self):
         return False
 
+    def isorderbook(self):
+        return False
+
     def _store_event(self, event):
         """
         Store price event for bid/ask
@@ -79,12 +82,61 @@ class AbstractTickPriceHandler(AbstractPriceHandler):
             return None, None
 
 
+class AbstractOrderBookPriceHandler(AbstractPriceHandler):
+    def istick(self):
+        return False
+
+    def isbar(self):
+        return False
+
+    def isorderbook(self):
+        return True
+
+    def _store_event(self, event):
+        """
+        Store price event for bid/ask
+        """
+        ticker = event.ticker
+        self.tickers[ticker] = event
+
+    def get_orderbook(self, ticker):
+        """
+        Returns the most recent orderbook for a ticker.
+        """
+        if ticker in self.tickers:
+            ob = self.tickers[ticker].orderbook
+            return ob
+        else:
+            print(
+                "Orderbook for ticker %s are not "
+                "available from the PriceHandler." % ticker
+            )
+            return None
+
+    def get_last_timestamp(self, ticker):
+        """
+        Returns the most recent actual timestamp for a given ticker
+        """
+        if ticker in self.tickers:
+            timestamp = self.tickers[ticker].time
+            return timestamp
+        else:
+            print(
+                "Timestamp for ticker %s is not "
+                "available from the %s." % (ticker, self.__class__.__name__)
+            )
+            return None
+
+
 class AbstractBarPriceHandler(AbstractPriceHandler):
     def istick(self):
         return False
 
     def isbar(self):
         return True
+
+    def isorderbook(self):
+        return False
 
     def _store_event(self, event):
         """

@@ -49,7 +49,8 @@ class Backtest(object):
                 self.price_handler.stream_next()
             else:
                 if event is not None:
-                    if event.type == EventType.TICK or event.type == EventType.BAR:
+                    if event.type in [EventType.TICK, EventType.BAR, EventType.ORDERBOOK]:
+                        print(event)
                         self.cur_time = event.time
                         # Generate any sentiment events here
                         if self.sentiment_handler is not None:

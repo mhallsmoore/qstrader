@@ -37,51 +37,54 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         # Stream to Tick #1 (GOOG)
         self.price_handler.stream_next()
         self.assertEqual(
-            self.price_handler.tickers["GOOG"]["timestamp"].strftime(
+            self.price_handler.tickers["GOOG"].time.strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
             ),
             "01-02-2016 00:00:01.358000"
         )
+        event = self.price_handler.tickers["GOOG"]
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["GOOG"]["bid"], 5),
+            PriceParser.display(event.orderbook.bid(), 5),
             683.56000
         )
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["GOOG"]["ask"], 5),
+            PriceParser.display(event.orderbook.ask(), 5),
             683.58000
         )
 
         # Stream to Tick #2 (AMZN)
         self.price_handler.stream_next()
         self.assertEqual(
-            self.price_handler.tickers["AMZN"]["timestamp"].strftime(
+            self.price_handler.tickers["AMZN"].time.strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
             ),
             "01-02-2016 00:00:01.562000"
         )
+        event = self.price_handler.tickers["AMZN"]
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["AMZN"]["bid"], 5),
+            PriceParser.display(event.orderbook.bid(), 5),
             502.10001
         )
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["AMZN"]["ask"], 5),
+            PriceParser.display(event.orderbook.ask(), 5),
             502.11999
         )
 
         # Stream to Tick #3 (MSFT)
         self.price_handler.stream_next()
         self.assertEqual(
-            self.price_handler.tickers["MSFT"]["timestamp"].strftime(
+            self.price_handler.tickers["MSFT"].time.strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
             ),
             "01-02-2016 00:00:01.578000"
         )
+        event = self.price_handler.tickers["MSFT"]
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["MSFT"]["bid"], 5),
+            PriceParser.display(event.orderbook.bid(), 5),
             50.14999
         )
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["MSFT"]["ask"], 5),
+            PriceParser.display(event.orderbook.ask(), 5),
             50.17001
         )
 
@@ -89,17 +92,18 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         for i in range(4, 11):
             self.price_handler.stream_next()
         self.assertEqual(
-            self.price_handler.tickers["GOOG"]["timestamp"].strftime(
+            self.price_handler.tickers["GOOG"].time.strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
             ),
             "01-02-2016 00:00:05.215000"
         )
+        event = self.price_handler.tickers["GOOG"]
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["GOOG"]["bid"], 5),
+            PriceParser.display(event.orderbook.bid(), 5),
             683.56001
         )
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["GOOG"]["ask"], 5),
+            PriceParser.display(event.orderbook.ask(), 5),
             683.57999
         )
 
@@ -107,17 +111,18 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         for i in range(11, 21):
             self.price_handler.stream_next()
         self.assertEqual(
-            self.price_handler.tickers["MSFT"]["timestamp"].strftime(
+            self.price_handler.tickers["MSFT"].time.strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
             ),
             "01-02-2016 00:00:09.904000"
         )
+        event = self.price_handler.tickers["MSFT"]
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["MSFT"]["bid"], 5),
+            PriceParser.display(event.orderbook.bid(), 5),
             50.15000
         )
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["MSFT"]["ask"], 5),
+            PriceParser.display(event.orderbook.ask(), 5),
             50.17000
         )
 
@@ -125,17 +130,18 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         for i in range(21, 31):
             self.price_handler.stream_next()
         self.assertEqual(
-            self.price_handler.tickers["AMZN"]["timestamp"].strftime(
+            self.price_handler.tickers["AMZN"].time.strftime(
                 "%d-%m-%Y %H:%M:%S.%f"
             ),
             "01-02-2016 00:00:14.616000"
         )
+        event = self.price_handler.tickers["AMZN"]
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["AMZN"]["bid"], 5),
+            PriceParser.display(event.orderbook.bid(), 5),
             502.10015
         )
         self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["AMZN"]["ask"], 5),
+            PriceParser.display(event.orderbook.ask(), 5),
             502.11985
         )
 
@@ -178,11 +184,11 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         Tests that the 'get_best_bid_ask' method produces the
         correct values depending upon validity of ticker.
         """
-        bid, ask = self.price_handler.get_best_bid_ask("AMZN")
-        self.assertEqual(PriceParser.display(bid, 5), 502.10001)
-        self.assertEqual(PriceParser.display(ask, 5), 502.11999)
+        ob = self.price_handler.get_orderbook("AMZN")
+        self.assertEqual(PriceParser.display(ob.bid(), 5), 502.10001)
+        self.assertEqual(PriceParser.display(ob.ask(), 5), 502.11999)
 
-        bid, ask = self.price_handler.get_best_bid_ask("C")
+        ob = self.price_handler.get_orderbook("C")
         # TODO WHAT TO DO HERE?.
         # self.assertEqual(PriceParser.display(bid, 5), None)
         # self.assertEqual(PriceParser.display(ask, 5), None)
