@@ -33,7 +33,7 @@ class OandaBarPriceHandler(AbstractBarPriceHandler):
         # self.warmup_bar_counter = warmup_bar_count
 
         self.server = server
-        self.bearer_token = f"Bearer {bearer_token}"
+        self.bearer_token = "Bearer %s" % bearer_token
         self.request_headers = {
             'Authorization': self.bearer_token,
             'Connection': 'Keep-Alive',
@@ -59,17 +59,16 @@ class OandaBarPriceHandler(AbstractBarPriceHandler):
             )
 
             url = (
-                f"https://{self.server}/v1/candles"
-                f"?instrument={parse.quote_plus(self.instrument)}"
-                f"&granularity={self.granularity}"
-                f"&count={self.warmup_bar_count}"
-                f"&end="
-                f"{parse.quote_plus(start_string)}"  # grab bars up to the
-                                                     # start date
-                f"&candleFormat=midpoint"
-                f"&dailyAlignment={self.daily_alignment}"
-                f"&alignmentTimezone="
-                f"{parse.quote_plus(self.alignment_timezone)}"
+                "https://" + self.server + "/v1/candles" +
+                "?instrument=" + parse.quote_plus(self.instrument) +
+                "&granularity=" + self.granularity +
+                "&count=" + self.warmup_bar_count +
+                # grab bars up to the start date
+                "&end=" + parse.quote_plus(start_string) +
+                "&candleFormat=midpoint" +
+                "&dailyAlignment=" + self.daily_alignment +
+                "&alignmentTimezone=" +
+                parse.quote_plus(self.alignment_timezone)
             )
             response_json = requests.get(url, headers=self.request_headers)
             self.candle_queue.extend(response_json.json()['candles'])
@@ -106,15 +105,15 @@ class OandaBarPriceHandler(AbstractBarPriceHandler):
         )
 
         url = (
-            f"https://{self.server}/v1/candles"
-            f"?instrument={parse.quote_plus(self.instrument)}"
-            f"&granularity={self.granularity}"
-            f"&count=5000"
-            f"&start={parse.quote_plus(start_string)}"
-            f"&candleFormat=midpoint"
-            f"&dailyAlignment={self.daily_alignment}"
-            f"&alignmentTimezone="
-            f"{parse.quote_plus(self.alignment_timezone)}"
+            "https://" + self.server + "/v1/candles" +
+            "?instrument=" + parse.quote_plus(self.instrument) +
+            "&granularity=" + self.granularity +
+            "&count=5000"
+            "&start=" + parse.quote_plus(start_string) +
+            "&candleFormat=midpoint"
+            "&dailyAlignment=" + self.daily_alignment +
+            "&alignmentTimezone=" +
+            parse.quote_plus(self.alignment_timezone)
         )
 
         response_json = requests.get(url, headers=self.request_headers)
