@@ -30,7 +30,10 @@ class DisplayStrategy(AbstractStrategy):
                 event.high_price = PriceParser.display(event.high_price)
                 event.low_price = PriceParser.display(event.low_price)
                 event.close_price = PriceParser.display(event.close_price)
-                event.adj_close_price = PriceParser.display(event.adj_close_price)
+                if event.adj_close_price is not None:
+                    event.adj_close_price = PriceParser.display(
+                        event.adj_close_price
+                    )
             else:  # event.type == EventType.TICK
                 event.bid = PriceParser.display(event.bid)
                 event.ask = PriceParser.display(event.ask)
