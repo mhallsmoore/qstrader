@@ -1,7 +1,6 @@
 import unittest
 import os
 import datetime
-import sys
 
 from qstrader.compat import queue
 from qstrader.price_handler.oanda import OandaBarPriceHandler
@@ -48,8 +47,6 @@ class TestOandaBarPriceHandler(unittest.TestCase):
         self.assertEqual(len(oanda_bar_price_handler.candle_queue), 309)
         event = events_queue.get(False)
         self.assertEqual(event.open_price, 1.08743)
-
-    # def test_continue_backtest_set(self):
 
 
 if __name__ == "__main__":
