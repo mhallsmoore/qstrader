@@ -3,7 +3,7 @@ from ..event import BarEvent
 
 import requests
 from collections import deque
-from urllib import parse
+import six.moves.urllib as urllib
 from datetime import datetime, timedelta
 
 oanda_request_date_format_string = '%Y-%m-%dT%H:%M:%SZ'
@@ -15,7 +15,7 @@ class OandaBarPriceHandler(AbstractBarPriceHandler):
     OandaBarPriceHandler..
     """
     def __init__(self, instrument, granularity,
-                 start: datetime, end: datetime,
+                 start, end,
                  daily_alignment=0, alignment_timezone=None,
                  warmup_bar_count=0,
                  server=None, bearer_token=None,
@@ -60,15 +60,15 @@ class OandaBarPriceHandler(AbstractBarPriceHandler):
 
             url = (
                 "https://" + self.server + "/v1/candles" +
-                "?instrument=" + parse.quote_plus(self.instrument) +
+                "?instrument=" + urllib.parse.quote_plus(self.instrument) +
                 "&granularity=" + self.granularity +
-                "&count=" + self.warmup_bar_count +
+                "&count={}".format(self.warmup_bar_count) +
                 # grab bars up to the start date
-                "&end=" + parse.quote_plus(start_string) +
+                "&end=" + urllib.parse.quote_plus(start_string) +
                 "&candleFormat=midpoint" +
-                "&dailyAlignment=" + self.daily_alignment +
+                "&dailyAlignment={}".format(self.daily_alignment) +
                 "&alignmentTimezone=" +
-                parse.quote_plus(self.alignment_timezone)
+                urllib.parse.quote_plus(self.alignment_timezone)
             )
             response_json = requests.get(url, headers=self.request_headers)
             self.candle_queue.extend(response_json.json()['candles'])
@@ -106,14 +106,14 @@ class OandaBarPriceHandler(AbstractBarPriceHandler):
 
         url = (
             "https://" + self.server + "/v1/candles" +
-            "?instrument=" + parse.quote_plus(self.instrument) +
+            "?instrument=" + urllib.parse.quote_plus(self.instrument) +
             "&granularity=" + self.granularity +
             "&count=5000"
-            "&start=" + parse.quote_plus(start_string) +
+            "&start=" + urllib.parse.quote_plus(start_string) +
             "&candleFormat=midpoint"
-            "&dailyAlignment=" + self.daily_alignment +
+            "&dailyAlignment=" + str(self.daily_alignment) +
             "&alignmentTimezone=" +
-            parse.quote_plus(self.alignment_timezone)
+            urllib.parse.quote_plus(self.alignment_timezone)
         )
 
         response_json = requests.get(url, headers=self.request_headers)
