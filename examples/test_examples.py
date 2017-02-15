@@ -17,6 +17,7 @@ import examples.buy_and_hold_backtest
 import examples.mac_backtest
 import examples.mac_backtest_tearsheet
 import examples.strategy_backtest
+import examples.monthly_liquidate_rebalance_backtest
 
 
 class TestExamples(unittest.TestCase):
@@ -88,6 +89,15 @@ class TestExamples(unittest.TestCase):
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "mac_backtest_tearsheet.pkl")
         results = examples.mac_backtest_tearsheet.run(self.config, self.testing, tickers, filename)
         self.assertAlmostEqual(float(results['sharpe']), 0.639220566475)
+
+    def test_monthly_liquidate_rebalance_backtest(self):
+        """
+        Test monthly liquidation & rebalance strategy.
+        """
+        tickers = ["AGG", "SPY"]
+        filename = os.path.join(settings.TEST.OUTPUT_DIR, "monthly_liquidate_rebalance_backtest.pkl")
+        results = examples.monthly_liquidate_rebalance_backtest.run(self.config, self.testing, tickers, filename)
+        self.assertAlmostEqual(float(results['sharpe']), 0.295765040758)
 
     def test_strategy_backtest(self):
         """
