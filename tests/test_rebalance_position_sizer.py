@@ -12,6 +12,7 @@ class PriceHandlerMock(AbstractBarPriceHandler):
         self.tickers = {
             "AAA": {"adj_close": PriceParser.parse(50.00)},
             "BBB": {"adj_close": PriceParser.parse(100.00)},
+            "CCC": {"adj_close": PriceParser.parse(1.00)},
         }
 
     def get_last_close(self, ticker):
@@ -46,7 +47,7 @@ class TestLiquidateRebalancePositionSizer(unittest.TestCase):
     def test_will_liquidate_positions(self):
         """
         Ensure positions will be liquidated completely when asked.
-        Include a long and a short that must be covered.
+        Include a long & a short.
         """
         self.portfolio._add_position(
             "BOT", "AAA", 100, PriceParser.parse(60.00), 0.0
@@ -54,6 +55,7 @@ class TestLiquidateRebalancePositionSizer(unittest.TestCase):
         self.portfolio._add_position(
             "BOT", "BBB", -100, PriceParser.parse(60.00), 0.0
         )
+
         exit_a = SuggestedOrder("AAA", "EXIT", 0)
         exit_b = SuggestedOrder("BBB", "EXIT", 0)
         sized_a = self.position_sizer.size_order(self.portfolio, exit_a)
