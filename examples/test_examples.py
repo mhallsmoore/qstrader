@@ -94,7 +94,7 @@ class TestExamples(unittest.TestCase):
         """
         Test monthly liquidation & rebalance strategy.
         """
-        tickers = ["AGG","SPY"]
+        tickers = ["AGG", "SPY"]
         filename = os.path.join(settings.TEST.OUTPUT_DIR, "monthly_liquidate_rebalance_backtest.pkl")
         results = examples.monthly_liquidate_rebalance_backtest.run(self.config, self.testing, tickers, filename)
         self.assertAlmostEqual(float(results['sharpe']), 0.295765040758)
