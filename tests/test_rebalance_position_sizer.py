@@ -46,12 +46,13 @@ class TestLiquidateRebalancePositionSizer(unittest.TestCase):
     def test_will_liquidate_positions(self):
         """
         Ensure positions will be liquidated completely when asked.
+        Include a long and a short that must be covered.
         """
         self.portfolio._add_position(
             "BOT", "AAA", 100, PriceParser.parse(60.00), 0.0
         )
         self.portfolio._add_position(
-            "BOT", "BBB", 100, PriceParser.parse(60.00), 0.0
+            "BOT", "BBB", -100, PriceParser.parse(60.00), 0.0
         )
         exit_a = SuggestedOrder("AAA", "EXIT", 0)
         exit_b = SuggestedOrder("BBB", "EXIT", 0)
@@ -59,6 +60,6 @@ class TestLiquidateRebalancePositionSizer(unittest.TestCase):
         sized_b = self.position_sizer.size_order(self.portfolio, exit_b)
 
         self.assertEqual(sized_a.action, "SLD")
-        self.assertEqual(sized_b.action, "SLD")
+        self.assertEqual(sized_b.action, "BOT")
         self.assertEqual(sized_a.quantity, 100)
         self.assertEqual(sized_a.quantity, 100)
