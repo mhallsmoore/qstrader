@@ -19,9 +19,9 @@ import os
 class TearsheetStatistics(AbstractStatistics):
     """
     Displays a Matplotlib-generated 'one-pager' as often
-    found in institutional strategy performance reports. 
+    found in institutional strategy performance reports.
 
-    Includes an equity curve, drawdown curve, monthly 
+    Includes an equity curve, drawdown curve, monthly
     returns heatmap, yearly returns summary, strategy-
     level statistics and trade-level statistics.
 
@@ -97,7 +97,7 @@ class TearsheetStatistics(AbstractStatistics):
         statistics["returns"] = returns_s
         statistics["rolling_sharpe"] = rolling_sharpe_s
         statistics["cum_returns"] = cum_returns_s
-        
+
         positions = self._get_positions()
         if positions is not None:
             statistics["positions"] = positions
@@ -336,7 +336,7 @@ class TearsheetStatistics(AbstractStatistics):
         returns = stats["returns"]
         cum_returns = stats['cum_returns']
 
-        if not 'positions' in stats:
+        if 'positions' not in stats:
             trd_yr = 0
         else:
             positions = stats['positions']
@@ -429,7 +429,7 @@ class TearsheetStatistics(AbstractStatistics):
         if ax is None:
             ax = plt.gca()
 
-        if not 'positions' in stats:
+        if 'positions' not in stats:
             num_trades = 0
             win_pct = "N/A"
             win_pct_str = "N/A"
@@ -437,7 +437,7 @@ class TearsheetStatistics(AbstractStatistics):
             avg_win_pct = "N/A"
             avg_loss_pct = "N/A"
             max_win_pct = "N/A"
-            max_loss_pct = "N/A"         
+            max_loss_pct = "N/A"
         else:
             pos = stats['positions']
             num_trades = pos.shape[0]
@@ -447,7 +447,7 @@ class TearsheetStatistics(AbstractStatistics):
             avg_win_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] > 0]["trade_pct"]))
             avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] <= 0]["trade_pct"]))
             max_win_pct = '{:.2%}'.format(np.max(pos["trade_pct"]))
-            max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"])) 
+            max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"]))
 
         y_axis_formatter = FuncFormatter(format_perc)
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))

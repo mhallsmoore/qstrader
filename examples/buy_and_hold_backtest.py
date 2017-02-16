@@ -38,23 +38,16 @@ class BuyAndHoldStrategy(AbstractStrategy):
             self.bars += 1
 
 
-if __name__ == "__main__":
-    # Configuration data
-    testing = False
-    config = settings.from_file(
-        settings.DEFAULT_CONFIG_FILENAME, testing
-    )
-    events_queue = queue.Queue()
-
+def run(config, testing, tickers, filename):
     # Backtest information
     title = ['Buy and Hold Example on SPY']
-    tickers = ["SPY"]
     initial_equity = 10000.0
     start_date = datetime.datetime(2000, 1, 1)
     end_date = datetime.datetime(2014, 1, 1)
 
     # Use the MAC Strategy
-    strategy = BuyAndHoldStrategy("SPY", events_queue)
+    events_queue = queue.Queue()
+    strategy = BuyAndHoldStrategy(tickers[0], events_queue)
 
     # Set up the backtest
     backtest = Backtest(
@@ -62,4 +55,16 @@ if __name__ == "__main__":
         initial_equity, start_date, end_date,
         events_queue, title=title
     )
-    results = backtest.simulate_trading()
+    results = backtest.simulate_trading(testing=testing)
+    return
+
+
+if __name__ == "__main__":
+    # Configuration data
+    testing = False
+    config = settings.from_file(
+        settings.DEFAULT_CONFIG_FILENAME, testing
+    )
+    tickers = ["SPY"]
+    filename = None
+    run(config, testing, tickers, filename)

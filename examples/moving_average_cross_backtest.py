@@ -71,24 +71,17 @@ class MovingAverageCrossStrategy(AbstractStrategy):
             self.bars += 1
 
 
-if __name__ == "__main__":
-    # Configuration data
-    testing = False
-    config = settings.from_file(
-        settings.DEFAULT_CONFIG_FILENAME, testing
-    )
-    events_queue = queue.Queue()
-
+def run(config, testing, tickers, filename):
     # Backtest information
     title = ['Moving Average Crossover Example on AAPL: 100x300']
-    tickers = ["AAPL", "SPY"]
     initial_equity = 10000.0
     start_date = datetime.datetime(2000, 1, 1)
     end_date = datetime.datetime(2014, 1, 1)
 
     # Use the MAC Strategy
+    events_queue = queue.Queue()
     strategy = MovingAverageCrossStrategy(
-        "AAPL", events_queue,
+        tickers[0], events_queue,
         short_window=100,
         long_window=300
     )
@@ -97,6 +90,19 @@ if __name__ == "__main__":
     backtest = Backtest(
         config, strategy, tickers,
         initial_equity, start_date, end_date,
-        events_queue, title=title, benchmark="SPY"
+        events_queue, title=title,
+        benchmark=tickers[1],
     )
-    results = backtest.simulate_trading()
+    results = backtest.simulate_trading(testing=testing)
+    return results
+
+
+if __name__ == "__main__":
+    # Configuration data
+    testing = False
+    config = settings.from_file(
+        settings.DEFAULT_CONFIG_FILENAME, testing
+    )
+    tickers = ["AAPL", "SPY"]
+    filename = None
+    run(config, testing, tickers, filename)

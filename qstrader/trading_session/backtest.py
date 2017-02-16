@@ -21,9 +21,9 @@ class Backtest(object):
         self, config, strategy, tickers,
         equity, start_date, end_date, events_queue,
         price_handler=None, portfolio_handler=None,
-        compliance=None, position_sizer=None, 
-        execution_handler=None, risk_manager=None, 
-        statistics=None, sentiment_handler=None, 
+        compliance=None, position_sizer=None,
+        execution_handler=None, risk_manager=None,
+        statistics=None, sentiment_handler=None,
         title=None, benchmark=None
     ):
         """
@@ -52,13 +52,13 @@ class Backtest(object):
 
     def _config_backtest(self):
         """
-        Initialises the necessary classes used 
+        Initialises the necessary classes used
         within the backtest.
         """
         if self.price_handler is None:
             self.price_handler = YahooDailyCsvBarPriceHandler(
-                self.config.CSV_DATA_DIR, self.events_queue, 
-                self.tickers, start_date=self.start_date, 
+                self.config.CSV_DATA_DIR, self.events_queue,
+                self.tickers, start_date=self.start_date,
                 end_date=self.end_date
             )
 
@@ -70,10 +70,10 @@ class Backtest(object):
 
         if self.portfolio_handler is None:
             self.portfolio_handler = PortfolioHandler(
-                self.equity, 
-                self.events_queue, 
+                self.equity,
+                self.events_queue,
                 self.price_handler,
-                self.position_sizer, 
+                self.position_sizer,
                 self.risk_manager
             )
 
@@ -82,14 +82,14 @@ class Backtest(object):
 
         if self.execution_handler is None:
             self.execution_handler = IBSimulatedExecutionHandler(
-                self.events_queue, 
-                self.price_handler, 
+                self.events_queue,
+                self.price_handler,
                 self.compliance
             )
 
         if self.statistics is None:
             self.statistics = TearsheetStatistics(
-                self.config, self.portfolio_handler, 
+                self.config, self.portfolio_handler,
                 self.title, self.benchmark
             )
 
@@ -130,7 +130,7 @@ class Backtest(object):
                     else:
                         raise NotImplemented("Unsupported event.type '%s'" % event.type)
 
-    def simulate_trading(self):
+    def simulate_trading(self, testing=False):
         """
         Simulates the backtest and outputs portfolio performance.
         """
@@ -141,5 +141,6 @@ class Backtest(object):
         print("Sharpe Ratio: %s" % results["sharpe"])
         print("Max Drawdown: %s" % results["max_drawdown"])
         print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
-        self.statistics.plot_results()
+        if not testing:
+            self.statistics.plot_results()
         return results
