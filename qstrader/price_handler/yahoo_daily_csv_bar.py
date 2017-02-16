@@ -72,7 +72,11 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
             start = df.index.searchsorted(self.start_date)
         if self.end_date is not None:
             end = df.index.searchsorted(self.end_date)
-        # Determine how to slice
+        # This is added so that the ticker events are
+        # always deterministic, otherwise unit test values
+        # will differ
+        df['colFromIndex'] = df.index
+        df = df.sort_values(by=["colFromIndex", "Ticker"])
         if start is None and end is None:
             return df.iterrows()
         elif start is not None and end is None:

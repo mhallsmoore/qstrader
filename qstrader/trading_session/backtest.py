@@ -109,7 +109,10 @@ class Backtest(object):
                 self.price_handler.stream_next()
             else:
                 if event is not None:
-                    if event.type == EventType.TICK or event.type == EventType.BAR:
+                    if (
+                        event.type == EventType.TICK or
+                        event.type == EventType.BAR
+                    ):
                         self.cur_time = event.time
                         # Generate any sentiment events here
                         if self.sentiment_handler is not None:
@@ -138,9 +141,12 @@ class Backtest(object):
         results = self.statistics.get_results()
         print("---------------------------------")
         print("Backtest complete.")
-        print("Sharpe Ratio: %s" % results["sharpe"])
-        print("Max Drawdown: %s" % results["max_drawdown"])
-        print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
+        print("Sharpe Ratio: %0.2f" % results["sharpe"])
+        print(
+            "Max Drawdown: %0.2f%%" % (
+                results["max_drawdown_pct"] * 100.0
+            )
+        )
         if not testing:
             self.statistics.plot_results()
         return results

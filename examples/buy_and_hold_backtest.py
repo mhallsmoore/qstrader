@@ -40,7 +40,7 @@ class BuyAndHoldStrategy(AbstractStrategy):
 
 def run(config, testing, tickers, filename):
     # Backtest information
-    title = ['Buy and Hold Example on SPY']
+    title = ['Buy and Hold Example on %s' % tickers[0]]
     initial_equity = 10000.0
     start_date = datetime.datetime(2000, 1, 1)
     end_date = datetime.datetime(2014, 1, 1)
@@ -56,7 +56,7 @@ def run(config, testing, tickers, filename):
         events_queue, title=title
     )
     results = backtest.simulate_trading(testing=testing)
-    return
+    return results
 
 
 if __name__ == "__main__":
