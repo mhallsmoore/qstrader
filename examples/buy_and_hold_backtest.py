@@ -45,7 +45,7 @@ def run(config, testing, tickers, filename):
     start_date = datetime.datetime(2000, 1, 1)
     end_date = datetime.datetime(2014, 1, 1)
 
-    # Use the MAC Strategy
+    # Use the Buy and Hold Strategy
     events_queue = queue.Queue()
     strategy = BuyAndHoldStrategy(tickers[0], events_queue)
 

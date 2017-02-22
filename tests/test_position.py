@@ -154,7 +154,7 @@ class TestShortPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.cost_basis), -7768.00)
         self.assertEqual(PriceParser.display(self.position.market_value), -7769.00)
         self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -1.00)
-        self.assertEqual(PriceParser.display(self.position.realised_pnl), -1.0)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), 0.00)
 
         self.position.update_market_value(
             PriceParser.parse(77.72), PriceParser.parse(77.72)
@@ -163,7 +163,53 @@ class TestShortPosition(unittest.TestCase):
         self.assertEqual(PriceParser.display(self.position.cost_basis), -7768.00)
         self.assertEqual(PriceParser.display(self.position.market_value), -7772.00)
         self.assertEqual(PriceParser.display(self.position.unrealised_pnl), -4.00)
-        self.assertEqual(PriceParser.display(self.position.realised_pnl), -4.0)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), 0.00)
+
+
+class TestProfitLossBuying(unittest.TestCase):
+    """
+    Tests that the unrealised and realised pnls are
+    working after position initialization, every
+    transaction, and every price update
+    """
+    def setUp(self):
+        self.position = Position(
+            "BOT", "XOM", 100,
+            PriceParser.parse(74.78), PriceParser.parse(1.00),
+            PriceParser.parse(74.77), PriceParser.parse(74.79)
+        )
+
+    def test_realised_unrealised_calcs(self):
+        self.assertEqual(
+            PriceParser.display(self.position.unrealised_pnl), -1.00
+        )
+        self.assertEqual(
+            PriceParser.display(self.position.realised_pnl), 0.00
+        )
+
+        self.position.update_market_value(
+            PriceParser.parse(75.77), PriceParser.parse(75.79)
+        )
+        self.assertEqual(
+            PriceParser.display(self.position.unrealised_pnl), 99.00
+        )
+        self.position.transact_shares(
+            "SLD", 100,
+            PriceParser.parse(75.78), PriceParser.parse(1.00)
+        )
+        self.assertEqual(
+            PriceParser.display(self.position.unrealised_pnl), 99.00
+        )  # still high
+        self.assertEqual(
+            PriceParser.display(self.position.realised_pnl), 98.00
+        )
+
+        self.position.update_market_value(
+            PriceParser.parse(75.77), PriceParser.parse(75.79)
+        )
+        self.assertEqual(
+            PriceParser.display(self.position.unrealised_pnl), 0.00
+        )
 
 
 if __name__ == "__main__":

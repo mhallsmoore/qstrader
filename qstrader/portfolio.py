@@ -39,9 +39,8 @@ class Portfolio(object):
                 ask = close_price
             pt.update_market_value(bid, ask)
             self.unrealised_pnl += pt.unrealised_pnl
-            pnl_diff = pt.realised_pnl - pt.unrealised_pnl
             self.equity += (
-                pt.market_value - pt.cost_basis + pnl_diff
+                pt.market_value - pt.cost_basis + pt.realised_pnl
             )
 
     def _add_position(
