@@ -88,7 +88,7 @@ The tearsheet will look similar to:
 
 ![alt tag](https://s3.amazonaws.com/quantstart/media/images/qstrader-buy-and-hold-tearsheet.png)
 
-You can explore the buy_and_hold_backtest.py file to examine the API of QSTrader. You will see that it is relatively straightforward to set up a simple strategy and execute it.
+You can explore the ```buy_and_hold_backtest.py``` file to examine the API of QSTrader. You will see that it is relatively straightforward to set up a simple strategy and execute it.
 
 For slightly more complex buy and sell rules it is possible to consider a Moving Average Crossover strategy. 
 
