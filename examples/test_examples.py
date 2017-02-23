@@ -71,7 +71,7 @@ class TestExamples(unittest.TestCase):
         """
         tickers = ["SPY", "AGG"]
         filename = os.path.join(
-            settings.TEST.OUTPUT_DIR, 
+            settings.TEST.OUTPUT_DIR,
             "monthly_liquidate_rebalance_backtest.pkl"
         )
         results = examples.monthly_liquidate_rebalance_backtest.run(

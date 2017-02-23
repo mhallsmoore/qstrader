@@ -1,6 +1,5 @@
 import calendar
 import datetime
-from math import floor
 
 from qstrader import settings
 from qstrader.strategy.base import AbstractStrategy
