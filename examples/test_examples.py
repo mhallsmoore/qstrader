@@ -12,6 +12,7 @@ import unittest
 from qstrader import settings
 import examples.buy_and_hold_backtest
 import examples.moving_average_cross_backtest
+import examples.monthly_liquidate_rebalance_backtest
 
 
 class TestExamples(unittest.TestCase):
@@ -63,3 +64,23 @@ class TestExamples(unittest.TestCase):
         self.assertAlmostEqual(
             float(results['sharpe']), 0.643009566
         )
+
+    def test_monthly_liquidate_rebalance_backtest(self):
+        """
+        Test monthly liquidation & rebalance strategy.
+        """
+        tickers = ["SPY", "AGG"]
+        filename = os.path.join(
+            settings.TEST.OUTPUT_DIR, 
+            "monthly_liquidate_rebalance_backtest.pkl"
+        )
+        results = examples.monthly_liquidate_rebalance_backtest.run(
+            self.config, self.testing, tickers, filename
+        )
+        self.assertAlmostEqual(
+            float(results['sharpe']), 0.27105589487274
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
