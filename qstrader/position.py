@@ -75,7 +75,6 @@ class Position(object):
         midpoint = (bid + ask) // 2
         self.market_value = self.quantity * midpoint * sign(self.net)
         self.unrealised_pnl = self.market_value - self.cost_basis
-        self.realised_pnl = self.market_value + self.net_incl_comm
 
     def transact_shares(self, action, quantity, price, commission):
         """
@@ -90,17 +89,36 @@ class Position(object):
 
         # Adjust total bought and sold
         if action == "BOT":
-            self.avg_bot = (self.avg_bot * self.buys + price * quantity) // (self.buys + quantity)
-            if self.action != "SLD":
-                self.avg_price = (self.avg_price * self.buys + price * quantity + commission) // (self.buys + quantity)
+            self.avg_bot = (
+                self.avg_bot * self.buys + price * quantity
+            ) // (self.buys + quantity)
+            if self.action != "SLD":  # Increasing long position
+                self.avg_price = (
+                    self.avg_price * self.buys +
+                    price * quantity + commission
+                ) // (self.buys + quantity)
+            elif self.action == "SLD":  # Closed partial positions out
+                self.realised_pnl += quantity * (
+                    self.avg_price - price
+                ) - commission  # Adjust realised PNL
             self.buys += quantity
             self.total_bot = self.buys * self.avg_bot
 
         # action == "SLD"
         else:
-            self.avg_sld = (self.avg_sld * self.sells + price * quantity) // (self.sells + quantity)
-            if self.action != "BOT":
-                self.avg_price = (self.avg_price * self.sells + price * quantity - commission) // (self.sells + quantity)
+            self.avg_sld = (
+                self.avg_sld * self.sells + price * quantity
+            ) // (self.sells + quantity)
+            if self.action != "BOT":  # Increasing short position
+                self.avg_price = (
+                    self.avg_price * self.sells +
+                    price * quantity - commission
+                ) // (self.sells + quantity)
+                self.unrealised_pnl -= commission
+            elif self.action == "BOT":  # Closed partial positions out
+                self.realised_pnl += quantity * (
+                    price - self.avg_price
+                ) - commission
             self.sells += quantity
             self.total_sld = self.sells * self.avg_sld
 

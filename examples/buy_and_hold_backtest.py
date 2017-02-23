@@ -1,81 +1,70 @@
-import click
+import datetime
 
 from qstrader import settings
+from qstrader.strategy.base import AbstractStrategy
+from qstrader.event import SignalEvent, EventType
 from qstrader.compat import queue
-from qstrader.price_parser import PriceParser
-from qstrader.price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
-from qstrader.strategy.buy_and_hold import BuyAndHoldStrategy
-from qstrader.strategy import Strategies, DisplayStrategy
-from qstrader.position_sizer.fixed import FixedPositionSizer
-from qstrader.risk_manager.example import ExampleRiskManager
-from qstrader.portfolio_handler import PortfolioHandler
-from qstrader.compliance.example import ExampleCompliance
-from qstrader.execution_handler.ib_simulated import IBSimulatedExecutionHandler
-from qstrader.statistics.simple import SimpleStatistics
 from qstrader.trading_session.backtest import Backtest
 
 
+class BuyAndHoldStrategy(AbstractStrategy):
+    """
+    A testing strategy that simply purchases (longs) an asset
+    upon first receipt of the relevant bar event and
+    then holds until the completion of a backtest.
+    """
+    def __init__(
+        self, ticker, events_queue,
+        base_quantity=100
+    ):
+        self.ticker = ticker
+        self.events_queue = events_queue
+        self.base_quantity = base_quantity
+        self.bars = 0
+        self.invested = False
+
+    def calculate_signals(self, event):
+        if (
+            event.type in [EventType.BAR, EventType.TICK] and
+            event.ticker == self.ticker
+        ):
+            if not self.invested and self.bars == 0:
+                signal = SignalEvent(
+                    self.ticker, "BOT",
+                    suggested_quantity=self.base_quantity
+                )
+                self.events_queue.put(signal)
+                self.invested = True
+            self.bars += 1
+
+
 def run(config, testing, tickers, filename):
-
-    # Set up variables needed for backtest
-    events_queue = queue.Queue()
-    csv_dir = config.CSV_DATA_DIR
-    initial_equity = PriceParser.parse(500000.00)
-
-    # Use Yahoo Daily Price Handler
-    price_handler = YahooDailyCsvBarPriceHandler(
-        csv_dir, events_queue, tickers
-    )
+    # Backtest information
+    title = ['Buy and Hold Example on %s' % tickers[0]]
+    initial_equity = 10000.0
+    start_date = datetime.datetime(2000, 1, 1)
+    end_date = datetime.datetime(2014, 1, 1)
 
     # Use the Buy and Hold Strategy
-    strategy = BuyAndHoldStrategy(tickers, events_queue)
-    strategy = Strategies(strategy, DisplayStrategy())
-
-    # Use an example Position Sizer
-    position_sizer = FixedPositionSizer()
-
-    # Use an example Risk Manager
-    risk_manager = ExampleRiskManager()
-
-    # Use the default Portfolio Handler
-    portfolio_handler = PortfolioHandler(
-        initial_equity, events_queue, price_handler,
-        position_sizer, risk_manager
-    )
-
-    # Use the ExampleCompliance component
-    compliance = ExampleCompliance(config)
-
-    # Use a simulated IB Execution Handler
-    execution_handler = IBSimulatedExecutionHandler(
-        events_queue, price_handler, compliance
-    )
-
-    # Use the default Statistics
-    statistics = SimpleStatistics(config, portfolio_handler)
+    events_queue = queue.Queue()
+    strategy = BuyAndHoldStrategy(tickers[0], events_queue)
 
     # Set up the backtest
     backtest = Backtest(
-        price_handler, strategy,
-        portfolio_handler, execution_handler,
-        position_sizer, risk_manager,
-        statistics, initial_equity
+        config, strategy, tickers,
+        initial_equity, start_date, end_date,
+        events_queue, title=title
     )
     results = backtest.simulate_trading(testing=testing)
-    statistics.save(filename)
     return results
 
 
-@click.command()
-@click.option('--config', default=settings.DEFAULT_CONFIG_FILENAME, help='Config filename')
-@click.option('--testing/--no-testing', default=False, help='Enable testing mode')
-@click.option('--tickers', default='SP500TR', help='Tickers (use comma)')
-@click.option('--filename', default='', help='Pickle (.pkl) statistics filename')
-def main(config, testing, tickers, filename):
-    tickers = tickers.split(",")
-    config = settings.from_file(config, testing)
-    run(config, testing, tickers, filename)
-
-
 if __name__ == "__main__":
-    main()
+    # Configuration data
+    testing = False
+    config = settings.from_file(
+        settings.DEFAULT_CONFIG_FILENAME, testing
+    )
+    tickers = ["SPY"]
+    filename = None
+    run(config, testing, tickers, filename)

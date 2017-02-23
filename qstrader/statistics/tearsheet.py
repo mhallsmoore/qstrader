@@ -18,6 +18,15 @@ import os
 
 class TearsheetStatistics(AbstractStatistics):
     """
+    Displays a Matplotlib-generated 'one-pager' as often
+    found in institutional strategy performance reports.
+
+    Includes an equity curve, drawdown curve, monthly
+    returns heatmap, yearly returns summary, strategy-
+    level statistics and trade-level statistics.
+
+    Also includes an optional annualised rolling Sharpe
+    ratio chart.
     """
     def __init__(
         self, config, portfolio_handler,
@@ -88,7 +97,10 @@ class TearsheetStatistics(AbstractStatistics):
         statistics["returns"] = returns_s
         statistics["rolling_sharpe"] = rolling_sharpe_s
         statistics["cum_returns"] = cum_returns_s
-        statistics["positions"] = self._get_positions()
+
+        positions = self._get_positions()
+        if positions is not None:
+            statistics["positions"] = positions
 
         # Benchmark statistics if benchmark ticker specified
         if self.benchmark is not None:
@@ -123,28 +135,28 @@ class TearsheetStatistics(AbstractStatistics):
         a = []
         for p in pos:
             a.append(p.__dict__)
-
-        df = pd.DataFrame(a)
-
-        df['avg_bot'] = df['avg_bot'].apply(x)
-        df['avg_price'] = df['avg_price'].apply(x)
-        df['avg_sld'] = df['avg_sld'].apply(x)
-        df['cost_basis'] = df['cost_basis'].apply(x)
-        df['init_commission'] = df['init_commission'].apply(x)
-        df['init_price'] = df['init_price'].apply(x)
-        df['market_value'] = df['market_value'].apply(x)
-        df['net'] = df['net'].apply(x)
-        df['net_incl_comm'] = df['net_incl_comm'].apply(x)
-        df['net_total'] = df['net_total'].apply(x)
-        df['realised_pnl'] = df['realised_pnl'].apply(x)
-        df['total_bot'] = df['total_bot'].apply(x)
-        df['total_commission'] = df['total_commission'].apply(x)
-        df['total_sld'] = df['total_sld'].apply(x)
-        df['unrealised_pnl'] = df['unrealised_pnl'].apply(x)
-
-        df['trade_pct'] = (df['avg_sld'] / df['avg_bot'] - 1.0)
-
-        return df
+        if len(a) == 0:
+            # There are no closed positions
+            return None
+        else:
+            df = pd.DataFrame(a)
+            df['avg_bot'] = df['avg_bot'].apply(x)
+            df['avg_price'] = df['avg_price'].apply(x)
+            df['avg_sld'] = df['avg_sld'].apply(x)
+            df['cost_basis'] = df['cost_basis'].apply(x)
+            df['init_commission'] = df['init_commission'].apply(x)
+            df['init_price'] = df['init_price'].apply(x)
+            df['market_value'] = df['market_value'].apply(x)
+            df['net'] = df['net'].apply(x)
+            df['net_incl_comm'] = df['net_incl_comm'].apply(x)
+            df['net_total'] = df['net_total'].apply(x)
+            df['realised_pnl'] = df['realised_pnl'].apply(x)
+            df['total_bot'] = df['total_bot'].apply(x)
+            df['total_commission'] = df['total_commission'].apply(x)
+            df['total_sld'] = df['total_sld'].apply(x)
+            df['unrealised_pnl'] = df['unrealised_pnl'].apply(x)
+            df['trade_pct'] = (df['avg_sld'] / df['avg_bot'] - 1.0)
+            return df
 
     def _plot_equity(self, stats, ax=None, **kwargs):
         """
@@ -323,7 +335,14 @@ class TearsheetStatistics(AbstractStatistics):
 
         returns = stats["returns"]
         cum_returns = stats['cum_returns']
-        positions = stats['positions']
+
+        if 'positions' not in stats:
+            trd_yr = 0
+        else:
+            positions = stats['positions']
+            trd_yr = positions.shape[0] / (
+                (returns.index[-1] - returns.index[0]).days / 365.0
+            )
 
         if ax is None:
             ax = plt.gca()
@@ -337,7 +356,6 @@ class TearsheetStatistics(AbstractStatistics):
         sortino = perf.create_sortino_ratio(returns, self.periods)
         rsq = perf.rsquared(range(cum_returns.shape[0]), cum_returns)
         dd, dd_max, dd_dur = perf.create_drawdowns(cum_returns)
-        trd_yr = positions.shape[0] / ((returns.index[-1] - returns.index[0]).days / 365.0)
 
         ax.text(0.25, 8.9, 'Total Return', fontsize=8)
         ax.text(7.50, 8.9, '{:.0%}'.format(tot_ret), fontweight='bold', horizontalalignment='right', fontsize=8)
@@ -411,19 +429,29 @@ class TearsheetStatistics(AbstractStatistics):
         if ax is None:
             ax = plt.gca()
 
-        pos = stats['positions']
+        if 'positions' not in stats:
+            num_trades = 0
+            win_pct = "N/A"
+            win_pct_str = "N/A"
+            avg_trd_pct = "N/A"
+            avg_win_pct = "N/A"
+            avg_loss_pct = "N/A"
+            max_win_pct = "N/A"
+            max_loss_pct = "N/A"
+        else:
+            pos = stats['positions']
+            num_trades = pos.shape[0]
+            win_pct = pos[pos["trade_pct"] > 0].shape[0] / float(num_trades)
+            win_pct_str = '{:.0%}'.format(win_pct)
+            avg_trd_pct = '{:.2%}'.format(np.mean(pos["trade_pct"]))
+            avg_win_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] > 0]["trade_pct"]))
+            avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] <= 0]["trade_pct"]))
+            max_win_pct = '{:.2%}'.format(np.max(pos["trade_pct"]))
+            max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"]))
 
         y_axis_formatter = FuncFormatter(format_perc)
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
 
-        num_trades = pos.shape[0]
-        win_pct = pos[pos["trade_pct"] > 0].shape[0] / float(num_trades)
-        win_pct_str = '{:.0%}'.format(win_pct)
-        avg_trd_pct = '{:.2%}'.format(np.mean(pos["trade_pct"]))
-        avg_win_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] > 0]["trade_pct"]))
-        avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] <= 0]["trade_pct"]))
-        max_win_pct = '{:.2%}'.format(np.max(pos["trade_pct"]))
-        max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"]))
         # TODO: Position class needs entry date
         max_loss_dt = 'TBD'  # pos[pos["trade_pct"] == np.min(pos["trade_pct"])].entry_date.values[0]
         avg_dit = '0.0'  # = '{:.2f}'.format(np.mean(pos.time_in_pos))

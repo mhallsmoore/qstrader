@@ -2,6 +2,14 @@ from __future__ import print_function
 
 from ..compat import queue
 from ..event import EventType
+from ..price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
+from ..price_parser import PriceParser
+from ..position_sizer.fixed import FixedPositionSizer
+from ..risk_manager.example import ExampleRiskManager
+from ..portfolio_handler import PortfolioHandler
+from ..compliance.example import ExampleCompliance
+from ..execution_handler.ib_simulated import IBSimulatedExecutionHandler
+from ..statistics.tearsheet import TearsheetStatistics
 
 
 class Backtest(object):
@@ -10,28 +18,80 @@ class Backtest(object):
     carrying out an event-driven backtest.
     """
     def __init__(
-        self, price_handler,
-        strategy, portfolio_handler,
-        execution_handler,
-        position_sizer, risk_manager,
-        statistics, equity,
-        sentiment_handler=None
+        self, config, strategy, tickers,
+        equity, start_date, end_date, events_queue,
+        price_handler=None, portfolio_handler=None,
+        compliance=None, position_sizer=None,
+        execution_handler=None, risk_manager=None,
+        statistics=None, sentiment_handler=None,
+        title=None, benchmark=None
     ):
         """
         Set up the backtest variables according to
         what has been passed in.
         """
-        self.price_handler = price_handler
+        self.config = config
         self.strategy = strategy
+        self.tickers = tickers
+        self.equity = PriceParser.parse(equity)
+        self.start_date = start_date
+        self.end_date = end_date
+        self.events_queue = events_queue
+        self.price_handler = price_handler
         self.portfolio_handler = portfolio_handler
+        self.compliance = compliance
         self.execution_handler = execution_handler
         self.position_sizer = position_sizer
         self.risk_manager = risk_manager
         self.statistics = statistics
-        self.equity = equity
         self.sentiment_handler = sentiment_handler
-        self.events_queue = price_handler.events_queue
+        self.title = title
+        self.benchmark = benchmark
+        self._config_backtest()
         self.cur_time = None
+
+    def _config_backtest(self):
+        """
+        Initialises the necessary classes used
+        within the backtest.
+        """
+        if self.price_handler is None:
+            self.price_handler = YahooDailyCsvBarPriceHandler(
+                self.config.CSV_DATA_DIR, self.events_queue,
+                self.tickers, start_date=self.start_date,
+                end_date=self.end_date
+            )
+
+        if self.position_sizer is None:
+            self.position_sizer = FixedPositionSizer()
+
+        if self.risk_manager is None:
+            self.risk_manager = ExampleRiskManager()
+
+        if self.portfolio_handler is None:
+            self.portfolio_handler = PortfolioHandler(
+                self.equity,
+                self.events_queue,
+                self.price_handler,
+                self.position_sizer,
+                self.risk_manager
+            )
+
+        if self.compliance is None:
+            self.compliance = ExampleCompliance(self.config)
+
+        if self.execution_handler is None:
+            self.execution_handler = IBSimulatedExecutionHandler(
+                self.events_queue,
+                self.price_handler,
+                self.compliance
+            )
+
+        if self.statistics is None:
+            self.statistics = TearsheetStatistics(
+                self.config, self.portfolio_handler,
+                self.title, self.benchmark
+            )
 
     def _run_backtest(self):
         """
@@ -49,7 +109,10 @@ class Backtest(object):
                 self.price_handler.stream_next()
             else:
                 if event is not None:
-                    if event.type == EventType.TICK or event.type == EventType.BAR:
+                    if (
+                        event.type == EventType.TICK or
+                        event.type == EventType.BAR
+                    ):
                         self.cur_time = event.time
                         # Generate any sentiment events here
                         if self.sentiment_handler is not None:
@@ -78,9 +141,12 @@ class Backtest(object):
         results = self.statistics.get_results()
         print("---------------------------------")
         print("Backtest complete.")
-        print("Sharpe Ratio: %s" % results["sharpe"])
-        print("Max Drawdown: %s" % results["max_drawdown"])
-        print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
+        print("Sharpe Ratio: %0.2f" % results["sharpe"])
+        print(
+            "Max Drawdown: %0.2f%%" % (
+                results["max_drawdown_pct"] * 100.0
+            )
+        )
         if not testing:
             self.statistics.plot_results()
         return results
