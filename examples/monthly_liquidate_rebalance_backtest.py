@@ -125,7 +125,6 @@ def run(config, testing, tickers, filename):
     strategy = MonthlyLiquidateRebalanceStrategy(
         tickers, events_queue
     )
-    #strategy = Strategies(strategy, DisplayStrategy())
 
     # Use the liquidate and rebalance position sizer
     # with prespecified ticker weights
