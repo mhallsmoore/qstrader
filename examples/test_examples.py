@@ -78,7 +78,7 @@ class TestExamples(unittest.TestCase):
             self.config, self.testing, tickers, filename
         )
         self.assertAlmostEqual(
-            float(results['sharpe']), 0.27105589487274
+            float(results['sharpe']), 0.2710491397280638
         )
 
 
