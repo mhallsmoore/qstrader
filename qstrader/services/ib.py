@@ -103,22 +103,6 @@ class IBService(IBWrapper, IBClient):
 
 
     """
-    Creates a historical data request for CBA.
-    """
-    def historicalDataRequests_req(self):
-        contract = Contract()
-        contract.exchange = "SMART"
-        contract.symbol = "CBA"
-        contract.secType = "STK"
-        contract.currency = "AUD"
-
-        queryTime = (datetime.datetime.today() -
-                    datetime.timedelta(days=180)).strftime("%Y%m%d %H:%M:%S")
-        self.reqHistoricalData(4002, contract, queryTime,
-                                "10 D", "1 min", "TRADES", 1, 1, None)
-
-
-    """
     Populate the HistoricalData queue.
     """
     def historicalData(self, reqId:TickerId , date:str, open:float, high:float,
