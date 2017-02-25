@@ -9,7 +9,7 @@ import logging
 import time
 import os.path
 
-from ibapi.wrapper import wrapper
+from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
 from ibapi.utils import iswrapper
 
@@ -28,14 +28,8 @@ from ibapi.ticktype import *
 
 from ibapi.account_summary_tags import *
 
-from ContractSamples import ContractSamples
-from OrderSamples import OrderSamples
-from AvailableAlgoParams import AvailableAlgoParams
-from ScannerSubscriptionSamples import ScannerSubscriptionSamples
-from FaAllocationSamples import FaAllocationSamples
 
-
-class IBService(IBWrapper, IBClient):
+class IBService(EWrapper, EClient):
     """
     The IBService is the primary conduit of data from QStrader to Interactive Brokers.
     This service provides functions to request data, and allows for
@@ -52,8 +46,8 @@ class IBService(IBWrapper, IBClient):
     can easily create mock instances of the IBService for testing.
     """
     def __init__(self):
-        IBWrapper.__init__(self)
-        IBClient.__init__(self, wrapper=self)
+        EWrapper.__init__(self)
+        EClient.__init__(self, wrapper=self)
 
         self.historicalDataQueue = queue.Queue()
         self.waitingHistoricalData = []
