@@ -4,7 +4,6 @@ from qstrader.price_handler.ib_bar import IBBarPriceHandler
 from qstrader.compat import queue
 from qstrader import settings
 
-
 class TestPriceHandlerSimpleCase(unittest.TestCase):
     def setUp(self):
         """
@@ -14,7 +13,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.config = settings.TEST
         fixtures_path = self.config.CSV_DATA_DIR
         events_queue = queue.Queue()
-        init_tickers = ["FB"]
+        init_tickers = ["CBA"]
         self.price_handler = IBBarPriceHandler(
             events_queue, init_tickers, self.config
         )

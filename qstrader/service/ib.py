@@ -52,31 +52,6 @@ class IBService(EWrapper, EClient):
         self.historicalDataQueue = queue.Queue()
         self.waitingHistoricalData = []
 
-        # Connect to IB and make the historic data request.
-        # self.connect("127.0.0.1", 4001, clientId=0)
-        # self.historicalDataRequests_req()
-        #
-        # while (self.conn.isConnected() or not self.msg_queue.empty()) and len(self.waitingHistoricalData) != 0:
-        #     try:
-        #         text = self.msg_queue.get(block=True, timeout=0.2)
-        #         if len(text) > MAX_MSG_LEN:
-        #             self.wrapper.error(NO_VALID_ID, BAD_LENGTH.code(),
-        #                 "%s:%d:%s" % (BAD_LENGTH.msg(), len(text), text))
-        #             self.disconnect()
-        #             break
-        #     except queue.Empty:
-        #         logging.debug("queue.get: empty")
-        #     else:
-        #         fields = comm.read_fields(text)
-        #         logging.debug("fields %s", fields)
-        #         self.decoder.interpret(fields)
-        #
-        #     # print("conn:%d queue.sz:%d",
-        #     #              self.conn.isConnected(),
-        #     #              self.msg_queue.qsize())
-        #
-        # self.disconnect()
-
 
     def error(self, reqId:TickerId, errorCode:int, errorString:str):
         super().error(reqId, errorCode, errorString)
@@ -102,7 +77,9 @@ class IBService(EWrapper, EClient):
     def historicalData(self, reqId:TickerId , date:str, open:float, high:float,
                        low:float, close:float, volume:int, barCount:int,
                         WAP:float, hasGaps:int):
-        print("RECEIVED HISTORIC DATA")
+        print("HistoricalData. ", reqId, " Date:", date, "Open:", open,
+            "High:", high, "Low:", low, "Close:", close, "Volume:", volume,
+            "Count:", barCount, "WAP:", WAP, "HasGaps:", hasGaps)
         self.historicalDataQueue.put((reqId, date, open, high, low, close,
                                         volume, barCount, WAP, hasGaps))
 
