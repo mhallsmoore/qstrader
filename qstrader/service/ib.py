@@ -65,7 +65,6 @@ class IBService(EWrapper, EClient):
                           durationStr:str, barSizeSetting:str, whatToShow:str,
                           useRTH:int, formatDate:int, chartOptions:TagValueList):
         self.waitingHistoricalData.append(reqId)
-        print("REQUESTING HISTORIC, WAITING FOR %s" % len(self.waitingHistoricalData))
         super().reqHistoricalData( reqId, contract, endDateTime,
                                   durationStr, barSizeSetting, whatToShow,
                                   useRTH, formatDate, chartOptions)
@@ -77,9 +76,6 @@ class IBService(EWrapper, EClient):
     def historicalData(self, reqId:TickerId , date:str, open:float, high:float,
                        low:float, close:float, volume:int, barCount:int,
                         WAP:float, hasGaps:int):
-        print("HistoricalData. ", reqId, " Date:", date, "Open:", open,
-            "High:", high, "Low:", low, "Close:", close, "Volume:", volume,
-            "Count:", barCount, "WAP:", WAP, "HasGaps:", hasGaps)
         self.historicalDataQueue.put((reqId, date, open, high, low, close,
                                         volume, barCount, WAP, hasGaps))
 
@@ -88,5 +84,4 @@ class IBService(EWrapper, EClient):
     TODO: Will it work with multiple historical requests for same symbol?
     """
     def historicalDataEnd(self, reqId:int, start:str, end:str):
-        print("FINISHED FOR %s" % reqId)
         self.waitingHistoricalData.remove(reqId)
