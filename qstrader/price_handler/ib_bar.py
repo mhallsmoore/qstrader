@@ -86,8 +86,6 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self._wait_for_hist_population()
         self._merge_sort_ticker_data()
 
-        import pdb; pdb.set_trace()
-
     def _subscribe_ticker(self, ticker):
         """
         Request ticker data from IB
