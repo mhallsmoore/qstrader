@@ -52,6 +52,10 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
     ):
         self.ib_service = IBService()
         self.ib_service.connect("127.0.0.1",4001,0)
+
+        # TODO move outside this class, call when backtest or live trading is finished
+        self.ib_service.start()
+
         self.barsize_lookup = {
             "1 sec": 1,
             "5 secs": 5,
@@ -112,28 +116,15 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
 
     def _wait_for_hist_population(self):
         """
-        # TODO this *needs* to be an infinite loop running inside the service,
-        # with the service launched on a new Thread or Process
+        Blocks until the historical dataset has been populated.
         """
-        while (self.ib_service.conn.isConnected() or not self.ib_service.msg_queue.empty()) and len(self.ib_service.waitingHistoricalData) != 0:
-            try:
-                text = self.ib_service.msg_queue.get(block=True, timeout=0.2)
-                if len(text) > MAX_MSG_LEN:
-                    self.ib_service.wrapper.error(NO_VALID_ID, BAD_LENGTH.code(),
-                        "%s:%d:%s" % (BAD_LENGTH.msg(), len(text), text))
-                    self.ib_service.disconnect()
-                    break
-            except queue.Empty:
-                print("queue.get: empty")
-            else:
-                fields = comm.read_fields(text)
-                print("fields %s", fields)
-                self.ib_service.decoder.interpret(fields)
+        while len(self.ib_service.waitingHistoricalData) != 0:
+            pass
 
-            print("conn:%d queue.sz:%d",
-                         self.ib_service.conn.isConnected(),
-                         self.ib_service.msg_queue.qsize())
-        self.ib_service.disconnect()
+        # TODO move outside this class, call when backtest or live trading is finished
+        self.ib_service.stop_event.set()
+        self.ib_service.join()
+
 
 
     def _merge_sort_ticker_data(self):

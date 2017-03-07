@@ -4,7 +4,7 @@ import datetime
 import collections
 import inspect
 import queue
-
+import threading
 import logging
 import time
 import os.path
@@ -29,7 +29,7 @@ from ibapi.ticktype import *
 from ibapi.account_summary_tags import *
 
 
-class IBService(EWrapper, EClient):
+class IBService(EWrapper, EClient, threading.Thread):
     """
     The IBService is the primary conduit of data from QStrader to Interactive Brokers.
     This service provides functions to request data, and allows for
@@ -44,10 +44,14 @@ class IBService(EWrapper, EClient):
     methods offered in this class. This ensures that the logic required to talk with IB
     is contained within this class exclusively, with the added benefit that we
     can easily create mock instances of the IBService for testing.
+
+    TODO: document usage (starting, stopping, using)
     """
     def __init__(self):
         EWrapper.__init__(self)
         EClient.__init__(self, wrapper=self)
+        threading.Thread.__init__(self, name='IBService')
+        self.stop_event = threading.Event()
 
         self.historicalDataQueue = queue.Queue()
         self.waitingHistoricalData = []
@@ -85,3 +89,28 @@ class IBService(EWrapper, EClient):
     """
     def historicalDataEnd(self, reqId:int, start:str, end:str):
         self.waitingHistoricalData.remove(reqId)
+
+
+    """
+    TODO document
+    """
+    def run(self):
+        while (self.conn.isConnected() or not self.msg_queue.empty()) and not self.stop_event.is_set() :
+            try:
+                text = self.msg_queue.get(block=True, timeout=0.2)
+                if len(text) > MAX_MSG_LEN:
+                    self.wrapper.error(NO_VALID_ID, BAD_LENGTH.code(),
+                        "%s:%d:%s" % (BAD_LENGTH.msg(), len(text), text))
+                    self.disconnect()
+                    break
+            except queue.Empty:
+                print("queue.get: empty")
+            else:
+                fields = comm.read_fields(text)
+                print("fields %s", fields)
+                self.decoder.interpret(fields)
+
+            print("conn:%d queue.sz:%d",
+                         self.conn.isConnected(),
+                         self.msg_queue.qsize())
+        self.disconnect()
