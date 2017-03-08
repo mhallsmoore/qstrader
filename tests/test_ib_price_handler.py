@@ -13,6 +13,16 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
 
         For now, while testing locally with IB (i.e. not Travis), implement
         all real IB functionality (i.e. set up service)
+
+
+
+        TODO:
+            * Mock IB Service, populate dummy data.
+            * Duplicate tests from test_price_handler
+            * Add test to all price_handlers for get_last_close()
+            * Test multiple tickers
+            * Test multiple timeframes
+            * Test returned date formats
         """
         self.ib_service = IBService()
         self.ib_service.connect("127.0.0.1",4001,0) # TODO remove & replace with mock when happy
@@ -26,7 +36,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.price_handler = IBBarPriceHandler(
             self.ib_service, events_queue, init_tickers, self.config
         )
-        
+
 
     def tearDown(self):
         self.ib_service.stop_event.set()

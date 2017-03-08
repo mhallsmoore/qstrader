@@ -41,9 +41,8 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
 
     TODO:
         * Historic/Live mode to be set by whether QSTrader is in Backtest or Live mode
-        * IBService should be an initialization parameter
-        * Ports, etc, connection strings from config
         * Work with live market data
+        * Ensure works with multiple tickers
     """
     def __init__(
         self, ib_service, events_queue, param_tickers, settings, mode="historic",
