@@ -95,7 +95,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             contract.exchange = "SMART"
             contract.symbol = ticker
             contract.secType = "STK"
-            contract.currency = "AUD"
+            contract.currency = "AUD" # TODO -- Should PriceHandler take in a list of contracts?
 
         if self.mode == "historic":
             ib_ticker_id = len(self.tickers)

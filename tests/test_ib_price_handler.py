@@ -26,6 +26,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         self.price_handler = IBBarPriceHandler(
             self.ib_service, events_queue, init_tickers, self.config
         )
+        
 
     def tearDown(self):
         self.ib_service.stop_event.set()

@@ -92,7 +92,7 @@ class IBService(EWrapper, EClient, threading.Thread):
 
 
     """
-    TODO document
+    TODO document usage
     """
     def run(self):
         while (self.conn.isConnected() or not self.msg_queue.empty()) and not self.stop_event.is_set():
@@ -104,13 +104,9 @@ class IBService(EWrapper, EClient, threading.Thread):
                     self.disconnect()
                     break
             except queue.Empty:
-                print("queue.get: empty")
+                pass # TODO something more appropriate
             else:
                 fields = comm.read_fields(text)
-                print("fields %s", fields)
                 self.decoder.interpret(fields)
 
-            print("conn:%d queue.sz:%d",
-                         self.conn.isConnected(),
-                         self.msg_queue.qsize())
         self.disconnect()
