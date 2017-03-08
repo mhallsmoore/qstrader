@@ -45,14 +45,21 @@ class IBService(EWrapper, EClient, threading.Thread):
     is contained within this class exclusively, with the added benefit that we
     can easily create mock instances of the IBService for testing.
 
-    TODO: document usage (starting, stopping, using)
+    Several calls must be made to the IBService in order for it to run correctly.
+    These should be called from the user's main `trading-session` script.
+
+    An IBService object must be instantiated, immediately followed by the .connect()
+    call, immediately followed by the .start() call, which spawns a thread for the run loop.
+    When the trading session is complete, the service should be stopped gracefully by
+    calling ibservice.stop_event.set() to break the infinite loop, and ibservice.join()
+    to wait for the thread to close.
     """
     def __init__(self):
         EWrapper.__init__(self)
         EClient.__init__(self, wrapper=self)
         threading.Thread.__init__(self, name='IBService')
         self.stop_event = threading.Event()
-
+        # Set up data queues.
         self.historicalDataQueue = queue.Queue()
         self.waitingHistoricalData = []
 
@@ -92,7 +99,9 @@ class IBService(EWrapper, EClient, threading.Thread):
 
 
     """
-    TODO document usage
+    Overridden from the Threading class. Infinite loop which handles
+    message passing from IB to QSTrader. This loop is run in new thread when
+    started.
     """
     def run(self):
         while (self.conn.isConnected() or not self.msg_queue.empty()) and not self.stop_event.is_set():
