@@ -1,15 +1,15 @@
 from __future__ import print_function
-
-from ..compat import queue
-from ..event import EventType
-from ..price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
-from ..price_parser import PriceParser
-from ..position_sizer.fixed import FixedPositionSizer
-from ..risk_manager.example import ExampleRiskManager
-from ..portfolio_handler import PortfolioHandler
-from ..compliance.example import ExampleCompliance
-from ..execution_handler.ib_simulated import IBSimulatedExecutionHandler
-from ..statistics.tearsheet import TearsheetStatistics
+from datetime import datetime
+from .compat import queue
+from .event import EventType
+from .price_handler.yahoo_daily_csv_bar import YahooDailyCsvBarPriceHandler
+from .price_parser import PriceParser
+from .position_sizer.fixed import FixedPositionSizer
+from .risk_manager.example import ExampleRiskManager
+from .portfolio_handler import PortfolioHandler
+from .compliance.example import ExampleCompliance
+from .execution_handler.ib_simulated import IBSimulatedExecutionHandler
+from .statistics.tearsheet import TearsheetStatistics
 
 
 class TradingSession(object):
@@ -49,11 +49,11 @@ class TradingSession(object):
         self.title = title
         self.benchmark = benchmark
         self.session_type = session_type
-        self._config_backtest()
+        self._config_session()
         self.cur_time = None
 
         if self.session_type == "live":
-            if self.end_session_time == None:
+            if self.end_session_time is None:
                 raise Exception("Must specify an end_session_time when live trading")
 
     def _config_session(self):
@@ -149,7 +149,7 @@ class TradingSession(object):
                     else:
                         raise NotImplemented("Unsupported event.type '%s'" % event.type)
 
-    def do_trading(self, testing=False):
+    def start_trading(self, testing=False):
         """
         Runs either a backtest or live session, and outputs performance when complete.
         """
