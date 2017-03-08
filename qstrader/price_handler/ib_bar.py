@@ -46,16 +46,11 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         * Work with live market data
     """
     def __init__(
-        self, events_queue, param_tickers, settings, mode="historic",
+        self, ib_service, events_queue, param_tickers, settings, mode="historic",
         hist_end_date = datetime.datetime.now() - datetime.timedelta(days=3),
         hist_duration="5 D", hist_barsize="1 min"
     ):
-        self.ib_service = IBService()
-        self.ib_service.connect("127.0.0.1",4001,0)
-
-        # TODO move outside this class, call when backtest or live trading is finished
-        self.ib_service.start()
-
+        self.ib_service = ib_service
         self.barsize_lookup = {
             "1 sec": 1,
             "5 secs": 5,
@@ -120,11 +115,6 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         """
         while len(self.ib_service.waitingHistoricalData) != 0:
             pass
-
-        # TODO move outside this class, call when backtest or live trading is finished
-        self.ib_service.stop_event.set()
-        self.ib_service.join()
-
 
 
     def _merge_sort_ticker_data(self):

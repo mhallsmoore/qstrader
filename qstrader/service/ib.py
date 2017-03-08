@@ -95,7 +95,7 @@ class IBService(EWrapper, EClient, threading.Thread):
     TODO document
     """
     def run(self):
-        while (self.conn.isConnected() or not self.msg_queue.empty()) and not self.stop_event.is_set() :
+        while (self.conn.isConnected() or not self.msg_queue.empty()) and not self.stop_event.is_set():
             try:
                 text = self.msg_queue.get(block=True, timeout=0.2)
                 if len(text) > MAX_MSG_LEN:
