@@ -39,13 +39,14 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
 
     Uses the IBService to make requests and collect data once responses have returned.
 
+    `param_contracts` must be a list of IB Contract objects.
+
     TODO:
         * Historic/Live mode to be set by whether QSTrader is in Backtest or Live mode
         * Work with live market data
-        * Ensure works with multiple tickers
     """
     def __init__(
-        self, ib_service, events_queue, param_tickers, settings, mode="historic",
+        self, ib_service, events_queue, param_contracts, settings, mode="historic",
         hist_end_date = datetime.datetime.now() - datetime.timedelta(days=3),
         hist_duration="5 D", hist_barsize="1 min"
     ):
@@ -65,6 +66,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             "8 hours": 28800,
             "1 day": 86400
         }
+        self.tickers = {} # Required to be populated for some parent methods.
         self.bar_stream = queue.Queue()
         self.events_queue = events_queue
         self.mode = mode
@@ -74,38 +76,33 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self.qst_barsize = self.barsize_lookup[hist_barsize]
         self.ib_barsize = hist_barsize
 
-        # The position of a ticker in this dict is used as its IB ID.
-        self.tickers = {} # TODO gross
-        self.ticker_lookup = {}
+        # The position of a contract in this dict is used as its IB ID.
+        self.contracts = {} # TODO gross
+        self.contract_lookup = {}
 
-        for ticker in param_tickers:  # TODO gross param_tickers -- combine above?
-            self._subscribe_ticker(ticker)
+        for contract in param_contracts:  # TODO gross param_contracts -- combine above?
+            self._subscribe_contract(contract)
 
         self._wait_for_hist_population()
-        self._merge_sort_ticker_data()
+        self._merge_sort_contract_data()
 
-    def _subscribe_ticker(self, ticker):
+    def _subscribe_contract(self, contract):
         """
-        Request ticker data from IB
+        Request contract data from IB
         """
-        if ticker not in self.tickers:
-            # Set up an IB ContractS
-            contract = Contract()
-            contract.exchange = "SMART"
-            contract.symbol = ticker
-            contract.secType = "STK"
-            contract.currency = "AUD" # TODO -- Should PriceHandler take in a list of contracts?
+        # Add ticker symbol, as required by some parent methods
+        self.tickers[contract.symbol] = {}
 
         if self.mode == "historic":
-            ib_ticker_id = len(self.tickers)
+            ib_contract_id = len(self.contracts)
             end_time = datetime.datetime.strftime(self.hist_end_date, "%Y%m%d 17:00:00")
             self.ib_service.reqHistoricalData(
-                ib_ticker_id, contract, end_time, self.hist_duration, self.ib_barsize,
+                ib_contract_id, contract, end_time, self.hist_duration, self.ib_barsize,
                 "TRADES", True, 2, None)
 
         # TODO gross
-        self.ticker_lookup[len(self.tickers)] = ticker
-        self.tickers[ticker] = {}
+        self.contract_lookup[len(self.contracts)] = contract.symbol
+        self.contracts[contract] = {}
 
 
     def _wait_for_hist_population(self):
@@ -116,7 +113,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             pass
 
 
-    def _merge_sort_ticker_data(self):
+    def _merge_sort_contract_data(self):
         """
         Collects all the equities data from thte IBService, and populates the
         member Queue `self.bar_stream`. This queue is used for the `stream_next()`
@@ -134,7 +131,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         mkt_event is a tuple created according to the format:
         http:////www.interactivebrokers.com/en/software/api/apiguide/java/historicaldata.htm
         """
-        ticker = self.ticker_lookup[mkt_event[0]]
+        symbol = self.contract_lookup[mkt_event[0]]
         time = datetime.datetime.fromtimestamp(int(mkt_event[1]))
         barsize = self.qst_barsize
         open_price = PriceParser.parse(mkt_event[2])
@@ -144,7 +141,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         adj_close_price = PriceParser.parse(mkt_event[5]) # TODO redundant?
         volume = mkt_event[6]
         return BarEvent(
-            ticker, time, barsize, open_price, high_price,
+            symbol, time, barsize, open_price, high_price,
             low_price, close_price, volume, adj_close_price
         )
 

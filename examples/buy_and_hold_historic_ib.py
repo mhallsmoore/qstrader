@@ -7,6 +7,7 @@ from qstrader.compat import queue
 from qstrader.trading_session.backtest import Backtest
 from qstrader.service.ib import IBService
 from qstrader.price_handler.ib_bar import IBBarPriceHandler
+from ibapi.contract import *
 
 class BuyAndHoldStrategy(AbstractStrategy):
     """
@@ -39,10 +40,8 @@ class BuyAndHoldStrategy(AbstractStrategy):
 
 def run(config, testing, tickers, filename):
     # Backtest information
-    title = ['Buy and Hold Example on %s' % tickers[0]]
+    title = ['Buy and Hold Historic IB Example']
     initial_equity = 10000.0
-    start_date = datetime.datetime(2000, 1, 1)
-    end_date = datetime.datetime(2014, 1, 1)
     events_queue = queue.Queue()
 
     # Set up IBService
@@ -50,13 +49,32 @@ def run(config, testing, tickers, filename):
     ib_service.connect("127.0.0.1", 4001, 0) # TODO from config
     ib_service.start()
 
-    # Set up the IB PriceHandler
+    # Set up IB Contract objects for the PriceHandler
+    # MORE INFO: https://www.interactivebrokers.com/en/?f=%2Fen%2Fgeneral%2Fcontact%2FtipsContractsDatabaseSearch.php%3Fib_entity%3Dllc
+    symbols = ["CBA", "BHP", "STO", "FMG", "WOW", "WES"]
+    contracts = []
+    for symbol in symbols:
+        contract = Contract()
+        contract.exchange = "SMART"
+        contract.symbol = symbol
+        contract.secType = "STK"
+        contract.currency = "AUD"
+        contracts.append(contract)
+
+    # Set up the IB PriceHandler. Want 5 day's of minute bars, up to yesterday.
+    # Look at IB Documentation for possible values.
+    end_date = datetime.datetime.now() - datetime.timedelta(days=1)
     price_handler = IBBarPriceHandler(
-        ib_service, events_queue, tickers, config
+        ib_service, events_queue, contracts, config,
+        "historic", end_date, hist_duration="5 D", hist_barsize="1 min"
     )
 
     # Use the Buy and Hold Strategy
     strategy = BuyAndHoldStrategy(tickers, events_queue)
+
+    # Start/End TODO redundant -- only required for default (Yahoo) price handler 
+    start_date = datetime.datetime(2000, 1, 1)
+    end_date = datetime.datetime(2014, 1, 1)
 
     # Set up the backtest
     backtest = Backtest(
