@@ -6,7 +6,7 @@ from qstrader.strategy.base import AbstractStrategy
 from qstrader.position_sizer.rebalance import LiquidateRebalancePositionSizer
 from qstrader.event import SignalEvent, EventType
 from qstrader.compat import queue
-from qstrader.trading_session.backtest import Backtest
+from qstrader.trading_session import TradingSession
 
 
 class MonthlyLiquidateRebalanceStrategy(AbstractStrategy):
@@ -87,13 +87,13 @@ def run(config, testing, tickers, filename):
     )
 
     # Set up the backtest
-    backtest = Backtest(
+    backtest = TradingSession(
         config, strategy, tickers,
         initial_equity, start_date, end_date,
         events_queue, position_sizer=position_sizer,
         title=title, benchmark=tickers[0],
     )
-    results = backtest.simulate_trading(testing=testing)
+    results = backtest.start_trading(testing=testing)
     return results
 
 
