@@ -1,35 +1,9 @@
-import os
 import datetime
 import queue
 import pandas as pd
 from .base import AbstractBarPriceHandler
 from ..event import BarEvent
-
 from ..price_parser import PriceParser
-from qstrader.service.ib import IBService
-
-from ibapi.client import EClient
-from ibapi.wrapper import EWrapper
-from ibapi.utils import iswrapper
-from ibapi.contract import *
-from ibapi.common import *
-
-
-
-#types
-from ibapi.utils import (current_fn_name, BadMessage)
-from ibapi.common import *
-from ibapi.order_condition import *
-from ibapi.contract import *
-from ibapi.order import *
-from ibapi.order_state import *
-from ibapi.execution import Execution
-from ibapi.execution import ExecutionFilter
-from ibapi.commission_report import CommissionReport
-from ibapi.scanner import ScannerSubscription
-from ibapi.ticktype import *
-
-from ibapi.account_summary_tags import *
 
 
 class IBBarPriceHandler(AbstractBarPriceHandler):
@@ -50,7 +24,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
     """
     def __init__(
         self, ib_service, events_queue, param_contracts, settings, mode="historic",
-        hist_end_date = datetime.datetime.now() - datetime.timedelta(days=3),
+        hist_end_date=datetime.datetime.now() - datetime.timedelta(days=3),
         hist_duration="5 D", hist_barsize="1 min"
     ):
         self.ib_service = ib_service
@@ -69,7 +43,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
             "8 hours": 28800,
             "1 day": 86400
         }
-        self.tickers = {} # Required to be populated for some parent methods.
+        self.tickers = {}  # Required to be populated for some parent methods.
         self.bar_stream = queue.Queue()
         self.events_queue = events_queue
         self.mode = mode
@@ -78,14 +52,11 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self.hist_duration = hist_duration
         self.qst_barsize = self.barsize_lookup[hist_barsize]
         self.ib_barsize = hist_barsize
-
         # The position of a contract in this dict is used as its IB ID.
-        self.contracts = {} # TODO gross
+        self.contracts = {}  # TODO gross
         self.contract_lookup = {}
-
         for contract in param_contracts:  # TODO gross param_contracts -- combine above?
             self._subscribe_contract(contract)
-
         self._wait_for_hist_population()
         self._merge_sort_contract_data()
 
@@ -95,18 +66,15 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         """
         # Add ticker symbol, as required by some parent methods
         self.tickers[contract.symbol] = {}
-
         if self.mode == "historic":
             ib_contract_id = len(self.contracts)
             end_time = datetime.datetime.strftime(self.hist_end_date, "%Y%m%d 17:00:00")
             self.ib_service.reqHistoricalData(
                 ib_contract_id, contract, end_time, self.hist_duration, self.ib_barsize,
                 "TRADES", True, 2, None)
-
         # TODO gross
         self.contract_lookup[len(self.contracts)] = contract.symbol
         self.contracts[contract] = {}
-
 
     def _wait_for_hist_population(self):
         """
@@ -114,7 +82,6 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         """
         while len(self.ib_service.waitingHistoricalData) != 0:
             pass
-
 
     def _merge_sort_contract_data(self):
         """
@@ -129,7 +96,6 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         for bar_tuple in historicalData:
             self.bar_stream.put(bar_tuple)
 
-
     def _create_event(self, mkt_event):
         """
         mkt_event is a tuple created according to the format:
@@ -142,13 +108,12 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         high_price = PriceParser.parse(mkt_event[3])
         low_price = PriceParser.parse(mkt_event[4])
         close_price = PriceParser.parse(mkt_event[5])
-        adj_close_price = PriceParser.parse(mkt_event[5]) # TODO redundant?
+        adj_close_price = PriceParser.parse(mkt_event[5])  # TODO redundant?
         volume = mkt_event[6]
         return BarEvent(
             symbol, time, barsize, open_price, high_price,
             low_price, close_price, volume, adj_close_price
         )
-
 
     def stream_next(self):
         """
@@ -157,8 +122,8 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         try:
             # Create, store and return the bar event.
             mkt_event = self.bar_stream.get(False)
-            bev = self._create_event(mkt_event);
+            bev = self._create_event(mkt_event)
             self._store_event(bev)
             self.events_queue.put(bev)
-        except Queue.Empty:
+        except queue.Empty:
             self.continue_backtest = False

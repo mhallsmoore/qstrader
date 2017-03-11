@@ -1,14 +1,11 @@
 import unittest
-import mock
-import queue
 import numpy as np
 import pandas as pd
 from qstrader.price_parser import PriceParser
 from qstrader.price_handler.ib_bar import IBBarPriceHandler
 from qstrader.compat import queue
-from qstrader.service.ib import IBService
 from qstrader import settings
-from ibapi.contract import *
+from ibapi.contract import Contract
 
 
 # Starting at 2017-01-01 13:00:00, 1 minute bars.
@@ -23,21 +20,20 @@ class IBServiceMock(object):
         self.countHistoricalRequestsMade = 0
         # Populate some historic data for the mock service.
         # CBA mock data
-        for i in range(0,10):
+        for i in range(0, 10):
             self.historicalDataQueue.put((0, timestamp + (i * 60),
-                                            closes[i], closes[i]+1,
-                                            closes[i]-1, closes[i+1],
-                                            1000000, 100, closes[i], False))
+                                         closes[i], closes[i] + 1,
+                                         closes[i] - 1, closes[i + 1],
+                                         1000000, 100, closes[i], False))
         # BHP mock data
-        for i in range(0,10):
+        for i in range(0, 10):
             self.historicalDataQueue.put((1, timestamp + (i * 60),
-                                            closes[i]/2, closes[i]+1/2,
-                                            (closes[i]-1)/2, closes[i+1]/2,
-                                            1000000, 100, closes[i]/2, False))
+                                         closes[i] / 2, closes[i] + 1 / 2,
+                                         (closes[i] - 1) / 2, closes[i + 1] / 2,
+                                         1000000, 100, closes[i] / 2, False))
 
     def reqHistoricalData(self, *arg):
         self.countHistoricalRequestsMade += 1
-
 
 
 class TestPriceHandlerSimpleCase(unittest.TestCase):
@@ -52,7 +48,6 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         """
         self.ib_service = IBServiceMock()
         self.config = settings.TEST
-        fixtures_path = self.config.CSV_DATA_DIR
         events_queue = queue.Queue()
 
         # Set up an IB Contract for CBA and BHP
@@ -70,9 +65,8 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
 
         # Create the price handler.
         self.price_handler = IBBarPriceHandler(
-            self.ib_service, events_queue, [cba,bhp], self.config
+            self.ib_service, events_queue, [cba, bhp], self.config
         )
-
 
     def test_stream_all_historic_events(self):
         """
@@ -86,22 +80,22 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             self.price_handler.stream_next()
             self.assertEqual(
                 self.price_handler.tickers["CBA"]["timestamp"],
-                pd.Timestamp((timestamp + (i*60)) * 1e9)
+                pd.Timestamp((timestamp + (i * 60)) * 1e9)
             )
             self.assertEqual(
                 PriceParser.display(self.price_handler.tickers["CBA"]["close"]),
-                closes[i+1] # Close is next open
+                closes[i + 1]  # Close is next open
             )
 
             # Test BHP
             self.price_handler.stream_next()
             self.assertEqual(
                 self.price_handler.tickers["BHP"]["timestamp"],
-                pd.Timestamp((timestamp + (i*60)) * 1e9)
+                pd.Timestamp((timestamp + (i * 60)) * 1e9)
             )
             self.assertEqual(
                 PriceParser.display(self.price_handler.tickers["BHP"]["close"]),
-                closes[i+1]/2 # Close is next open
+                closes[i + 1] / 2  # Close is next open
             )
 
     def test_made_historical_requests(self):

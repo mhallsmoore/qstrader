@@ -1,32 +1,11 @@
-import sys
-import argparse
-import datetime
-import collections
-import inspect
 import queue
 import threading
-import logging
-import time
-import os.path
-
+from ibapi import comm
 from ibapi.wrapper import EWrapper
 from ibapi.client import EClient
-from ibapi.utils import iswrapper
-
-#types
-from ibapi.utils import (current_fn_name, BadMessage)
-from ibapi.common import *
-from ibapi.order_condition import *
-from ibapi.contract import *
-from ibapi.order import *
-from ibapi.order_state import *
-from ibapi.execution import Execution
-from ibapi.execution import ExecutionFilter
-from ibapi.commission_report import CommissionReport
-from ibapi.scanner import ScannerSubscription
-from ibapi.ticktype import *
-
-from ibapi.account_summary_tags import *
+from ibapi.common import NO_VALID_ID, MAX_MSG_LEN, TickerId, TagValueList
+from ibapi.contract import Contract
+from ibapi.errors import BAD_LENGTH
 
 
 class IBService(EWrapper, EClient, threading.Thread):
@@ -63,40 +42,36 @@ class IBService(EWrapper, EClient, threading.Thread):
         self.historicalDataQueue = queue.Queue()
         self.waitingHistoricalData = []
 
-
-    def error(self, reqId:TickerId, errorCode:int, errorString:str):
+    def error(self, reqId: TickerId, errorCode: int, errorString: str):
         super().error(reqId, errorCode, errorString)
-        print("Error. Id: " , reqId, " Code: " , errorCode , " Msg: " , errorString)
-
+        print("Error. Id: ", reqId, " Code: ", errorCode, " Msg: ", errorString)
 
     """
     Append `reqId` to waitingHistoricalData, then call the super method.
     """
-    def reqHistoricalData(self, reqId:TickerId , contract:Contract, endDateTime:str,
-                          durationStr:str, barSizeSetting:str, whatToShow:str,
-                          useRTH:int, formatDate:int, chartOptions:TagValueList):
+    def reqHistoricalData(self, reqId: TickerId, contract: Contract, endDateTime: str,
+                          durationStr: str, barSizeSetting: str, whatToShow: str,
+                          useRTH: int, formatDate: int, chartOptions: TagValueList):
         self.waitingHistoricalData.append(reqId)
-        super().reqHistoricalData( reqId, contract, endDateTime,
+        super().reqHistoricalData(reqId, contract, endDateTime,
                                   durationStr, barSizeSetting, whatToShow,
                                   useRTH, formatDate, chartOptions)
-
 
     """
     Populate the HistoricalData queue.
     """
-    def historicalData(self, reqId:TickerId , date:str, open:float, high:float,
-                       low:float, close:float, volume:int, barCount:int,
-                        WAP:float, hasGaps:int):
+    def historicalData(self, reqId: TickerId, date: str, open: float, high: float,
+                       low: float, close: float, volume: int, barCount: int,
+                       WAP: float, hasGaps: int):
         self.historicalDataQueue.put((reqId, date, open, high, low, close,
-                                        volume, barCount, WAP, hasGaps))
+                                     volume, barCount, WAP, hasGaps))
 
     """
     Remove `reqId` from waitingHistoricalData
     TODO: Will it work with multiple historical requests for same symbol?
     """
-    def historicalDataEnd(self, reqId:int, start:str, end:str):
+    def historicalDataEnd(self, reqId: int, start: str, end: str):
         self.waitingHistoricalData.remove(reqId)
-
 
     """
     Overridden from the Threading class. Infinite loop which handles
@@ -109,11 +84,11 @@ class IBService(EWrapper, EClient, threading.Thread):
                 text = self.msg_queue.get(block=True, timeout=0.2)
                 if len(text) > MAX_MSG_LEN:
                     self.wrapper.error(NO_VALID_ID, BAD_LENGTH.code(),
-                        "%s:%d:%s" % (BAD_LENGTH.msg(), len(text), text))
+                                       "%s:%d:%s" % (BAD_LENGTH.msg(), len(text), text))
                     self.disconnect()
                     break
             except queue.Empty:
-                pass # TODO something more appropriate
+                pass  # TODO something more appropriate
             else:
                 fields = comm.read_fields(text)
                 self.decoder.interpret(fields)

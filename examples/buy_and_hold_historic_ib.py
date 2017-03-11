@@ -7,7 +7,8 @@ from qstrader.compat import queue
 from qstrader.trading_session.backtest import Backtest
 from qstrader.service.ib import IBService
 from qstrader.price_handler.ib_bar import IBBarPriceHandler
-from ibapi.contract import *
+from ibapi.contract import Contract
+
 
 class BuyAndHoldStrategy(AbstractStrategy):
     """
@@ -46,7 +47,7 @@ def run(config, testing, tickers, filename):
 
     # Set up IBService
     ib_service = IBService()
-    ib_service.connect("127.0.0.1", 4001, 0) # TODO from config
+    ib_service.connect("127.0.0.1", 4001, 0)  # TODO from config
     ib_service.start()
 
     # Set up IB Contract objects for the PriceHandler
@@ -72,7 +73,7 @@ def run(config, testing, tickers, filename):
     # Use the Buy and Hold Strategy
     strategy = BuyAndHoldStrategy(tickers, events_queue)
 
-    # Start/End TODO redundant -- only required for default (Yahoo) price handler 
+    # Start/End TODO redundant -- only required for default (Yahoo) price handler.
     start_date = datetime.datetime(2000, 1, 1)
     end_date = datetime.datetime(2014, 1, 1)
 
