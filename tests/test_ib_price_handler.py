@@ -2,6 +2,7 @@ import unittest
 import mock
 import queue
 import numpy as np
+import pandas as pd
 from qstrader.price_parser import PriceParser
 from qstrader.price_handler.ib_bar import IBBarPriceHandler
 from qstrader.compat import queue
@@ -9,7 +10,11 @@ from qstrader.service.ib import IBService
 from qstrader import settings
 from ibapi.contract import *
 
+
+# Starting at 2017-01-01 13:00:00, 1 minute bars.
+timestamp = 1483275600
 closes = np.arange(80.00, 91.00, 1)
+
 
 class IBServiceMock(object):
     def __init__(self):
@@ -17,8 +22,6 @@ class IBServiceMock(object):
         self.waitingHistoricalData = []
         self.countHistoricalRequestsMade = 0
         # Populate some historic data for the mock service.
-        # Starting at 2017-01-01 13:00:00, 1 minute bars.
-        timestamp = 1483275600
         # CBA mock data
         for i in range(0,10):
             self.historicalDataQueue.put((0, timestamp + (i * 60),
@@ -86,31 +89,31 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             * historic data is merge sorted correctly
             * historic data is streamed out correctly
         """
-        # Test Bar #1
-        self.price_handler.stream_next()
-        self.assertEqual(
-            self.price_handler.tickers["CBA"]["timestamp"].strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
-            "2017-01-01 13:00:00"
-        )
-        self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["CBA"]["close"]),
-            closes[1] # Close is next open
-        )
+        for i in range(0, 10):
+            # Test CBA
+            try:
+                self.price_handler.stream_next()
+                self.assertEqual(
+                    self.price_handler.tickers["CBA"]["timestamp"],
+                    pd.Timestamp((timestamp + (i*60)) * 1e9)
+                )
+                self.assertEqual(
+                    PriceParser.display(self.price_handler.tickers["CBA"]["close"]),
+                    closes[i+1] # Close is next open
+                )
 
-        # Test Bar #2
-        self.price_handler.stream_next()
-        self.assertEqual(
-            self.price_handler.tickers["BHP"]["timestamp"].strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
-            "2017-01-01 13:00:00"
-        )
-        self.assertEqual(
-            PriceParser.display(self.price_handler.tickers["BHP"]["close"]),
-            closes[1]/2 # Close is next open
-        )
+                # Test BHP
+                self.price_handler.stream_next()
+                self.assertEqual(
+                    self.price_handler.tickers["BHP"]["timestamp"],
+                    pd.Timestamp((timestamp + (i*60)) * 1e9)
+                )
+                self.assertEqual(
+                    PriceParser.display(self.price_handler.tickers["BHP"]["close"]),
+                    closes[i+1]/2 # Close is next open
+                )
+            except AssertionError:
+                import pdb; pdb.set_trace()
 
     def test_made_historical_requests(self):
         self.assertEqual(self.ib_service.countHistoricalRequestsMade, 2)

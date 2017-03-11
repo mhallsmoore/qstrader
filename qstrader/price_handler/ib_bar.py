@@ -133,7 +133,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         http:////www.interactivebrokers.com/en/software/api/apiguide/java/historicaldata.htm
         """
         symbol = self.contract_lookup[mkt_event[0]]
-        time = pd.Timestamp(int(mkt_event[1]) * 1e9)
+        time = pd.Timestamp(int(mkt_event[1]) * 10**9)
         barsize = self.qst_barsize
         open_price = PriceParser.parse(mkt_event[2])
         high_price = PriceParser.parse(mkt_event[3])
@@ -151,11 +151,11 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         """
         Create the next BarEvent and place it onto the event queue.
         """
-        mkt_event = self.bar_stream.get()
-        if self.bar_stream.empty():
-            self.continue_backtest = False
-        else:
+        try:
             # Create, store and return the bar event.
+            mkt_event = self.bar_stream.get(False)
             bev = self._create_event(mkt_event);
             self._store_event(bev)
             self.events_queue.put(bev)
+        except Queue.Empty:
+            self.continue_backtest = False
