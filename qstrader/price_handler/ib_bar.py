@@ -126,13 +126,14 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         for bar_tuple in historicalData:
             self.bar_stream.put(bar_tuple)
 
+
     def _create_event(self, mkt_event):
         """
         mkt_event is a tuple created according to the format:
         http:////www.interactivebrokers.com/en/software/api/apiguide/java/historicaldata.htm
         """
         symbol = self.contract_lookup[mkt_event[0]]
-        time = datetime.datetime.fromtimestamp(int(mkt_event[1]))
+        time = pd.Timestamp(int(mkt_event[1]) * 1e9)
         barsize = self.qst_barsize
         open_price = PriceParser.parse(mkt_event[2])
         high_price = PriceParser.parse(mkt_event[3])
