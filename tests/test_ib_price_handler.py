@@ -91,29 +91,26 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         """
         for i in range(0, 10):
             # Test CBA
-            try:
-                self.price_handler.stream_next()
-                self.assertEqual(
-                    self.price_handler.tickers["CBA"]["timestamp"],
-                    pd.Timestamp((timestamp + (i*60)) * 1e9)
-                )
-                self.assertEqual(
-                    PriceParser.display(self.price_handler.tickers["CBA"]["close"]),
-                    closes[i+1] # Close is next open
-                )
+            self.price_handler.stream_next()
+            self.assertEqual(
+                self.price_handler.tickers["CBA"]["timestamp"],
+                pd.Timestamp((timestamp + (i*60)) * 1e9)
+            )
+            self.assertEqual(
+                PriceParser.display(self.price_handler.tickers["CBA"]["close"]),
+                closes[i+1] # Close is next open
+            )
 
-                # Test BHP
-                self.price_handler.stream_next()
-                self.assertEqual(
-                    self.price_handler.tickers["BHP"]["timestamp"],
-                    pd.Timestamp((timestamp + (i*60)) * 1e9)
-                )
-                self.assertEqual(
-                    PriceParser.display(self.price_handler.tickers["BHP"]["close"]),
-                    closes[i+1]/2 # Close is next open
-                )
-            except AssertionError:
-                import pdb; pdb.set_trace()
+            # Test BHP
+            self.price_handler.stream_next()
+            self.assertEqual(
+                self.price_handler.tickers["BHP"]["timestamp"],
+                pd.Timestamp((timestamp + (i*60)) * 1e9)
+            )
+            self.assertEqual(
+                PriceParser.display(self.price_handler.tickers["BHP"]["close"]),
+                closes[i+1]/2 # Close is next open
+            )
 
     def test_made_historical_requests(self):
         self.assertEqual(self.ib_service.countHistoricalRequestsMade, 2)
