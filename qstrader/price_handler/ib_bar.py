@@ -44,6 +44,9 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
     TODO:
         * Historic/Live mode to be set by whether QSTrader is in Backtest or Live mode
         * Work with live market data
+        * Raise exceptions if the user enters data that
+          IB won't like (i.e. barsize/duration string formats)
+        * Decide/discuss approaches to handle IB's simultaneous data feed limit.
     """
     def __init__(
         self, ib_service, events_queue, param_contracts, settings, mode="historic",
