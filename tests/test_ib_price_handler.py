@@ -32,7 +32,7 @@ class IBServiceMock(object):
                                             (closes[i]-1)/2, closes[i+1]/2,
                                             1000000, 100, closes[i]/2, False))
 
-    def reqHistoricalData(*arg):
+    def reqHistoricalData(self, *arg):
         self.countHistoricalRequestsMade += 1
 
 
@@ -113,7 +113,7 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         )
 
     def test_made_historical_requests(self):
-        self.assertEqual(1, 2)
+        self.assertEqual(self.ib_service.countHistoricalRequestsMade, 2)
 
     def test_can_handle_all_bar_sizes(self):
         self.assertEqual(1, 2)
