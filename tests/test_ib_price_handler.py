@@ -1,9 +1,11 @@
 import unittest
+from unittest.mock import MagicMock
 
 from qstrader.price_handler.ib_bar import IBBarPriceHandler
 from qstrader.compat import queue
 from qstrader.service.ib import IBService
 from qstrader import settings
+from ibapi.contract import *
 
 class TestPriceHandlerSimpleCase(unittest.TestCase):
     def setUp(self):
@@ -14,8 +16,6 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
         For now, while testing locally with IB (i.e. not Travis), implement
         all real IB functionality (i.e. set up service)
 
-
-
         TODO:
             * Mock IB Service, populate dummy data.
             * Duplicate tests from test_price_handler
@@ -23,28 +23,47 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
             * Test multiple tickers
             * Test multiple timeframes
             * Test returned date formats
+            * Test mocked live market data methods
         """
-        self.ib_service = IBService()
-        self.ib_service.connect("127.0.0.1",4001,0) # TODO remove & replace with mock when happy
-        self.ib_service.start()
-
-
+        self.ib_service = MagicMock()
         self.config = settings.TEST
         fixtures_path = self.config.CSV_DATA_DIR
         events_queue = queue.Queue()
-        init_tickers = ["CBA"]
+
+        # Set up an IB Contract/
+        contract = Contract()
+        contract.exchange = "SMART"
+        contract.symbol = "CBA"
+        contract.secType = "STK"
+        contract.currency = "AUD"
+
+        # Create the price handler.
         self.price_handler = IBBarPriceHandler(
-            self.ib_service, events_queue, init_tickers, self.config
+            self.ib_service, events_queue, [contract], self.config
         )
 
+    def test_stream_all_historic_events(self):
+        """
+        Will test that:
+            * historic data is collected from IBService
+            * historic data is merge sorted correctly
+            * historic data is streamed out correctly
+        """
+        self.assertEqual(1, 2)
 
-    def tearDown(self):
-        self.ib_service.stop_event.set()
-        self.ib_service.join()
+    def test_made_historical_requests(self):
+        self.assertEqual(1, 2)
+
+    def test_can_handle_all_bar_sizes(self):
+        self.assertEqual(1, 2)
+
+    def test_can_do_reqid_to_ticker_lookup(self):
+        self.assertEqual(1, 2)
+
+    def test_get_best_bid_ask(self):
+        self.assertEqual(1, 2)
 
 
-    def test(self):
-        self.assertEqual(1,2)
 
 
 
