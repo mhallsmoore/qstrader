@@ -118,12 +118,6 @@ class TestPriceHandlerSimpleCase(unittest.TestCase):
     def test_can_handle_all_bar_sizes(self):
         self.assertEqual(1, 2)
 
-    def test_can_do_reqid_to_ticker_lookup(self):
-        self.assertEqual(1, 2)
-
-    def test_get_best_bid_ask(self):
-        self.assertEqual(1, 2)
-
 
 
 
