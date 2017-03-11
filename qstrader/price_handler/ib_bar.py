@@ -1,6 +1,6 @@
 import datetime
-import queue
 import pandas as pd
+from qstrader.compat import queue
 from .base import AbstractBarPriceHandler
 from ..event import BarEvent
 from ..price_parser import PriceParser
