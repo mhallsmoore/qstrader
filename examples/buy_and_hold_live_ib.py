@@ -41,7 +41,7 @@ class BuyAndHoldStrategy(AbstractStrategy):
 
 def run(config, testing, tickers, filename):
     # Backtest information
-    title = ['Buy and Hold Historic IB Example']
+    title = ['Buy and Hold Live IB Example -- 5 Sec Bars']
     initial_equity = 10000.0
     events_queue = queue.Queue()
 
@@ -67,7 +67,7 @@ def run(config, testing, tickers, filename):
     end_date = datetime.datetime.now() - datetime.timedelta(days=1)
     price_handler = IBBarPriceHandler(
         ib_service, events_queue, contracts, config,
-        "historic", end_date, hist_duration="5 D", barsize="1 min"
+        "live"
     )
 
     # Use the Buy and Hold Strategy
@@ -78,12 +78,14 @@ def run(config, testing, tickers, filename):
     end_date = datetime.datetime(2014, 1, 1)
 
     # Set up the backtest
-    backtest = TradingSession(
+    session = TradingSession(
         config, strategy, tickers,
         initial_equity, start_date, end_date,
-        events_queue, price_handler=price_handler, title=title
+        events_queue, session_type="live",
+        end_session_time=datetime.datetime.now() + datetime.timedelta(minutes=1),
+        price_handler=price_handler, title=title
     )
-    results = backtest.start_trading(testing=testing)
+    results = session.start_trading(testing=testing)
 
     # Disconnect from services
     ib_service.stop_event.set()

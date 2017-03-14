@@ -16,6 +16,9 @@ class TradingSession(object):
     """
     Enscapsulates the settings and components for
     carrying out either a backtest or live trading session.
+
+    TODO logic leak from here/pricehandler with live & end_session_time,
+         code smell. I.e. we set end_time differently when live vs historic.
     """
     def __init__(
         self, config, strategy, tickers,
@@ -51,6 +54,7 @@ class TradingSession(object):
         self.session_type = session_type
         self._config_session()
         self.cur_time = None
+        self.end_session_time = end_session_time
 
         if self.session_type == "live":
             if self.end_session_time is None:

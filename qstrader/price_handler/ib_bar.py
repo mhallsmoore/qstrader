@@ -53,6 +53,10 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self.hist_duration = hist_duration
         self.qst_barsize = self.barsize_lookup[hist_barsize]
         self.ib_barsize = hist_barsize
+        # IB Only supports `5` as an int, for live barsize.
+        if self.mode == "live":
+            self.ib_barsize = 5
+
         # The position of a contract in this dict is used as its IB ID.
         self.contracts = {}  # TODO gross
         self.contract_lookup = {}
