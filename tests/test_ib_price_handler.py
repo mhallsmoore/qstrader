@@ -24,6 +24,7 @@ closes = np.arange(80.00, 91.00, 1)
 class IBServiceMock(object):
     def __init__(self):
         self.historicalDataQueue = queue.Queue()
+        self.realtimeBarQueue = queue.Queue()
         self.waitingHistoricalData = []
         self.countHistoricalRequestsMade = 0
         self.countMarketDataRequestsMade = 0
@@ -41,10 +42,25 @@ class IBServiceMock(object):
                                          (closes[i] - 1) / 2, closes[i + 1] / 2,
                                          1000000, 100, closes[i] / 2, False))
 
+        # Populate mock realtimeBars
+        for i in range(0, 10):
+            # CBA
+            self.realtimeBarQueue.put((0, timestamp + (i * 60),
+                                      closes[i], closes[i] + 1,
+                                      closes[i] - 1, closes[i + 1],
+                                      1000000, 100, closes[i], False))
+            # BHP
+            self.realtimeBarQueue.put((1, timestamp + (i * 60),
+                                      closes[i] / 2, closes[i] + 1 / 2,
+                                      (closes[i] - 1) / 2, closes[i + 1] / 2,
+                                      1000000, 100, closes[i] / 2, False))
+
+
+
     def reqHistoricalData(self, *arg):
         self.countHistoricalRequestsMade += 1
 
-    def reqMktData(self, *arg):
+    def reqRealTimeBars(self, *arg):
         self.countMarketDataRequestsMade += 1
 
 
@@ -58,6 +74,8 @@ class TestPriceHandlerLiveCase(unittest.TestCase):
             * Test multiple timeframes
             * Test successfully cancels market data feeds
             * Test handling of maxing out IB's market data streaming connections
+            * Test that live can understand 'start' of a bar, but historic
+              might use 'end' of a bar (RE timestamps)??
         """
         self.ib_service = IBServiceMock()
         self.config = settings.TEST

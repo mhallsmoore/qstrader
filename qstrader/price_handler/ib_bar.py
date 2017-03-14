@@ -21,6 +21,7 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         * Raise exceptions if the user enters data that
           IB won't like (i.e. barsize/duration string formats)
         * Decide/discuss approaches to handle IB's simultaneous data feed limit.
+        * Decide/discuss on support of live market data (ticks, opposed to bars)
     """
     def __init__(
         self, ib_service, events_queue, param_contracts, settings, mode="historic",
@@ -57,8 +58,11 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         self.contract_lookup = {}
         for contract in param_contracts:  # TODO gross param_contracts -- combine above?
             self._subscribe_contract(contract)
-        self._wait_for_hist_population()
-        self._merge_sort_contract_data()
+        if self.mode == "historic":
+            self._wait_for_hist_population()
+            self._merge_sort_contract_data()
+        elif self.mode == "live":  # Assign a reference to the live bars populated by IB.
+            self.bar_stream = self.ib_service.realtimeBarQueue
 
     def _subscribe_contract(self, contract):
         """
@@ -66,12 +70,20 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         """
         # Add ticker symbol, as required by some parent methods
         self.tickers[contract.symbol] = {}
+        if self.mode == "live":
+            ib_contract_id = len(self.contracts)
+            end_time = datetime.datetime.strftime(self.hist_end_date, "%Y%m%d 17:00:00")
+            self.ib_service.reqRealTimeBars(
+                ib_contract_id, contract, self.ib_barsize, "TRADES", True, None
+            )
+
         if self.mode == "historic":
             ib_contract_id = len(self.contracts)
             end_time = datetime.datetime.strftime(self.hist_end_date, "%Y%m%d 17:00:00")
             self.ib_service.reqHistoricalData(
                 ib_contract_id, contract, end_time, self.hist_duration, self.ib_barsize,
                 "TRADES", True, 2, None)
+
         # TODO gross
         self.contract_lookup[len(self.contracts)] = contract.symbol
         self.contracts[contract] = {}
@@ -88,6 +100,8 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
         Collects all the equities data from thte IBService, and populates the
         member Queue `self.bar_stream`. This queue is used for the `stream_next()`
         function.
+
+        Note this is not necessary for live data.
         """
         historicalData = []
         while not self.ib_service.historicalDataQueue.empty():
@@ -118,6 +132,8 @@ class IBBarPriceHandler(AbstractBarPriceHandler):
     def stream_next(self):
         """
         Create the next BarEvent and place it onto the event queue.
+
+        TODO make more clear if differences between live/historic?
         """
         try:
             # Create, store and return the bar event.

@@ -39,6 +39,7 @@ class IBService(EWrapper, EClient, threading.Thread):
         threading.Thread.__init__(self, name='IBService')
         self.stop_event = threading.Event()
         # Set up data queues.
+        self.realtimeBarQueue = queue.Queue()
         self.historicalDataQueue = queue.Queue()
         self.waitingHistoricalData = []
 
@@ -56,6 +57,16 @@ class IBService(EWrapper, EClient, threading.Thread):
         super().reqHistoricalData(reqId, contract, endDateTime,
                                   durationStr, barSizeSetting, whatToShow,
                                   useRTH, formatDate, chartOptions)
+
+    """
+    Populate the RealTimeBars queue.
+    Note that `time` is the start of the bar
+    """
+    def realtimeBar(self, reqId: TickerId, time:int, open: float, high: float,
+                    low: float, close: float, volume: float,
+                    wap: float, count: int):
+        self.realtimeBarQueue.put((reqId, time, open, high, low, close,
+                                  volume, wap, count))
 
     """
     Populate the HistoricalData queue.
