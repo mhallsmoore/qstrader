@@ -62,7 +62,7 @@ class IBService(EWrapper, EClient, threading.Thread):
     Populate the RealTimeBars queue.
     Note that `time` is the start of the bar
     """
-    def realtimeBar(self, reqId: TickerId, time:int, open: float, high: float,
+    def realtimeBar(self, reqId: TickerId, time: int, open: float, high: float,
                     low: float, close: float, volume: float,
                     wap: float, count: int):
         self.realtimeBarQueue.put((reqId, time, open, high, low, close,

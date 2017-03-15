@@ -10,6 +10,7 @@ from qstrader.service.ib import IBService
 from qstrader.price_handler.ib_bar import IBBarPriceHandler
 from ibapi.contract import Contract
 
+
 class DisplayStrategy(AbstractStrategy):
     """
     A strategy which display ticks / bars
@@ -103,7 +104,6 @@ def run(config, testing, tickers, filename):
     # Use the Buy and Hold Strategy
     strategy = Strategies(BuyAndHoldStrategy(tickers, events_queue), DisplayStrategy(n=20))
 
-
     # Start/End TODO redundant -- only required for default (Yahoo) price handler.
     start_date = datetime.datetime(2000, 1, 1)
     end_date = datetime.datetime(2014, 1, 1)
@@ -113,7 +113,7 @@ def run(config, testing, tickers, filename):
         config, strategy, tickers,
         initial_equity, start_date, end_date,
         events_queue, session_type="live",
-        end_session_time=datetime.datetime.now() + datetime.timedelta(minutes=1),
+        end_session_time=datetime.datetime.now() + datetime.timedelta(minutes=10),
         price_handler=price_handler, title=title
     )
     results = session.start_trading(testing=testing)

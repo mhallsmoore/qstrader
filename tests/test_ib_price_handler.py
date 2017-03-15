@@ -55,8 +55,6 @@ class IBServiceMock(object):
                                       (closes[i] - 1) / 2, closes[i + 1] / 2,
                                       1000000, 100, closes[i] / 2, False))
 
-
-
     def reqHistoricalData(self, *arg):
         self.countHistoricalRequestsMade += 1
 
