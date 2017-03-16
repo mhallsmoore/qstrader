@@ -47,6 +47,30 @@ class IBService(EWrapper, EClient, threading.Thread):
         super().error(reqId, errorCode, errorString)
         print("Error. Id: ", reqId, " Code: ", errorCode, " Msg: ", errorString)
 
+
+    """
+    Print portfolio position updates.
+    """
+    def updatePortfolio(self, contract: Contract, position: float, marketPrice: float,
+                        marketValue: float, averageCost: float, unrealizedPNL: float,
+                        realizedPNL: float, accountName: str):
+        super().updatePortfolio(contract, position, marketPrice, marketValue,
+                        averageCost, unrealizedPNL, realizedPNL, accountName)
+        print("UpdatePortfolio.", contract.symbol, "", contract.secType, "@",
+            contract.exchange, "Position:", position, "MarketPrice:", marketPrice,
+            "MarketValue:", marketValue, "AverageCost:", averageCost,
+            "UnrealizedPNL:", unrealizedPNL, "RealizedPNL:", realizedPNL,
+            "AccountName:", accountName)
+
+    """
+    Print account value
+    """
+    def updateAccountValue(self, key: str, val: str, currency: str, accountName: str):
+        super().updateAccountValue(key, val, currency, accountName)
+        print("UpdateAccountValue. Key:" ,key, "Value:", val,
+            "Currency:", currency, "AccountName:", accountName)
+
+
     """
     Append `reqId` to waitingHistoricalData, then call the super method.
     """
