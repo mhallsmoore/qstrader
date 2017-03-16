@@ -1,5 +1,6 @@
 import unittest
 from qstrader.ib_portfolio import IBPortfolio
+from qstrader.price_handler.ib_bar import IBBarPriceHandler
 from qstrader.service.ib import IBService
 from qstrader.compat import queue
 import time
@@ -13,8 +14,12 @@ class TestIBPortfolio(unittest.TestCase):
         self.ib_service = IBService()
         self.ib_service.connect("127.0.0.1", 4001, 0)
         self.ib_service.start()
+        self.events_queue = queue.Queue()
+        self.price_handler = IBBarPriceHandler(
+            self.ib_service, self.events_queue, [], None, mode="live"
+        )
         self.portfolio = IBPortfolio(
-            self.ib_service, None, 0
+            self.ib_service, self.price_handler, 0
         )
 
     def test_stream_portfolio_updates(self):

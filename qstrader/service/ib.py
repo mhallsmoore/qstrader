@@ -39,6 +39,7 @@ class IBService(EWrapper, EClient, threading.Thread):
         threading.Thread.__init__(self, name='IBService')
         self.stop_event = threading.Event()
         # Set up data queues.
+        self.portfolioUpdatesQueue = queue.Queue()
         self.realtimeBarQueue = queue.Queue()
         self.historicalDataQueue = queue.Queue()
         self.waitingHistoricalData = []
@@ -56,6 +57,9 @@ class IBService(EWrapper, EClient, threading.Thread):
                         realizedPNL: float, accountName: str):
         super().updatePortfolio(contract, position, marketPrice, marketValue,
                         averageCost, unrealizedPNL, realizedPNL, accountName)
+        self.portfolioUpdatesQueue.put((contract, position, marketPrice,
+                                        marketValue, averageCost, unrealizedPNL,
+                                        realizedPNL, accountName))
         print("UpdatePortfolio.", contract.symbol, "", contract.secType, "@",
             contract.exchange, "Position:", position, "MarketPrice:", marketPrice,
             "MarketValue:", marketValue, "AverageCost:", averageCost,

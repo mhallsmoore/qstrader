@@ -1,6 +1,8 @@
+import time
 from .position import Position
+from .portfolio import Portfolio
 
-class IBPortfolio(object):
+class IBPortfolio(Portfolio):
     def __init__(self, ib_service, price_handler, cash):
         """
         On creation, the IB Portfolio will request all current portfolio details
@@ -11,55 +13,34 @@ class IBPortfolio(object):
             * Bootstrap the portfolio by requesting current positions from IB
             * Decide where we handle OrderStatus() events (guessing ExecutionHandler)
         """
-        self.price_handler = price_handler
+        Portfolio.__init__(self, price_handler, cash)
         self.ib_service = ib_service
 
-        self.init_cash = cash
-        self.equity = cash
-        self.cur_cash = cash
-        self.positions = {}
-        self.closed_positions = []  # ???
-        self.realised_pnl = 0
-
-        # Request portfolio updates
+        # Bootstrap the portfolio by loading data from IB.
         self.ib_service.reqAccountUpdates(True, "")
+        time.sleep(5)  # Ugly, but no way to implement future/promise with IB's response?
+        while not self.ib_service.portfolioUpdatesQueue.empty():
+            # Create the position
+            portfolioUpdate = self.ib_service.portfolioUpdatesQueue.get(False)
+            contract = portfolioUpdate[0]
+            contract.exchange = contract.primaryExchange
+            position = Position(
+                "BOT" if portfolioUpdate[1] > 0 else "SLD",
+                contract.symbol, portfolioUpdate[1], 0, 0, 0, 0
+            )
+            # Override some of the position variables
+            if portfolioUpdate[1] > 0:
+                position.buys = portfolioUpdate[1]  ## TODO Confirm correct
+            else:
+                position.sells = portfolioUpdate[1] ## TODO Confirm correct
+            position.quantity = portfolioUpdate[1]
+            position.init_price = portfolioUpdate[4]
+            position.realised_pnl = portfolioUpdate[6]
+            position.unrealized_pnl = portfolioUpdate[5]
+            position.market_value = portfolioUpdate[3]
 
-    def _update_portfolio(self):
-        """
-        TODO needs to have listeners or notifications from:
-            * self.ib_service.updateAccountValue()
-            * self.ib_service.updatePortfolio()
-        Does this also need stubbing, if we're only updating based on IB Callbacks?
-        """
-        pass
+            # Add the position to the QSTrader portfolio
+            self.positions[contract.symbol] = position
 
-    def _add_position(
-        self, action, ticker,
-        quantity, price, commission
-    ):
-        """
-        TODO I believe should be handled from _update_portfolio iff a new position
-        comes through from IB's callback.
-        """
-        pass
-
-    def _modify_position(
-        self, action, ticker,
-        quantity, price, commission
-    ):
-        """
-        TODO I believe should be handled from _update_portfolio if a position
-        quantity changes between IB callbacks.
-        """
-        pass
-
-
-    def transact_position(
-        self, action, ticker,
-        quantity, price, commission
-    ):
-        """
-        TODO: Does this need stubbing if we'll be updating positions on the
-        IBService updatePortfolio() callback?
-        """
-        pass
+            # Subscribe the PriceHandler to this position so we get updates on value.
+            self.price_handler._subscribe_contract(contract)
