@@ -648,4 +648,4 @@ class TearsheetStatistics(AbstractStatistics):
 
     def save(self, filename=""):
         filename = self.get_filename(filename)
-        self.plot_results
+        self.plot_results(filename)
