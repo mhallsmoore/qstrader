@@ -64,7 +64,7 @@ Now that the library itself and requirements have been installed it is necessary
 ```
 mkdir -p ~/qstrader/examples ~/data ~/out
 cd ~/data
-wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/data/SP500TR.csv
+wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/data/SPY.csv
 cd ~/qstrader/examples
 wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/examples/buy_and_hold_backtest.py 
 ```
