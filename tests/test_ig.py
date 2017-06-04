@@ -21,7 +21,7 @@ class TestIGExecutionHandler(unittest.TestCase):
         self.test_sell_event = OrderEvent("CS.D.AUDUSD.TODAY.IP", "SELL", 1)
         self.test_buy_event = OrderEvent("CS.D.AUDUSD.TODAY.IP", "BOT", 1)
         self.events_queue = queue.Queue()
-        self.config = settings.from_file(settings.DEFAULT_CONFIG_DEMO_FILENAME, testing=True)
+        self.config = settings.from_file(settings.DEFAULT_CONFIG_FILENAME, testing=True)
         self.igclient = IGClient(self.config)
 
     def test_can_connect(self):
