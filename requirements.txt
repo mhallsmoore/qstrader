@@ -22,3 +22,4 @@ pyyaml>=3.11
 munch>=2.0.4
 enum34>=1.1.6
 multipledispatch>=0.4.8
+trading_ig=0.0.7
