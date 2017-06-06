@@ -1,6 +1,6 @@
 import unittest
 
-from qstrader.portfolio_handler.ig_portfolio import Portfolio
+from ig_portfolio import Portfolio
 from qstrader.price_handler.base import AbstractTickPriceHandler
 from qstrader.price_parser import PriceParser
 

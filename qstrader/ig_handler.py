@@ -1,5 +1,5 @@
-from qstrader.portfolio_handler.ig_portfolio import Portfolio
-from qstrader.portfolio_handler.base_handler import AbstractPortfolioHandler
+from base_handler import AbstractPortfolioHandler
+from ig_portfolio import Portfolio
 
 
 class PortfolioHandler(AbstractPortfolioHandler):
