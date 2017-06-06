@@ -2,7 +2,7 @@ import datetime
 import unittest
 from decimal import Decimal
 
-from ig_handler import PortfolioHandler
+from qstrader.ig_handler import PortfolioHandler
 from qstrader.compat import queue
 from qstrader.event import FillEvent, OrderEvent, SignalEvent
 from qstrader.price_handler.base import AbstractTickPriceHandler
