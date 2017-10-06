@@ -149,7 +149,7 @@ class TradingSession(object):
                     else:
                         raise NotImplemented("Unsupported event.type '%s'" % event.type)
 
-    def start_trading(self, testing=False):
+    def start_trading(self, testing=False, save=False):
         """
         Runs either a backtest or live session, and outputs performance when complete.
         """
@@ -164,5 +164,8 @@ class TradingSession(object):
             )
         )
         if not testing:
-            self.statistics.plot_results()
+            if save:
+                self.statistics.save()
+            else:               
+                self.statistics.plot_results()
         return results
