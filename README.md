@@ -10,7 +10,7 @@ It is currently being rewritten from the ground up such that:
 
 # Development
 
-QSTrader will now make use of the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow>`_ approach to version control and deployment.
+QSTrader will now make use of the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow) approach to version control and deployment.
 
 The most important point of this is that any new feature branches must be branched from the *deployment* branch such that all Pull Requests compare against *develop* rather than *master*. Only *release* branches will be merged into master for deployment.
 
