@@ -173,19 +173,19 @@ class Position(object):
         return self.current_trade_price * self.quantity
 
     @property
-    def gain(self):
+    def unr_gain(self):
         """
-        Calculate the absolute gain in currency of the position
-        based solely on the market value (i.e. remaining
-        unrealised gains).
+        Calculate the unrealised absolute gain in currency
+        of the position based solely on the market value.
         """
         return self.market_value - self.book_cost
 
     @property
-    def perc_gain(self):
+    def unr_perc_gain(self):
         """
-        Calculate the percentage gain of the position based solely
-        on the market value (i.e. remaining unrealised percentage
-        gains).
+        Calculate the unrealised percentage gain of the
+        position based solely on the market value.
         """
-        return (self.gain/self.book_cost)*100.0
+        if self.book_cost == 0.0:
+            return 0.0
+        return (self.direction*self.gain/self.book_cost)*100.0
