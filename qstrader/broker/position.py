@@ -188,4 +188,4 @@ class Position(object):
         """
         if self.book_cost == 0.0:
             return 0.0
-        return (self.direction*self.gain/self.book_cost)*100.0
+        return (self.direction*self.unr_gain/self.book_cost)*100.0
