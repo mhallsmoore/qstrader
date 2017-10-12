@@ -8,6 +8,14 @@ It is currently being rewritten from the ground up such that:
 * It is significantly more optimised for higher frequency trading
 * It makes use of up to date versions of Python (3.4-3.6) and libraries
 
+# Development
+
+QSTrader will now make use of the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow>`_ approach to version control and deployment.
+
+The most important point of this is that any new feature branches must be branched from the *deployment* branch such that all Pull Requests compare against *develop* rather than *master*. Only *release* branches will be merged into master for deployment.
+
+If you have not utilised a Gitflow workflow before please read the above link to familiarise yourself.
+
 # License Terms
 
 MIT License
