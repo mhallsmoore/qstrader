@@ -99,7 +99,7 @@ class PositionHandler(object):
         Calculate the sum of all the positions' book costs.
         """
         return sum(
-            pos.book_cost 
+            pos.book_cost
             for asset, pos in self.positions.items()
         )
 
@@ -130,4 +130,4 @@ class PositionHandler(object):
         tbc = self.total_book_cost()
         if tbc == 0.0:
             return 0.0
-        return (self.total_market_value() - tbc)/tbc*100.0
+        return (self.total_market_value() - tbc) / tbc * 100.0

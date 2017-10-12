@@ -243,10 +243,10 @@ class PositionHandlerTests(unittest.TestCase):
         )
         ph.transact_position(trans_pos_1)
         # Update values manually
-        quantity=100
-        current_trade_price=504.32
-        current_trade_date=pd.Timestamp('2015-05-07')
-        book_cost_ps=23.65
+        quantity = 100
+        current_trade_price = 504.32
+        current_trade_date = pd.Timestamp('2015-05-07')
+        book_cost_ps = 23.65
         ph.update_position(
             asset1,
             quantity=quantity,

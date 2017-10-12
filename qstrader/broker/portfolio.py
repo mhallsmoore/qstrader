@@ -64,7 +64,7 @@ class Portfolio(object):
     """
 
     def __init__(
-        self, start_dt, starting_cash=0.0, 
+        self, start_dt, starting_cash=0.0,
         currency="USD", portfolio_id=None, name=None
     ):
         """
@@ -83,7 +83,7 @@ class Portfolio(object):
         self.name = name
         self.total_value = starting_cash
         self.total_cash = starting_cash
-        
+
     def _set_currency(self):
         """
         Apply the correct currency symbols. Currently
@@ -120,15 +120,15 @@ class Portfolio(object):
         if amount < 0:
             raise PortfolioException(
                 'Cannot credit negative amount: '
-                '%s to the portfolio.' % \
-                    self._currency_format(amount)
+                '%s to the portfolio.' %
+                self._currency_format(amount)
             )
         self.total_cash += amount
         self.total_value += amount
         pe = PortfolioEvent(
-            date=dt, type='subscription', 
+            date=dt, type='subscription',
             description="SUBSCRIPTION",
-            debit=0.0, credit=round(amount, 2), 
+            debit=0.0, credit=round(amount, 2),
             balance=round(self.total_cash, 2)
         )
         self.history.append(pe)
@@ -164,9 +164,9 @@ class Portfolio(object):
         self.total_cash -= amount
         self.total_value -= amount
         pe = PortfolioEvent(
-            date=dt, type='withdrawal', 
+            date=dt, type='withdrawal',
             description="WITHDRAWAL",
-            debit=round(amount, 2), credit=0.0, 
+            debit=round(amount, 2), credit=0.0,
             balance=round(self.total_cash, 2)
         )
         self.history.append(pe)
@@ -201,13 +201,13 @@ class Portfolio(object):
         # Form Portfolio history details
         direction = "LONG" if tn.direction > 0 else "SHORT"
         description = "%s %s %s %0.2f %s" % (
-            direction, tn.quantity, tn.asset.name.upper(), 
+            direction, tn.quantity, tn.asset.name.upper(),
             tn.price, datetime.datetime.strftime(tn.dt, "%d/%m/%Y")
         )
         pe = PortfolioEvent(
-            date=tn.dt, type='asset_transaction', 
+            date=tn.dt, type='asset_transaction',
             description=description,
-            debit=round(tn_total_cost, 2), credit=0.0, 
+            debit=round(tn_total_cost, 2), credit=0.0,
             balance=round(self.total_cash, 2)
         )
         self.history.append(pe)
@@ -239,24 +239,24 @@ class Portfolio(object):
                 )
             )
         quantity = self.pos_handler.positions[asset].quantity
-        
+
         # Some brokerages use the following rounding
         # methodology # on their dividends:
         total_div = math.floor(
             (div_per_share * quantity) * 100.0
-        )/100.0
+        ) / 100.0
 
         self.total_cash += total_div
         self.total_value += total_div
         description = "DIVIDEND %s %s %0.2f%s %s" % (
-            quantity, asset.name.upper(), 
-            div_per_share, self.currency, 
+            quantity, asset.name.upper(),
+            div_per_share, self.currency,
             datetime.datetime.strftime(dt, "%d/%m/%Y")
         )
         pe = PortfolioEvent(
-            date=dt, type='dividend', 
+            date=dt, type='dividend',
             description=description,
-            debit=0.0, credit=total_div, 
+            debit=0.0, credit=total_div,
             balance=round(self.total_cash, 2)
         )
         self.history.append(pe)
@@ -342,12 +342,12 @@ class Portfolio(object):
             Prints a row divider for the table.
             """
             sys.stdout.write(
-                "%s%s%s\n" % (cap, symbol*repeats, cap)
+                "%s%s%s\n" % (cap, symbol * repeats, cap)
             )
 
         # Sort the assets based on their name, not ticker symbol
         pos_sorted = sorted(
-            self.pos_handler.positions.items(), 
+            self.pos_handler.positions.items(),
             key=lambda x: x[0].name
         )
 
@@ -377,7 +377,7 @@ class Portfolio(object):
             sys.stdout.write(
                 ticker_format.format(
                     asset.symbol, int(pos.quantity), "-", "-",
-                    self._currency_format(pos.book_cost), 
+                    self._currency_format(pos.book_cost),
                     self._currency_format(pos.market_value)
                 )
             )
@@ -394,12 +394,12 @@ class Portfolio(object):
                 ), colour=colour
             )
             perc_gain_str = string_colour(
-                "%0.2f%%" % pos.unr_perc_gain, 
+                "%0.2f%%" % pos.unr_perc_gain,
                 colour=colour
             )
-            sys.stdout.write(" "*(25-len(gain_str)))
+            sys.stdout.write(" " * (25 - len(gain_str)))
             sys.stdout.write(gain_str)
-            sys.stdout.write(" "*(22-len(perc_gain_str)))
+            sys.stdout.write(" " * (22 - len(perc_gain_str)))
             sys.stdout.write(str(perc_gain_str))
             sys.stdout.write(" |\n")
 
@@ -408,12 +408,12 @@ class Portfolio(object):
         total_format = '| {0:>7} | {1:25} | {2:>14} | {3:>14} |'
         sys.stdout.write(
             total_format.format(
-                "Total", " ", 
+                "Total", " ",
                 self._currency_format(self.pos_handler.total_book_cost()),
                 self._currency_format(self.pos_handler.total_market_value())
             )
         )
-        # Utilise the correct colour for the totals 
+        # Utilise the correct colour for the totals
         # of gain and percentage gain
         colour = WHITE
         total_gain = self.pos_handler.total_unr_gain()
@@ -423,16 +423,16 @@ class Portfolio(object):
         elif total_gain < 0.0:
             colour = RED
         gain_str = string_colour(
-            self._currency_format(total_gain), 
+            self._currency_format(total_gain),
             colour=colour
         )
         perc_gain_str = string_colour(
-            "%0.2f%%" % perc_total_gain, 
+            "%0.2f%%" % perc_total_gain,
             colour=colour
         )
-        sys.stdout.write(" "*(25-len(gain_str)))
+        sys.stdout.write(" " * (25 - len(gain_str)))
         sys.stdout.write(gain_str)
-        sys.stdout.write(" "*(22-len(perc_gain_str)))
+        sys.stdout.write(" " * (22 - len(perc_gain_str)))
         sys.stdout.write(str(perc_gain_str))
         sys.stdout.write(" |\n")
         print_row_divider(repeats)

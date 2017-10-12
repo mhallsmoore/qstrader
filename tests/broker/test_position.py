@@ -179,7 +179,7 @@ class PositionTests(unittest.TestCase):
         correctly calculated for three long transactions,
         followed by a partial closing position, followed
         by a new long position, all in the same asset.
-        
+
         Buy 100 qty at £1.00 -> £100
         Buy 100 qty at £2.00 -> £200
         Buy 200 qty at £3.00 -> £600
@@ -469,7 +469,7 @@ class PositionTests(unittest.TestCase):
         """
         asset = EquityMock(1, exchange='NYSE')
         position = Position(
-            asset, quantity=100, book_cost_ps=50.0, 
+            asset, quantity=100, book_cost_ps=50.0,
             current_trade_price=50.0
         )
         position.update_book_cost_for_commission(asset, 15.0)

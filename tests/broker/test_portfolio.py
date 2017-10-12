@@ -36,7 +36,7 @@ class EquityMock(object):
     """Mock object for the Asset-derived Equity class."""
 
     def __init__(
-        self, name, symbol, 
+        self, name, symbol,
         exchange, tax_exempt=False
     ):
         self.__name__ = "Equity"
@@ -46,11 +46,11 @@ class EquityMock(object):
         self.tax_exempt = tax_exempt
 
     def __str__(self):
-        return "%s(name='%s', symbol='%s', "\
+        return "%s(name='%s', symbol='%s', " \
             "exchange='%s', tax_exempt=%s)" % (
-            self.__name__, self.name, self.symbol,
-            self.exchange, self.tax_exempt
-        )
+                self.__name__, self.name, self.symbol,
+                self.exchange, self.tax_exempt
+            )
 
 
 class PortfolioTests(unittest.TestCase):
@@ -406,7 +406,7 @@ class PortfolioTests(unittest.TestCase):
         )
         port.transact_asset(tn_asset)
         with self.assertRaises(PortfolioException):
-            update = port.update_market_value_of_asset(
+            port.update_market_value_of_asset(
                 asset, -54.34, later_dt
             )
 
@@ -432,7 +432,7 @@ class PortfolioTests(unittest.TestCase):
         )
         port.transact_asset(tn_asset)
         with self.assertRaises(PortfolioException):
-            update = port.update_market_value_of_asset(
+            port.update_market_value_of_asset(
                 asset, 50.23, earlier_dt
             )
 
@@ -445,9 +445,9 @@ class PortfolioTests(unittest.TestCase):
         hist_df = port.history_to_df()
         test_df = pd.DataFrame(
             [], columns=[
-                "date", "type", "description", 
-                "debit", "credit", "balance" 
-            ] 
+                "date", "type", "description",
+                "debit", "credit", "balance"
+            ]
         )
         test_df.set_index(keys=["date"], inplace=True)
         self.assertEqual(
@@ -495,7 +495,7 @@ class PortfolioTests(unittest.TestCase):
                 "market_value": 56700.0,
                 "gain": -15.78,
                 "perc_gain": -0.027822944513854874
-            }, 
+            },
             asset2: {
                 "quantity": 100,
                 "book_cost": 12307.64,
@@ -628,6 +628,7 @@ class PortfolioTests(unittest.TestCase):
             port.holdings_to_console()
         output = out.getvalue().strip()
         self.assertEqual(test_str, output)
+
 
 if __name__ == "__main__":
     unittest.main()
