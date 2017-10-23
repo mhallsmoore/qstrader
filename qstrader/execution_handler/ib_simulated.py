@@ -35,7 +35,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
         https://www.interactivebrokers.co.uk/en/index.php?f=1590&p=stocks1
         """
         commission = min(
-            0.5 * fill_price * quantity,
+            0.005 * PriceParser.display(fill_price) * quantity,
             max(1.0, 0.005 * quantity)
         )
         return PriceParser.parse(commission)
