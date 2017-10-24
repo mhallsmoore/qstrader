@@ -146,6 +146,12 @@ class Broker(object):
         )
 
     @abstractmethod
+    def get_portfolio_as_dict(self, portfolio_id):
+        raise NotImplementedError(
+            "Should implement get_portfolio_as_dict()"
+        )
+
+    @abstractmethod
     def get_latest_asset_price(self, asset):
         raise NotImplementedError(
             "Should implement get_latest_asset_price()"

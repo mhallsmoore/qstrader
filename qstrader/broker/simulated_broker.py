@@ -22,12 +22,15 @@
 
 import collections
 
+import numpy as np
 import pandas as pd
 
 from qstrader.broker.broker import Broker, BrokerException
 from qstrader.broker.broker_commission import BrokerCommission
+from qstrader.broker.portfolio import Portfolio
 from qstrader.broker.zero_broker_commission import ZeroBrokerCommission
-import qstrader.settings
+from qstrader.exchange.exchange import ExchangeException
+from qstrader import settings
 
 
 class SimulatedBroker(Broker):
@@ -50,7 +53,7 @@ class SimulatedBroker(Broker):
         asset prices and an execution venue.
     account_id : str, optional
         The account ID for the brokerage account.
-    currency : str, optional
+    base_currency : str, optional
         The currency denomination of the brokerage account.
     initial_funds : float, optional
         An initial amount of cash to add to the broker account.
@@ -61,13 +64,14 @@ class SimulatedBroker(Broker):
 
     def __init__(
         self, start_dt, exchange,
-        account_id=None, currency="USD",
+        account_id=None, base_currency="USD",
         initial_funds=0.0, broker_commission=None
     ):
         self.start_dt = start_dt
+        self.cur_dt = start_dt
         self.exchange = exchange
         self.account_id = account_id
-        self.currency = self._set_base_currency(currency)
+        self.base_currency = self._set_base_currency(base_currency)
         self.initial_funds = self._set_initial_funds(initial_funds)
         self.broker_commission = self._set_broker_commission(
             broker_commission
@@ -76,20 +80,20 @@ class SimulatedBroker(Broker):
         self.portfolios = self._set_initial_portfolios()
         self.open_orders = self._set_initial_open_orders()
 
-    def _set_base_currency(self, currency):
+    def _set_base_currency(self, base_currency):
         """
         Check and set the base currency from a list of
         allowed currencies. Raise BrokerException if the
         currency is currently not supported by QSTrader.
         """
-        if currency not in settings.CURRENCIES:
+        if base_currency not in settings.CURRENCIES:
             raise BrokerException(
                 "Currency '%s' is not supported by QSTrader. Could not "
                 "set the base currency in the SimulatedBroker "
-                "entity." % currency
+                "entity." % base_currency
             )
         else:
-            return currency
+            return base_currency
 
     def _set_initial_funds(self, initial_funds):
         """
@@ -129,7 +133,13 @@ class SimulatedBroker(Broker):
         supported currencies, depending upon the availability
         of initial funds.
         """
-        pass
+        cash_dict = dict(
+            (currency, 0.0)
+            for currency in settings.CURRENCIES
+        )
+        if self.initial_funds > 0.0:
+            cash_dict[self.base_currency] = self.initial_funds
+        return cash_dict
 
     def _set_initial_portfolios(self):
         """
@@ -148,7 +158,12 @@ class SimulatedBroker(Broker):
         Subscribe an amount of cash in the base currency
         to the broker master cash account.
         """
-        pass
+        if amount < 0.0:
+            raise BrokerException(
+                "Cannot credit negative amount: "
+                "'%s' to the broker account." % amount
+            )
+        self.cash_balances[self.base_currency] += amount
 
     def withdraw_funds_from_account(self, amount):
         """
@@ -157,7 +172,20 @@ class SimulatedBroker(Broker):
         amount equal to or more cash is present. If less
         cash is present, a BrokerException is raised.
         """
-        pass
+        if amount < 0:
+            raise BrokerException(
+                "Cannot debit negative amount: "
+                "'%s' from the broker account." % amount
+            )
+        if amount > self.cash_balances[self.base_currency]:
+            raise BrokerException(
+                "Not enough cash in the broker account to "
+                "withdraw. %0.2f withdrawal request exceeds "
+                "current broker account cash balance of %0.2f." % (
+                    amount, self.cash_balances[self.base_currency]
+                )
+            )
+        self.cash_balances[self.base_currency] -= amount
 
     def get_account_cash_balance(self, currency=None):
         """
@@ -166,7 +194,15 @@ class SimulatedBroker(Broker):
         Raises a BrokerException if the currency is not
         found within the currency cash dictionary.
         """
-        pass
+        if currency is None:
+            return self.cash_balances
+        if currency not in self.cash_balances.keys():
+            raise BrokerException(
+                "Currency of type '%s' is not found within the "
+                "broker cash master accounts. Could not retrieve "
+                "cash balance." % currency
+            )
+        return self.cash_balances[currency]
 
     def get_account_total_pnl(self):
         """
@@ -197,14 +233,31 @@ class SimulatedBroker(Broker):
         Create a new sub-portfolio with ID 'portfolio_id' and
         an optional name given by 'name'.
         """
-        pass
+        if portfolio_id in self.portfolios.keys():
+            raise BrokerException(
+                "Portfolio with ID '%s' already exists. Cannot create "
+                "second portfolio with the same ID." % self.portfolio_id
+            )
+        else:
+            p = Portfolio(
+                self.cur_dt,
+                currency=self.base_currency,
+                portfolio_id=portfolio_id,
+                name=name
+            )
+            self.portfolios[portfolio_id] = p
 
     def list_all_portfolios(self):
         """
         List all of the sub-portfolios associated with this
-        broker account.
+        broker account in order of portfolio ID.
         """
-        pass
+        if self.portfolios == {}:
+            return []
+        return sorted(
+            list(self.portfolios.values()),
+            key=lambda port: port.portfolio_id
+        )
 
     def subscribe_funds_to_portfolio(self, portfolio_id, amount):
         """
@@ -212,7 +265,27 @@ class SimulatedBroker(Broker):
         it exists and the cash amount is positive. Otherwise raise
         a BrokerException.
         """
-        pass
+        if amount < 0.0:
+            raise BrokerException(
+                "Cannot add negative amount: "
+                "%0.2f to a portfolio account." % amount
+            )
+        if portfolio_id not in self.portfolios.keys():
+            raise BrokerException(
+                "Portfolio with ID '%s' does not exist. Cannot subscribe "
+                "funds to a non-existent portfolio." % portfolio_id
+            )
+        if amount > self.cash_balances[self.base_currency]:
+            raise BrokerException(
+                "Not enough cash in the broker master account to "
+                "fund portfolio '%s'. %0.2f subscription amount exceeds "
+                "current broker account cash balance of %0.2f." % (
+                    portfolio_id, amount,
+                    self.cash_balances[self.base_currency]
+                )
+            )
+        self.portfolios[portfolio_id].subscribe_funds(self.cur_dt, amount)
+        self.cash_balances[self.base_currency] -= amount
 
     def withdraw_funds_from_portfolio(self, portfolio_id, amount):
         """
@@ -228,7 +301,13 @@ class SimulatedBroker(Broker):
         Retrieve the cash balance of a sub-portfolio, if
         it exists. Otherwise raise a BrokerException.
         """
-        pass
+        if portfolio_id not in self.portfolios.keys():
+            raise BrokerException(
+                "Portfolio with ID '%s' does not exist. Cannot "
+                "retrieve cash balance for non-existent "
+                "portfolio." % portfolio_id
+            )
+        return self.portfolios[portfolio_id].total_cash
 
     def get_portfolio_total_pnl(self, portfolio_id):
         """
@@ -254,19 +333,38 @@ class SimulatedBroker(Broker):
         """
         pass
 
+    def get_portfolio_as_dict(self, portfolio_id):
+        """
+        Return a particular portfolio with ID 'portolio_id' as
+        a dictionary with Asset objects as keys, with various
+        attributes as sub-dictionaries. This includes 'quantity',
+        'book_cost', 'market_value', 'gain' and 'perc_gain'.
+        """
+        if portfolio_id not in self.portfolios.keys():
+            raise BrokerException(
+                "Cannot return portfolio as dictionary since "
+                "portfolio with ID '%s' does not exist." % portfolio_id
+            )
+        return self.portfolios[portfolio_id].portfolio_to_dict()
+
     def get_latest_asset_price(self, asset):
         """
         Retrieve the latest bid/ask price provided by the
         broker for a particular asset, as a tuple (bid, ask).
 
         If the broker cannot provide a price then a tuple
-        of (None, None) is returned.
+        of (np.NaN, np.NaN) is returned.
 
         If the broker only has access to the mid-price of
         an asset, then the same value will fill both tuple
         entries: (price, price).
         """
-        pass
+        try:
+            bid_ask = self.exchange.get_latest_asset_bid_ask(asset)
+        except ExchangeException:
+            return (np.NaN, np.NaN)
+        else:
+            return bid_ask
 
     def execute_order(self, portfolio_id, order):
         """
@@ -309,3 +407,9 @@ class SimulatedBroker(Broker):
         a specific portfolio if an ID is provided and it exists.
         """
         pass
+
+    def update(self, dt):
+        """
+        Updates the current SimulatedBroker timestamp
+        """
+        self.cur_dt = dt
