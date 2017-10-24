@@ -128,7 +128,7 @@ class Broker(object):
         )
 
     @abstractmethod
-    def get_portfolio_total_pnl(self):
+    def get_portfolio_total_pnl(self, portfolio_id):
         raise NotImplementedError(
             "Should implement get_portfolio_total_pnl()"
         )
