@@ -414,8 +414,9 @@ class SimulatedBroker(Broker):
 
         # Obtain a price for the asset, if no price then
         # raise a BrokerException
-        price_err_msg = "Could not obtain a latest market price for Asset " \
-            "with ticker symbol '%s'. Order with ID '%s' was not executed." % (
+        price_err_msg = "Could not obtain a latest market price for "
+            "Asset with ticker symbol '%s'. Order with ID '%s' was "
+            "not executed." % (
                 order.asset.symbol, order.order_id
             )
         try:
