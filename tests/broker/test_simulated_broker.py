@@ -29,6 +29,7 @@ import pytz
 from qstrader.broker.broker import BrokerException
 from qstrader.broker.simulated_broker import SimulatedBroker
 from qstrader.broker.zero_broker_commission import ZeroBrokerCommission
+from qstrader import settings
 
 
 class ExchangeMock(object):
@@ -65,7 +66,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         tcb1 = dict(
             zip(
                 settings.CURRENCIES,
-                [0.0]*len(settings.CURRENCIES)
+                [0.0] * len(settings.CURRENCIES)
             )
         )
         self.assertEqual(sb1.cash_balances, tcb1)
@@ -91,7 +92,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         tcb2 = dict(
             zip(
                 settings.CURRENCIES,
-                [0.0]*len(settings.CURRENCIES)
+                [0.0] * len(settings.CURRENCIES)
             )
         )
         tcb2["GBP"] = 1e6
@@ -123,7 +124,6 @@ class SimulatedBrokerTests(unittest.TestCase):
             start_dt, exchange, base_currency="AUD"
         )
         self.assertEqual(sb.base_currency, "AUD")
-
 
     def test_bad_set_initial_funds(self):
         """
@@ -197,7 +197,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         tcb1 = dict(
             zip(
                 settings.CURRENCIES,
-                [0.0]*len(settings.CURRENCIES)
+                [0.0] * len(settings.CURRENCIES)
             )
         )
         self.assertEqual(sb1._set_cash_balances(), tcb1)
@@ -209,7 +209,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         tcb2 = dict(
             zip(
                 settings.CURRENCIES,
-                [0.0]*len(settings.CURRENCIES)
+                [0.0] * len(settings.CURRENCIES)
             )
         )
         tcb2["USD"] = 12345.0
@@ -224,7 +224,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         exchange = ExchangeMock()
         sb = SimulatedBroker(start_dt, exchange)
         self.assertEqual(sb._set_initial_portfolios(), {})
-        
+
     def test_set_initial_open_orders(self):
         """
         Check _set_initial_open_orders method for return

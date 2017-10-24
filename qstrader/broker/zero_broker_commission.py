@@ -28,7 +28,7 @@ class ZeroBrokerCommission(BrokerCommission):
     no commission or tax. This is the default commission
     model for QSTrader.
     """
-    
+
     def __init__(self):
         pass
 
