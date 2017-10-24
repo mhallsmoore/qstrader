@@ -28,6 +28,7 @@ import pandas as pd
 from qstrader.broker.broker import Broker, BrokerException
 from qstrader.broker.broker_commission import BrokerCommission
 from qstrader.broker.portfolio import Portfolio
+from qstrader.broker.transaction import Transaction
 from qstrader.broker.zero_broker_commission import ZeroBrokerCommission
 from qstrader.exchange.exchange import ExchangeException
 from qstrader import settings
@@ -238,6 +239,7 @@ class SimulatedBroker(Broker):
                 name=name
             )
             self.portfolios[portfolio_id] = p
+            self.open_orders[portfolio_id] = collections.deque()
 
     def list_all_portfolios(self):
         """
@@ -389,7 +391,58 @@ class SimulatedBroker(Broker):
         double-ended queue structures as values, if they cannot be
         executed immediately (i.e. limit order/stop order).
         """
-        pass
+        # Check that the portfolio actually exists
+        if portfolio_id not in self.portfolios.keys():
+            raise BrokerException(
+                "Portfolio with ID '%s' does not exist. Order with "
+                "ID '%s' was not executed." % (
+                    portfolio_id, order.order_id
+                )
+            )
+
+        # If the order is a limit or stop order
+        # add it to the order queue
+        # TODO: Currently these orders are not executed!
+        # TODO: Must ensure orders are eventually executed
+        #    in an update() call.
+        if (
+            order.limit_price is not None or
+            order.stop_price is not None
+        ):
+            self.open_orders[portfolio_id].append(order)
+            return
+
+        # Obtain a price for the asset, if no price then
+        # raise a BrokerException
+        price_err_msg = "Could not obtain a latest market price for Asset " \
+            "with ticker symbol '%s'. Order with ID '%s' was not executed." % (
+                order.asset.symbol, order.order_id
+            )
+        try:
+            bid_ask = self.get_latest_asset_price(order.asset)
+        except Exception:
+            raise BrokerException(price_err_msg)
+        else:
+            if bid_ask == (np.NaN, np.NaN):
+                raise BrokerException(price_err_msg)
+
+        # Calculate the consideration and total commission
+        # based on the commission model
+        if order.direction > 0:
+            price = bid_ask[1]
+        else:
+            price = bid_ask[0]
+        consideration = round(price * order.quantity)
+        total_commission = self.broker_commission.calc_total_cost(
+            order.asset, consideration, self
+        )
+
+        # Create a transaction entity and update the portfolio
+        txn = Transaction(
+            order.asset, order.quantity, self.cur_dt,
+            price, order.order_id, commission=total_commission
+        )
+        self.portfolios[portfolio_id].transact_asset(txn)
 
     def get_all_open_orders(self, portfolio_id=None):
         """
