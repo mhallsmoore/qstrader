@@ -25,6 +25,9 @@ import collections
 import pandas as pd
 
 from qstrader.broker.broker import Broker, BrokerException
+from qstrader.broker.broker_commission import BrokerCommission
+from qstrader.broker.zero_broker_commission import ZeroBrokerCommission
+import qstrader.settings
 
 
 class SimulatedBroker(Broker):
@@ -34,8 +37,8 @@ class SimulatedBroker(Broker):
 
     The default transaction costs do not include slippage
     or market impact but do take into account commission.
-    
-    The default commission model is a ZeroCommissionModel
+
+    The default commission model is a ZeroBrokerCommission
     that charges no commission or tax (stamp duty).
 
     Parameters
@@ -51,22 +54,24 @@ class SimulatedBroker(Broker):
         The currency denomination of the brokerage account.
     initial_funds : float, optional
         An initial amount of cash to add to the broker account.
-    commission_model : CommissionModel, optional
-        The transaction cost model for handling broker 
+    broker_commission : BrokerCommission, optional
+        The transaction cost class for handling broker
         commission.
     """
 
     def __init__(
         self, start_dt, exchange,
         account_id=None, currency="USD",
-        initial_funds=0.0, commission_model=None
+        initial_funds=0.0, broker_commission=None
     ):
         self.start_dt = start_dt
         self.exchange = exchange
         self.account_id = account_id
         self.currency = self._set_base_currency(currency)
         self.initial_funds = self._set_initial_funds(initial_funds)
-        self.commission_model = self._set_commission_model(commission_model)
+        self.broker_commission = self._set_broker_commission(
+            broker_commission
+        )
         self.cash_balances = self._set_cash_balances()
         self.portfolios = self._set_initial_portfolios()
         self.open_orders = self._set_initial_open_orders()
@@ -77,7 +82,14 @@ class SimulatedBroker(Broker):
         allowed currencies. Raise BrokerException if the
         currency is currently not supported by QSTrader.
         """
-        pass
+        if currency not in settings.CURRENCIES:
+            raise BrokerException(
+                "Currency '%s' is not supported by QSTrader. Could not "
+                "set the base currency in the SimulatedBroker "
+                "entity." % currency
+            )
+        else:
+            return currency
 
     def _set_initial_funds(self, initial_funds):
         """
@@ -85,14 +97,31 @@ class SimulatedBroker(Broker):
         master account. Raise BrokerException if the
         amount is negative.
         """
-        pass
+        if initial_funds < 0.0:
+            raise BrokerException(
+                "Could not create the SimulatedBroker entity as the "
+                "provided initial funds of '%s' were "
+                "negative." % initial_funds
+            )
+        else:
+            return initial_funds
 
-    def _set_commission_model(self, commission_model):
+    def _set_broker_commission(self, broker_commission):
         """
-        Check and set the CommissionModel instance for
+        Check and set the BrokerCommission instance for
         the broker. The class default is no commission.
         """
-        pass
+        if broker_commission is None:
+            return ZeroBrokerCommission()
+        else:
+            if issubclass(broker_commission, BrokerCommission):
+                return broker_commission()
+            else:
+                raise BrokerException(
+                    "Provided broker commission is not a "
+                    "BrokerCommission subclass, so could not "
+                    "create the Broker entity."
+                )
 
     def _set_cash_balances(self):
         """
@@ -138,7 +167,7 @@ class SimulatedBroker(Broker):
         found within the currency cash dictionary.
         """
         pass
-    
+
     def get_account_total_pnl(self):
         """
         Retrieve the total summarised PnL and cash balances
@@ -146,7 +175,7 @@ class SimulatedBroker(Broker):
         'cash' and portfolio_ids as keys.
         """
         pass
-    
+
     def get_account_history(self):
         """
         Retrieve the history of the entire account including
@@ -154,7 +183,7 @@ class SimulatedBroker(Broker):
         list of PortfolioEvent and AccountEvent entities.
         """
         pass
-    
+
     def get_account_history_as_df(self):
         """
         Retrieve the history of the entire account including
@@ -162,21 +191,21 @@ class SimulatedBroker(Broker):
         Pandas DataFrame.
         """
         pass
-    
+
     def create_portfolio(self, portfolio_id, name=None):
         """
         Create a new sub-portfolio with ID 'portfolio_id' and
         an optional name given by 'name'.
         """
         pass
-    
+
     def list_all_portfolios(self):
         """
         List all of the sub-portfolios associated with this
         broker account.
         """
         pass
-    
+
     def subscribe_funds_to_portfolio(self, portfolio_id, amount):
         """
         Subscribe funds to a particular sub-portfolio, assuming
@@ -184,7 +213,7 @@ class SimulatedBroker(Broker):
         a BrokerException.
         """
         pass
-    
+
     def withdraw_funds_from_portfolio(self, portfolio_id, amount):
         """
         Withdraw funds from a particular sub-portfolio, assuming
@@ -193,14 +222,14 @@ class SimulatedBroker(Broker):
         withdraw. Otherwise raise a BrokerException.
         """
         pass
-    
+
     def get_portfolio_cash_balance(self, portfolio_id):
         """
         Retrieve the cash balance of a sub-portfolio, if
         it exists. Otherwise raise a BrokerException.
         """
         pass
-    
+
     def get_portfolio_total_pnl(self, portfolio_id):
         """
         Retrieve the total PnL of the sub-portfolio to
@@ -208,7 +237,7 @@ class SimulatedBroker(Broker):
         exists.
         """
         pass
-    
+
     def get_portfolio_history(self, portfolio_id):
         """
         Retrieve a list of PortfolioEvent entities for a
@@ -216,7 +245,7 @@ class SimulatedBroker(Broker):
         Otherwise raise a BrokerException.
         """
         pass
-    
+
     def get_portfolio_history_as_df(self, portfolio_id):
         """
         Retrieve a Pandas DataFrame of the sub-portfolio
@@ -224,12 +253,12 @@ class SimulatedBroker(Broker):
         Otherwise raise a BrokerException.
         """
         pass
-    
+
     def get_latest_asset_price(self, asset):
         """
         Retrieve the latest bid/ask price provided by the
         broker for a particular asset, as a tuple (bid, ask).
-        
+
         If the broker cannot provide a price then a tuple
         of (None, None) is returned.
 
@@ -238,7 +267,7 @@ class SimulatedBroker(Broker):
         entries: (price, price).
         """
         pass
-    
+
     def execute_order(self, portfolio_id, order):
         """
         Execute an Order instance against the sub-portfolio
@@ -258,7 +287,7 @@ class SimulatedBroker(Broker):
         executed immediately (i.e. limit order/stop order).
         """
         pass
-    
+
     def get_all_open_orders(self, portfolio_id=None):
         """
         Retrieves the dictionary of sub-portfolios, each with
@@ -267,13 +296,13 @@ class SimulatedBroker(Broker):
         with that account are returned (assuming it exists).
         """
         pass
-    
+
     def cancel_open_order(self, order_id):
         """
         Cancels an open order via its order_id.
         """
         pass
-    
+
     def cancel_all_open_orders(self, portfolio_id=None):
         """
         Cancels all open orders in the account or only those for
