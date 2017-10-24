@@ -204,29 +204,21 @@ class SimulatedBroker(Broker):
             )
         return self.cash_balances[currency]
 
-    def get_account_total_pnl(self):
+    def get_account_total_market_value(self):
         """
-        Retrieve the total summarised PnL and cash balances
-        for the broker account, in a dictionary format, with
-        'cash' and portfolio_ids as keys.
+        Retrieve the total market value of the account, across
+        each portfolio.
         """
-        pass
-
-    def get_account_history(self):
-        """
-        Retrieve the history of the entire account including
-        all sub-portfolio history, aggregated to date, as a
-        list of PortfolioEvent and AccountEvent entities.
-        """
-        pass
-
-    def get_account_history_as_df(self):
-        """
-        Retrieve the history of the entire account including
-        all sub-portfolio history, aggregated to date, as a
-        Pandas DataFrame.
-        """
-        pass
+        tmv_dict = {}
+        master_tmv = 0.0
+        for portfolio in self.portfolio.values():
+            pmv = self.get_portfolio_total_market_value(
+                portfolio.portfolio_id
+            )
+            tmv_dict[portfolio.portfolio_id] = pmv
+            master_tmv += pmv
+        tmv_dict["master"] = master_tmv
+        return tmv_dict
 
     def create_portfolio(self, portfolio_id, name=None):
         """
@@ -294,7 +286,31 @@ class SimulatedBroker(Broker):
         sufficient remaining cash in the sub-portfolio to
         withdraw. Otherwise raise a BrokerException.
         """
-        pass
+        if amount < 0.0:
+            raise BrokerException(
+                "Cannot withdraw negative amount: "
+                "%0.2f from a portfolio account." % amount
+            )
+        if portfolio_id not in self.portfolios.keys():
+            raise BrokerException(
+                "Portfolio with ID '%s' does not exist. Cannot "
+                "withdraw funds from a non-existent "
+                "portfolio. " % portfolio_id
+            )
+        if amount > self.portfolios[portfolio_id].total_cash:
+            raise BrokerException(
+                "Not enough cash in portfolio '%s' to withdraw "
+                "into brokerage master account. Withdrawal "
+                "amount %0.2f exceeds current portfolio cash "
+                "balance of %0.2f." % (
+                    portfolio_id, amount,
+                    self.portfolios[portfolio_id].total_cash
+                )
+            )
+        self.portfolios[portfolio_id].withdraw_funds(
+            self.cur_dt, amount
+        )
+        self.cash_balances[self.base_currency] += amount
 
     def get_portfolio_cash_balance(self, portfolio_id):
         """
@@ -309,29 +325,18 @@ class SimulatedBroker(Broker):
             )
         return self.portfolios[portfolio_id].total_cash
 
-    def get_portfolio_total_pnl(self, portfolio_id):
+    def get_portfolio_total_market_value(self, portfolio_id):
         """
-        Retrieve the total PnL of the sub-portfolio to
-        date, including cash balance, if the sub-portfolio
-        exists.
+        Returns the current total market value of a Portfolio
+        with ID 'portfolio_id'.
         """
-        pass
-
-    def get_portfolio_history(self, portfolio_id):
-        """
-        Retrieve a list of PortfolioEvent entities for a
-        particular sub-portfolio, assuming it exists.
-        Otherwise raise a BrokerException.
-        """
-        pass
-
-    def get_portfolio_history_as_df(self, portfolio_id):
-        """
-        Retrieve a Pandas DataFrame of the sub-portfolio
-        history, assuming the sub-portfolio exists.
-        Otherwise raise a BrokerException.
-        """
-        pass
+        if portfolio_id not in self.portfolios.keys():
+            raise BrokerException(
+                "Portfolio with ID '%s' does not exist. "
+                "Cannot return total market value for a "
+                "non-existent portfolio." % portfolio_id
+            )
+        return self.portfolios[portfolio_id].total_value
 
     def get_portfolio_as_dict(self, portfolio_id):
         """

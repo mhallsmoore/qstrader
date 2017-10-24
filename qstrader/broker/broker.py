@@ -80,21 +80,9 @@ class Broker(object):
         )
 
     @abstractmethod
-    def get_account_total_pnl(self):
+    def get_account_total_market_value(self):
         raise NotImplementedError(
-            "Should implement get_account_total_pnl()"
-        )
-
-    @abstractmethod
-    def get_account_history(self):
-        raise NotImplementedError(
-            "Should implement get_account_history()"
-        )
-
-    @abstractmethod
-    def get_account_history_as_df(self):
-        raise NotImplementedError(
-            "Should implement get_account_history_as_df()"
+            "Should implement get_account_total_market_value()"
         )
 
     @abstractmethod
@@ -128,21 +116,9 @@ class Broker(object):
         )
 
     @abstractmethod
-    def get_portfolio_total_pnl(self, portfolio_id):
+    def get_portfolio_total_market_value(self, portfolio_id):
         raise NotImplementedError(
-            "Should implement get_portfolio_total_pnl()"
-        )
-
-    @abstractmethod
-    def get_portfolio_history(self, portfolio_id):
-        raise NotImplementedError(
-            "Should implement get_portfolio_history()"
-        )
-
-    @abstractmethod
-    def get_portfolio_history_as_df(self, portfolio_id):
-        raise NotImplementedError(
-            "Should implement get_portfolio_history_as_df()"
+            "Should implement get_portfolio_total_market_value()"
         )
 
     @abstractmethod
