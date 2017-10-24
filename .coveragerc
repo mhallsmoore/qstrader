@@ -1,0 +1,6 @@
+[run]
+omit = 
+    # Omit abstract base class files
+    qstrader/broker/broker.py
+    # Omit package versioning
+    qstrader/version.py
