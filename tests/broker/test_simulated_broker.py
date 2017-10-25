@@ -235,6 +235,103 @@ class SimulatedBrokerTests(unittest.TestCase):
         sb = SimulatedBroker(start_dt, exchange)
         self.assertEqual(sb._set_initial_open_orders(), {})
 
+    def test_subscribe_funds_to_account(self):
+        """
+        Tests subscribe_funds_to_account method for:
+        * Raising BrokerException with negative amount
+        * Correctly setting cash_balances for a positive amount
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # Raising BrokerException with negative amount
+        with self.assertRaises(BrokerException):
+            sb.subscribe_funds_to_account(-4306.23)
+
+        # Correctly setting cash_balances for a positive amount
+        sb.subscribe_funds_to_account(165303.23)
+        self.assertEqual(
+            sb.cash_balances[sb.base_currency], 165303.23
+        )
+
+    def test_withdraw_funds_from_account(self):
+        """
+        Tests withdraw_funds_from_account method for:
+        * Raising BrokerException with negative amount
+        * Raising BrokerException for lack of cash
+        * Correctly setting cash_balances for positive amount
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange, initial_funds=1e6)
+
+        # Raising BrokerException with negative amount
+        with self.assertRaises(BrokerException):
+            sb.withdraw_funds_from_account(-4306.23)
+
+        # Raising BrokerException for lack of cash
+        with self.assertRaises(BrokerException):
+            sb.withdraw_funds_from_account(2e6)
+
+        # Correctly setting cash_balances for a positive amount
+        sb.withdraw_funds_from_account(3e5)
+        self.assertEqual(
+            sb.cash_balances[sb.base_currency], 7e5
+        )
+
+    def test_get_account_cash_balance(self):
+        """
+        Tests get_account_cash_balance method for:
+        * If currency is None, return the cash_balances
+        * If the currency code isn't in the cash_balances
+        dictionary, then raise BrokerException
+        * Otherwise, return the appropriate cash balance
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(
+            start_dt, exchange, initial_funds=1000.0
+        )
+
+        # If currency is None, return the cash balances
+        sbcb1 = sb.get_account_cash_balance()
+        tcb1 = dict(
+            zip(
+                settings.CURRENCIES,
+                [0.0] * len(settings.CURRENCIES)
+            )
+        )
+        tcb1["USD"] = 1000.0
+        self.assertEqual(
+            sbcb1, tcb1
+        )
+
+        # If the currency code isn't in the cash_balances
+        # dictionary, then raise BrokerException
+        with self.assertRaises(BrokerException):
+            sb.get_account_cash_balance(currency="XYZ")
+
+        # Otherwise, return appropriate cash balance
+        self.assertEqual(
+            sb.get_account_cash_balance(currency="USD"), 1000.0
+        )
+        self.assertEqual(
+            sb.get_account_cash_balance(currency="AUD"), 0.0
+        )
+
+    def test_update_sets_correct_time(self):
+        """
+        Tests that the update method sets the current
+        time correctly.
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        new_dt = pd.Timestamp('2017-10-07 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+        sb.update(new_dt)
+        self.assertEqual(sb.cur_dt, new_dt)
+
 
 if __name__ == "__main__":
     unittest.main()
