@@ -23,7 +23,6 @@
 import collections
 
 import numpy as np
-import pandas as pd
 
 from qstrader.broker.broker import Broker, BrokerException
 from qstrader.broker.broker_commission import BrokerCommission
@@ -119,7 +118,7 @@ class SimulatedBroker(Broker):
         if broker_commission is None:
             return ZeroBrokerCommission()
         else:
-            if issubclass(broker_commission, BrokerCommission):
+            if issubclass(type(broker_commission), BrokerCommission):
                 return broker_commission()
             else:
                 raise BrokerException(
