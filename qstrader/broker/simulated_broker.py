@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 import collections
+import inspect
 
 import numpy as np
 
@@ -118,7 +119,10 @@ class SimulatedBroker(Broker):
         if broker_commission is None:
             return ZeroBrokerCommission()
         else:
-            if issubclass(type(broker_commission), BrokerCommission):
+            if (
+                inspect.isclass(broker_commission) and
+                issubclass(broker_commission, BrokerCommission)
+            ):
                 return broker_commission()
             else:
                 raise BrokerException(
