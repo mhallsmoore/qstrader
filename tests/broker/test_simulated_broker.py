@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import collections
 import unittest
 
 import numpy as np
@@ -27,6 +28,7 @@ import pandas as pd
 import pytz
 
 from qstrader.broker.broker import BrokerException
+from qstrader.broker.portfolio import Portfolio
 from qstrader.broker.simulated_broker import SimulatedBroker
 from qstrader.broker.zero_broker_commission import ZeroBrokerCommission
 from qstrader import settings
@@ -318,6 +320,60 @@ class SimulatedBrokerTests(unittest.TestCase):
         )
         self.assertEqual(
             sb.get_account_cash_balance(currency="AUD"), 0.0
+        )
+
+    def test_create_portfolio(self):
+        """
+        Tests create_portfolio method for:
+        * If portfolio_id already in the dictionary keys,
+        raise BrokerException
+        * If it isn't, check that they portfolio and open
+        orders dictionary was created correctly.
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # If portfolio_id isn't in the dictionary, then check it
+        # was created correctly, along with the orders dictionary
+        sb.create_portfolio(portfolio_id=1234, name="My Portfolio")
+        self.assertTrue("1234" in sb.portfolios)
+        self.assertTrue(isinstance(sb.portfolios["1234"], Portfolio))
+        self.assertTrue("1234" in sb.open_orders)
+        self.assertTrue(isinstance(sb.open_orders["1234"], collections.deque))
+
+        # If portfolio is already in the dictionary
+        # then raise BrokerException
+        with self.assertRaises(BrokerException):
+            sb.create_portfolio(
+                portfolio_id=1234, name="My Portfolio"
+            )
+
+    def test_list_all_portfolio(self):
+        """
+        Tests list_all_portfolios method for:
+        * If empty portfolio dictionary, return empty list
+        * If non-empty, return sorted list via the portfolio IDs
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # If empty portfolio dictionary, return empty list
+        self.assertEquals(sb.list_all_portfolios(), [])
+
+        # If non-empty, return sorted list via the portfolio IDs
+        sb.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        sb.create_portfolio(portfolio_id="z154", name="My Portfolio #2")
+        sb.create_portfolio(portfolio_id="abcd", name="My Portfolio #3")
+        self.assertEqual(
+            sorted(
+                [
+                    p.portfolio_id
+                    for p in sb.list_all_portfolios()
+                ]
+            ),
+            ["1234", "abcd", "z154"]
         )
 
     def test_update_sets_correct_time(self):

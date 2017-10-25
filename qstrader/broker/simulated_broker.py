@@ -229,20 +229,21 @@ class SimulatedBroker(Broker):
         Create a new sub-portfolio with ID 'portfolio_id' and
         an optional name given by 'name'.
         """
-        if portfolio_id in self.portfolios.keys():
+        portfolio_id_str = str(portfolio_id)
+        if portfolio_id_str in self.portfolios.keys():
             raise BrokerException(
                 "Portfolio with ID '%s' already exists. Cannot create "
-                "second portfolio with the same ID." % self.portfolio_id
+                "second portfolio with the same ID." % portfolio_id_str
             )
         else:
             p = Portfolio(
                 self.cur_dt,
                 currency=self.base_currency,
-                portfolio_id=portfolio_id,
+                portfolio_id=portfolio_id_str,
                 name=name
             )
-            self.portfolios[portfolio_id] = p
-            self.open_orders[portfolio_id] = collections.deque()
+            self.portfolios[portfolio_id_str] = p
+            self.open_orders[portfolio_id_str] = collections.deque()
 
     def list_all_portfolios(self):
         """
