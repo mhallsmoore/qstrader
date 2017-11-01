@@ -80,21 +80,9 @@ class Broker(object):
         )
 
     @abstractmethod
-    def get_account_total_pnl(self):
+    def get_account_total_market_value(self):
         raise NotImplementedError(
-            "Should implement get_account_total_pnl()"
-        )
-
-    @abstractmethod
-    def get_account_history(self):
-        raise NotImplementedError(
-            "Should implement get_account_history()"
-        )
-
-    @abstractmethod
-    def get_account_history_as_df(self):
-        raise NotImplementedError(
-            "Should implement get_account_history_as_df()"
+            "Should implement get_account_total_market_value()"
         )
 
     @abstractmethod
@@ -128,21 +116,15 @@ class Broker(object):
         )
 
     @abstractmethod
-    def get_portfolio_total_pnl(self):
+    def get_portfolio_total_market_value(self, portfolio_id):
         raise NotImplementedError(
-            "Should implement get_portfolio_total_pnl()"
+            "Should implement get_portfolio_total_market_value()"
         )
 
     @abstractmethod
-    def get_portfolio_history(self, portfolio_id):
+    def get_portfolio_as_dict(self, portfolio_id):
         raise NotImplementedError(
-            "Should implement get_portfolio_history()"
-        )
-
-    @abstractmethod
-    def get_portfolio_history_as_df(self, portfolio_id):
-        raise NotImplementedError(
-            "Should implement get_portfolio_history_as_df()"
+            "Should implement get_portfolio_as_dict()"
         )
 
     @abstractmethod
@@ -155,22 +137,4 @@ class Broker(object):
     def execute_order(self, portfolio_id, order):
         raise NotImplementedError(
             "Should implement execute_order()"
-        )
-
-    @abstractmethod
-    def list_all_open_orders(self, portfolio_id=None):
-        raise NotImplementedError(
-            "Should implement list_all_open_orders()"
-        )
-
-    @abstractmethod
-    def cancel_open_order(self, order_id):
-        raise NotImplementedError(
-            "Should implement cancel_open_order()"
-        )
-
-    @abstractmethod
-    def cancel_all_open_orders(self, portfolio_id=None):
-        raise NotImplementedError(
-            "Should implement cancel_all_open_orders()"
         )
