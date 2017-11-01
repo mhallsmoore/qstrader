@@ -215,7 +215,7 @@ class SimulatedBroker(Broker):
         """
         tmv_dict = {}
         master_tmv = 0.0
-        for portfolio in self.portfolio.values():
+        for portfolio in self.portfolios.values():
             pmv = self.get_portfolio_total_market_value(
                 portfolio.portfolio_id
             )
@@ -389,11 +389,6 @@ class SimulatedBroker(Broker):
         brokerage accounts. The cash is taken immediately upon
         entering a long position and returned immediately upon
         closing out the position.
-
-        The Order entities are added to the open_orders dictionary,
-        with sub_portfolio IDs as keys, and collections.deque
-        double-ended queue structures as values, if they cannot be
-        executed immediately (i.e. limit order/stop order).
         """
         # Check that the portfolio actually exists
         if portfolio_id not in self.portfolios.keys():
@@ -404,18 +399,6 @@ class SimulatedBroker(Broker):
                 )
             )
 
-        # If the order is a limit or stop order
-        # add it to the order queue
-        # TODO: Currently these orders are not executed!
-        # TODO: Must ensure orders are eventually executed
-        #    in an update() call.
-        if (
-            order.limit_price is not None or
-            order.stop_price is not None
-        ):
-            self.open_orders[portfolio_id].append(order)
-            return
-
         # Obtain a price for the asset, if no price then
         # raise a BrokerException
         price_err_msg = "Could not obtain a latest market price for " \
@@ -423,13 +406,9 @@ class SimulatedBroker(Broker):
             "not executed." % (
                 order.asset.symbol, order.order_id
             )
-        try:
-            bid_ask = self.get_latest_asset_price(order.asset)
-        except Exception:
+        bid_ask = self.get_latest_asset_price(order.asset)
+        if bid_ask == (np.NaN, np.NaN):
             raise BrokerException(price_err_msg)
-        else:
-            if bid_ask == (np.NaN, np.NaN):
-                raise BrokerException(price_err_msg)
 
         # Calculate the consideration and total commission
         # based on the commission model
@@ -448,28 +427,6 @@ class SimulatedBroker(Broker):
             price, order.order_id, commission=total_commission
         )
         self.portfolios[portfolio_id].transact_asset(txn)
-
-    def get_all_open_orders(self, portfolio_id=None):
-        """
-        Retrieves the dictionary of sub-portfolios, each with
-        the list of current open orders. If a sub-portfolio ID
-        is specifically provided, only the open orders associated
-        with that account are returned (assuming it exists).
-        """
-        pass
-
-    def cancel_open_order(self, order_id):
-        """
-        Cancels an open order via its order_id.
-        """
-        pass
-
-    def cancel_all_open_orders(self, portfolio_id=None):
-        """
-        Cancels all open orders in the account or only those for
-        a specific portfolio if an ID is provided and it exists.
-        """
-        pass
 
     def update(self, dt):
         """

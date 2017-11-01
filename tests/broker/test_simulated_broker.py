@@ -31,6 +31,7 @@ from qstrader.broker.broker import BrokerException
 from qstrader.broker.portfolio import Portfolio
 from qstrader.broker.simulated_broker import SimulatedBroker
 from qstrader.broker.zero_broker_commission import ZeroBrokerCommission
+from qstrader.exchange.exchange import ExchangeException
 from qstrader import settings
 
 
@@ -40,6 +41,36 @@ class ExchangeMock(object):
 
     def get_latest_asset_bid_ask(self, asset):
         return (np.NaN, np.NaN)
+
+
+class ExchangeMockException(object):
+    def __init__(self):
+        pass
+
+    def get_latest_asset_bid_ask(self, asset):
+        raise ExchangeException("No price available!")
+
+
+class ExchangeMockPrice(object):
+    def __init__(self):
+        pass
+
+    def get_latest_asset_bid_ask(self, asset):
+        return (53.45, 53.47)
+
+
+class OrderMock(object):
+    def __init__(self, asset, quantity, order_id=None):
+        self.asset = asset
+        self.quantity = quantity
+        self.order_id = 1 if order_id is None else order_id
+        self.direction = np.copysign(1, self.quantity)
+
+
+class AssetMock(object):
+    def __init__(self, name, symbol):
+        self.name = name
+        self.symbol = symbol
 
 
 class SimulatedBrokerTests(unittest.TestCase):
@@ -322,6 +353,35 @@ class SimulatedBrokerTests(unittest.TestCase):
             sb.get_account_cash_balance(currency="AUD"), 0.0
         )
 
+    def test_get_account_total_market_value(self):
+        """
+        Tests get_account_total_market_value method for:
+        * The correct market values after cash is subscribed.
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # Subscribe all necessary funds and create portfolios
+        sb.subscribe_funds_to_account(300000.0)
+        sb.create_portfolio(portfolio_id="1", name="My Portfolio #1")
+        sb.create_portfolio(portfolio_id="2", name="My Portfolio #1")
+        sb.create_portfolio(portfolio_id="3", name="My Portfolio #1")
+        sb.subscribe_funds_to_portfolio("1", 100000.0)
+        sb.subscribe_funds_to_portfolio("2", 100000.0)
+        sb.subscribe_funds_to_portfolio("3", 100000.0)
+
+        # Check that the market value is correct
+        self.assertEqual(
+            sb.get_account_total_market_value(),
+            {
+                "1": 100000.0,
+                "2": 100000.0,
+                "3": 100000.0,
+                "master": 300000.0
+            }
+        )
+
     def test_create_portfolio(self):
         """
         Tests create_portfolio method for:
@@ -375,6 +435,255 @@ class SimulatedBrokerTests(unittest.TestCase):
             ),
             ["1234", "abcd", "z154"]
         )
+
+    def test_subscribe_funds_to_portfolio(self):
+        """
+        Tests subscribe_funds_to_portfolio method for:
+        * Raising BrokerException with negative amount
+        * Raising BrokerException if portfolio does not exist
+        * Correctly setting cash_balances for a positive amount
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # Raising BrokerException with negative amount
+        with self.assertRaises(BrokerException):
+            sb.subscribe_funds_to_portfolio("1234", -4306.23)
+
+        # Raising BrokerException if portfolio doesn't exist
+        with self.assertRaises(BrokerException):
+            sb.subscribe_funds_to_portfolio("1234", 5432.12)
+
+        # Add in cash balance to the account
+        sb.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        sb.subscribe_funds_to_account(165303.23)
+
+        # Raising BrokerException if not enough cash
+        with self.assertRaises(BrokerException):
+            sb.subscribe_funds_to_portfolio("1234", 200000.00)
+
+        # If everything else worked, check balances are correct
+        sb.subscribe_funds_to_portfolio("1234", 100000.00)
+        self.assertEqual(
+            sb.cash_balances[sb.base_currency], 65303.23000000001
+        )
+        self.assertEqual(
+            sb.portfolios["1234"].portfolio_to_dict()["total_cash"],
+            100000.00
+        )
+
+    def test_withdraw_funds_from_portfolio(self):
+        """
+        Tests withdraw_funds_from_portfolio method for:
+        * Raising BrokerException with negative amount
+        * Raising BrokerException if portfolio does not exist
+        * Raising BrokerException for a lack of cash
+        * Correctly setting cash_balances for a positive amount
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # Raising BrokerException with negative amount
+        with self.assertRaises(BrokerException):
+            sb.withdraw_funds_from_portfolio("1234", -4306.23)
+
+        # Raising BrokerException if portfolio doesn't exist
+        with self.assertRaises(BrokerException):
+            sb.withdraw_funds_from_portfolio("1234", 5432.12)
+
+        # Add in cash balance to the account
+        sb.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        sb.subscribe_funds_to_account(165303.23)
+        sb.subscribe_funds_to_portfolio("1234", 100000.00)
+
+        # Raising BrokerException if not enough cash
+        with self.assertRaises(BrokerException):
+            sb.withdraw_funds_from_portfolio("1234", 200000.00)
+
+        # If everything else worked, check balances are correct
+        sb.withdraw_funds_from_portfolio("1234", 50000.00)
+        self.assertEqual(
+            sb.cash_balances[sb.base_currency], 115303.23000000001
+        )
+        self.assertEqual(
+            sb.portfolios["1234"].portfolio_to_dict()["total_cash"],
+            50000.00
+        )
+
+    def test_get_portfolio_cash_balance(self):
+        """
+        Tests get_portfolio_cash_balance method for:
+        * Raising BrokerException if portfolio_id not in keys
+        * Correctly obtaining the value after cash transfers
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # Raising BrokerException if portfolio_id not in keys
+        with self.assertRaises(BrokerException):
+            sb.get_portfolio_cash_balance("5678")
+
+        # Create fund transfers and portfolio
+        sb.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        sb.subscribe_funds_to_account(175000.0)
+        sb.subscribe_funds_to_portfolio("1234", 100000.00)
+
+        # Check correct values obtained after cash transfers
+        self.assertEqual(
+            sb.get_portfolio_cash_balance("1234"),
+            100000.0
+        )
+
+    def test_get_portfolio_total_market_value(self):
+        """
+        Tests get_portfolio_total_market_value method for:
+        * Raising BrokerException if portfolio_id not in keys
+        * Correctly obtaining the market value after cash transfers
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # Raising BrokerException if portfolio_id not in keys
+        with self.assertRaises(BrokerException):
+            sb.get_portfolio_total_market_value("5678")
+
+        # Create fund transfers and portfolio
+        sb.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        sb.subscribe_funds_to_account(175000.0)
+        sb.subscribe_funds_to_portfolio("1234", 100000.00)
+
+        # Check correct values obtained after cash transfers
+        self.assertEqual(
+            sb.get_portfolio_total_market_value("1234"),
+            100000.0
+        )
+
+    def test_get_portfolio_as_dict(self):
+        """
+        Tests get_portfolio_as_dict method for:
+        * Raising BrokerException if portfolio_id not in keys
+        * Correctly obtaining the portfolio dictionary
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+
+        # Raising BrokerException if portfolio_id not in keys
+        with self.assertRaises(BrokerException):
+            sb.get_portfolio_as_dict("5678")
+
+        # Create fund transfers and portfolio
+        sb.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        sb.subscribe_funds_to_account(175000.0)
+        sb.subscribe_funds_to_portfolio("1234", 100000.00)
+
+        # Check correct values obtained after cash transfers
+        self.assertEqual(
+            sb.get_portfolio_as_dict("1234"),
+            {"total_value": 100000.0, "total_cash": 100000.0}
+        )
+
+    def test_get_latest_asset_price(self):
+        """
+        Tests get_latest_asset_price method for:
+        * Returns (np.NaN, np.NaN) if price not available
+        * Returns a tuple of bid/ask if price available
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+
+        # Exchange and account definitions
+        exchange_exception = ExchangeMockException()
+        sbnp = SimulatedBroker(start_dt, exchange_exception)
+        exchange_with_price = ExchangeMockPrice()
+        sbp = SimulatedBroker(start_dt, exchange_with_price)
+
+        # Returns (np.NaN, np.NaN) if price not available
+        asset = "RDSB"
+        self.assertEqual(
+            sbnp.get_latest_asset_price(asset),
+            (np.NaN, np.NaN)
+        )
+
+        # Returns a tuple of bid/ask if price available
+        asset = "GSK"
+        self.assertEqual(
+            sbp.get_latest_asset_price(asset),
+            (53.45, 53.47)
+        )
+
+    def test_execute_order(self):
+        """
+        Tests the execute_order method for:
+        * Raises BrokerException if no portfolio_id
+        * Raises BrokerException if bid/ask is (np.NaN, np.NaN)
+        * Checks that bid/ask are correctly set dependent
+        upon order direction
+        * Checks that portfolio values are correct after
+        carrying out a transaction
+        """
+        start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
+
+        # Raising BrokerException if portfolio_id not in keys
+        exchange = ExchangeMock()
+        sb = SimulatedBroker(start_dt, exchange)
+        asset = "RDSB"
+        quantity = 100
+        order = OrderMock(asset, quantity)
+        with self.assertRaises(BrokerException):
+            sb.execute_order("1234", order)
+
+        # Raises BrokerException if bid/ask is (np.NaN, np.NaN)
+        exchange_exception = ExchangeMockException()
+        sbnp = SimulatedBroker(start_dt, exchange_exception)
+        sbnp.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        quantity = 100
+        asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
+        order = OrderMock(asset, quantity)
+        with self.assertRaises(BrokerException):
+            sbnp.execute_order("1234", order)
+
+        # Checks that bid/ask are correctly set dependent on
+        # order direction
+        # Positive direction
+        exchange_price = ExchangeMockPrice()
+        sbwp = SimulatedBroker(start_dt, exchange_price)
+        sbwp.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        sbwp.subscribe_funds_to_account(175000.0)
+        sbwp.subscribe_funds_to_portfolio("1234", 100000.00)
+        asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
+        quantity = 1000
+        order = OrderMock(asset, quantity)
+        sbwp.execute_order("1234", order)
+        port = sbwp.get_portfolio_as_dict("1234")
+        self.assertEqual(port["total_cash"], 46530.0)
+        self.assertEqual(port["total_value"], 100000.0)
+        self.assertEqual(port[asset]["book_cost"], 53470.0)
+        self.assertEqual(port[asset]["gain"], 0.0)
+        self.assertEqual(port[asset]["market_value"], 53470.0)
+        self.assertEqual(port[asset]["perc_gain"], 0.0)
+        self.assertEqual(port[asset]["quantity"], 1000)
+        # Negative direction
+        exchange_price = ExchangeMockPrice()
+        sbwp = SimulatedBroker(start_dt, exchange_price)
+        sbwp.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
+        sbwp.subscribe_funds_to_account(175000.0)
+        sbwp.subscribe_funds_to_portfolio("1234", 100000.00)
+        asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
+        quantity = -1000
+        order = OrderMock(asset, quantity)
+        sbwp.execute_order("1234", order)
+        port = sbwp.get_portfolio_as_dict("1234")
+        self.assertEqual(port["total_cash"], 153450.0)
+        self.assertEqual(port["total_value"], 100000.0)
+        self.assertEqual(port[asset]["book_cost"], -53450.0)
+        self.assertEqual(port[asset]["gain"], 0.0)
+        self.assertEqual(port[asset]["market_value"], -53450.0)
+        self.assertEqual(port[asset]["perc_gain"], 0.0)
+        self.assertEqual(port[asset]["quantity"], -1000)
 
     def test_update_sets_correct_time(self):
         """

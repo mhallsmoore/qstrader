@@ -138,21 +138,3 @@ class Broker(object):
         raise NotImplementedError(
             "Should implement execute_order()"
         )
-
-    @abstractmethod
-    def list_all_open_orders(self, portfolio_id=None):
-        raise NotImplementedError(
-            "Should implement list_all_open_orders()"
-        )
-
-    @abstractmethod
-    def cancel_open_order(self, order_id):
-        raise NotImplementedError(
-            "Should implement cancel_open_order()"
-        )
-
-    @abstractmethod
-    def cancel_all_open_orders(self, portfolio_id=None):
-        raise NotImplementedError(
-            "Should implement cancel_all_open_orders()"
-        )
