@@ -23,27 +23,34 @@
 from abc import ABCMeta, abstractmethod
 
 
-class ExchangeException(Exception):
+class AlphaModelException(Exception):
     pass
 
 
-class Exchange(object):
-    """This abstract class provides an interface to a
-    trading exchange such as the NYSE or LSE. This class
-    family is only required for backtesting simulations.
+class AlphaModel(object):
+    """Abstract base class to inherit from when generating
+    a new alpha/factor/forecast model.
 
-    It exposes methods for obtaining Asset pricing
-    information, along with a calendar capability for trading
-    opening times and market events.
+    A derived-class instance of AlphaModel takes in a list
+    of Asset instances, a list of external (non-pricing/fundamental)
+    data sources and produces a list of Forecast instances.
 
-    Unless other data sources are added, in QSTrader the
-    Exchange is the canonical source of pricing
-    information on an Asset for a backtest simulation. 
+    These Forecasts are used by the PortfolioConstructionModel
+    to generate Orders.
 
-    A SimulatedBroker entity obtains market prices from a
-    derived Exchange class, and in turn the trading
-    algorithm entity obtains the market data from the
-    SimulatedBroker.
+    The AlphaModel framework is generic enough to support many
+    types of forecast model, such as short- and long-term trend-
+    following, mean-reversion, momentum etc.
+
+    The AlphaModel exposes two 'public' methods - update(dt) and
+    forecast(). 
+
+    update(dt) requires a timestamp and is used to call further
+    'private' methods that update the pricing and non-pricing
+    data sources.
+
+    forecast() produces the list of actual forecasts and is where
+    the alpha/forecast model code is to be called.
     """
 
     __metaclass__ = ABCMeta
@@ -52,25 +59,13 @@ class Exchange(object):
         pass
 
     @abstractmethod
-    def get_latest_asset_price(self, asset):
+    def update(self, dt):
         raise NotImplementedError(
-            "Should implement get_latest_asset_price()"
+            "Should implement update()"
         )
 
     @abstractmethod
-    def get_latest_asset_prices(self, assets):
+    def forecast(self):
         raise NotImplementedError(
-            "Should implement get_latest_asset_prices()"
-        )
-
-    @abstractmethod
-    def is_open_at_datetime(self, dt):
-        raise NotImplementedError(
-            "Should implement is_open_at_datetime()"
-        )
-
-    @abstractmethod
-    def is_open_now(self):
-        raise NotImplementedError(
-            "Should implement is_open_now()"
+            "Should implement forecast()"
         )

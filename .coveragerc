@@ -1,8 +1,11 @@
 [run]
 omit = 
     # Omit abstract base class files
+    qstrader/algo/alpha_model.py
     qstrader/broker/broker.py
     qstrader/broker/broker_commission.py
+    qstrader/exchange/exchange.py
     qstrader/simulation/simulation_engine.py
+    qstrader/simulation/trading_simulation.py
     # Omit package versioning
     qstrader/version.py

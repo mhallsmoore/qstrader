@@ -27,13 +27,12 @@ import pandas as pd
 from pandas.tseries.offsets import BDay
 import pytz
 
-from simulation_engine import SimulationEngine, SimulationEngineException
-
-
-class SimulationEvent(object):
-    def __init__(self, ts, event_type):
-        self.ts = ts
-        self.event_type = event_type
+from qstrader.simulation.simulation_engine import (
+    SimulationEngine, SimulationEngineException
+)
+from qstrader.simulation.simulation_event import (
+    SimulationEvent
+)
 
 
 class DailyBusinessDaySimulationEngine(SimulationEngine):
