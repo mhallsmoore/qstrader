@@ -108,10 +108,10 @@ class EqualWeightPCM(PortfolioConstructionModel):
             # Calculate tax and commission for this asset
             # (note some assets are tax free)
             est_commission = self.transaction_cost_model._calc_commission(
-                asset, pc_dollar_weight, self.broker
+                asset, pc_dollar_weight, broker=self.broker
             )
             est_tax = self.transaction_cost_model._calc_tax(
-                asset, pc_dollar_weight, self.broker
+                asset, pc_dollar_weight, broker=self.broker
             )
 
             # Use this to create an actual quantity of shares

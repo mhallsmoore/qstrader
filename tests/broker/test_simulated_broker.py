@@ -110,7 +110,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         sb2 = SimulatedBroker(
             start_dt, exchange, account_id="ACCT1234",
             base_currency="GBP", initial_funds=1e6,
-            broker_commission=ZeroBrokerCommission
+            broker_commission=ZeroBrokerCommission()
         )
         self.assertEqual(sb2.start_dt, start_dt)
         self.assertEqual(sb2.cur_dt, start_dt)
@@ -193,19 +193,19 @@ class SimulatedBrokerTests(unittest.TestCase):
         bc1 = None
         sb1 = SimulatedBroker(start_dt, exchange)
         self.assertEqual(
-            type(sb1._set_broker_commission(bc1)),
-            ZeroBrokerCommission
+            sb1.broker_commission.__class__.__name__,
+            "ZeroBrokerCommission"
         )
 
         # Broker commission is specified as a subclass
         # of BrokerCommission abstract base class
-        bc2 = ZeroBrokerCommission
+        bc2 = ZeroBrokerCommission()
         sb2 = SimulatedBroker(
             start_dt, exchange, broker_commission=bc2
         )
         self.assertEqual(
-            type(sb2._set_broker_commission(bc2)),
-            ZeroBrokerCommission
+            sb2.broker_commission.__class__.__name__,
+            "ZeroBrokerCommission"
         )
 
         # Broker commission is mis-specified and thus

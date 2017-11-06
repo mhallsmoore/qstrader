@@ -120,10 +120,11 @@ class SimulatedBroker(Broker):
             return ZeroBrokerCommission()
         else:
             if (
-                inspect.isclass(broker_commission) and
-                issubclass(broker_commission, BrokerCommission)
+                hasattr(broker_commission, "__class__") and
+                hasattr(broker_commission.__class__, "__name__") and
+                issubclass(broker_commission.__class__, BrokerCommission)
             ):
-                return broker_commission()
+                return broker_commission
             else:
                 raise BrokerException(
                     "Provided broker commission is not a "
