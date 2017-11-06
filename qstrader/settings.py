@@ -19,7 +19,7 @@ def from_env(key, default_value=None, root=ENV_VAR_ROOT):
     if default_value == '' or default_value is None:
         try:
             return(os.environ[ENV_VAR_KEY])
-        except:
+        except Exception:
             warnings.warn("You should pass %s using --%s or using environment variable %r" % (key, key, ENV_VAR_KEY))
             return(default_value)
     else:
