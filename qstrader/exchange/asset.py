@@ -31,7 +31,7 @@ class Asset(object):
     """This abstract class provides an interface to a generic
     asset class that stores meta data about a trading asset.
 
-    Such assets might include equities, f/x, futures and options. 
+    Such assets might include equities, f/x, futures and options.
     """
 
     __metaclass__ = ABCMeta

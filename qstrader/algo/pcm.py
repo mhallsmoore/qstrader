@@ -36,9 +36,9 @@ class PortfolioConstructionModel(object):
     It achieves this by having (optional) references to the
     following entities:
 
-    * Broker - Provides updates on the current live/simulated 
+    * Broker - Provides updates on the current live/simulated
         portfolio as well as cash balances. [NON-OPTIONAL]
-    * RiskModel - Provides veto power over the construction 
+    * RiskModel - Provides veto power over the construction
         methodology based on various risk factors, such as market
         risk, sector risk, leverage, volatility etc. [OPTIONAL]
     * TransactionCostModel - A model that estimates the transaction
@@ -48,7 +48,7 @@ class PortfolioConstructionModel(object):
 
     On each 'hearbeat' or 'update' the PCM accepts a new list of Asset
     Forecast entities, which are used as guidance for constructing the
-    initial desired portfolio. This is then passed through the 
+    initial desired portfolio. This is then passed through the
     RiskModel checks and any orders are modified. Finally it is passed
     through the TransactionCostModel checks, which may modify or cancel
     orders further.
@@ -57,12 +57,12 @@ class PortfolioConstructionModel(object):
     (as far as the Broker understands it) and the desired portfolio is
     created, which then leads to a set of Order objects.
 
-    Example portfolio construction methodologies (that would be 
+    Example portfolio construction methodologies (that would be
     implemented by inheriting this PortfolioConstructionModel) could include:
 
     * Equal weighting of assets by position 'dollar' value
     * Inverse volatility weighting (aka 'Risk Parity') using some form
-    of historical, or future-looking, measure/estimate of volatility 
+    of historical, or future-looking, measure/estimate of volatility
     (e.g. trailing annual standard deviation of returns).
     * Modern Portfolio Theory/Mean-Variance Optimisation
     * Hierarchical Risk Parity - Marcos Lopez de Prado's HRP algorithm
@@ -84,7 +84,7 @@ class PortfolioConstructionModel(object):
     """
 
     def __init__(
-        self, start_dt, broker, broker_portfolio_id, 
+        self, start_dt, broker, broker_portfolio_id,
         risk_model=None, transaction_cost_model=None
     ):
         """
@@ -95,7 +95,7 @@ class PortfolioConstructionModel(object):
         self.broker_portfolio_id = broker_portfolio_id
         self.risk_model = risk_model
         self.transaction_cost_model = transaction_cost_model
-        # Set current time and list of forecasts        
+        # Set current time and list of forecasts
         self.forecasts = []
         self.cur_dt = start_dt
 
@@ -121,7 +121,7 @@ class PortfolioConstructionModel(object):
 
     def _check_long_only_forecasts(self, forecasts):
         """
-        Checks the list of Forecast objects to ensure that 
+        Checks the list of Forecast objects to ensure that
         all values are positive.
         """
         for forecast in forecasts:
@@ -225,7 +225,7 @@ class PortfolioConstructionModel(object):
         # Create the final Order list from the diff portfolio
         final_order_list = [
             Order(
-                self.cur_dt, asset, 
+                self.cur_dt, asset,
                 diff_portfolio[asset]["quantity"]
             )
             for asset, asset_dict in sorted(
@@ -251,8 +251,8 @@ class PortfolioConstructionModel(object):
 
     def generate_orders(self, forecasts):
         """
-        Takes in a list of Forecast instances and checks them for 
-        validity. 
+        Takes in a list of Forecast instances and checks them for
+        validity.
 
         Creates an initial 'alpha' portfolio, based on these Forecasts,
         passing it through the RiskModel and TransactionCostModel

@@ -190,7 +190,6 @@ class SimulatedBrokerTests(unittest.TestCase):
         exchange = ExchangeMock()
 
         # Broker commission is None
-        bc1 = None
         sb1 = SimulatedBroker(start_dt, exchange)
         self.assertEqual(
             sb1.broker_commission.__class__.__name__,

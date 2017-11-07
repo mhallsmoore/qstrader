@@ -22,7 +22,9 @@
 
 import pandas as pd
 
-from qstrader.broker.broker_commission import BrokerCommission
+from qstrader.broker.broker_commission import (
+    BrokerCommission, BrokerCommissionException
+)
 
 
 class TDDirectBrokerCommission(BrokerCommission):
@@ -89,7 +91,7 @@ class TDDirectBrokerCommission(BrokerCommission):
         """
         commission = 0.0
         if consideration < 0.0:
-            raise CommissionModelException(
+            raise BrokerCommissionException(
                 'Trade size of £%0.2f is negative. Cannot calculate '
                 'commission for negative trade sizes.'
             )
@@ -99,7 +101,7 @@ class TDDirectBrokerCommission(BrokerCommission):
             rate = "standard"
         else:
             if (
-                hasattr(broker, "account_age") and 
+                hasattr(broker, "account_age") and
                 broker.account_age <= pd.Timedelta(days=90)
             ):
                 rate = "introductory"
@@ -132,7 +134,7 @@ class TDDirectBrokerCommission(BrokerCommission):
         must be checked first.
         """
         if consideration < 0.0:
-            raise CommissionModelException(
+            raise BrokerCommissionException(
                 'Trade size of £%0.2f is negative. Cannot calculate '
                 'stamp duty for negative trade sizes.'
             )
@@ -149,7 +151,7 @@ class TDDirectBrokerCommission(BrokerCommission):
         for the trade of size 'consideration'.
         """
         if consideration < 0.0:
-            raise CommissionModelException(
+            raise BrokerCommissionException(
                 'Trade size of £%0.2f is negative. Cannot calculate '
                 'total cost for negative trade sizes.'
             )

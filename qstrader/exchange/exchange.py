@@ -38,7 +38,7 @@ class Exchange(object):
 
     Unless other data sources are added, in QSTrader the
     Exchange is the canonical source of pricing
-    information on an Asset for a backtest simulation. 
+    information on an Asset for a backtest simulation.
 
     A SimulatedBroker entity obtains market prices from a
     derived Exchange class, and in turn the trading

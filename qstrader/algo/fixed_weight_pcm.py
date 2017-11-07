@@ -22,10 +22,7 @@
 
 import math
 
-from qstrader.algo.pcm import (
-    PortfolioConstructionModel,
-    PortfolioConstructionModelException
-)
+from qstrader.algo.pcm import PortfolioConstructionModel
 
 
 class FixedWeightPCM(PortfolioConstructionModel):
@@ -50,7 +47,7 @@ class FixedWeightPCM(PortfolioConstructionModel):
     It achieves this through the following procedure:
     * Query the Broker entity for the current total market value
         of the Portfolio
-    * Estimate the dollar weight of each asset 
+    * Estimate the dollar weight of each asset
     * Estimate the likely transaction costs and subtract to leave
         consideration cash available per Asset
     * Divide the consideration by the current market price of the
@@ -99,8 +96,8 @@ class FixedWeightPCM(PortfolioConstructionModel):
         total forecast values sum to 1.0.
         """
         total_forecast = sum(forecast.value for forecast in self.forecasts)
-        asset_weights = dict( 
-            (forecast.asset, forecast.value/total_forecast)
+        asset_weights = dict(
+            (forecast.asset, forecast.value / total_forecast)
             for forecast in self.forecasts
         )
         return asset_weights

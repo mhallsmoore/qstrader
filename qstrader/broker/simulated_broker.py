@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 import collections
-import inspect
 
 import numpy as np
 

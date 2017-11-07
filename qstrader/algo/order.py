@@ -27,10 +27,10 @@ import numpy as np
 
 class Order(object):
     """Represents sending an order from a trading algo entity
-    to a brokerage to execute. 
+    to a brokerage to execute.
 
     A commission can be added here to override the commission
-    model, if known. An order_id can be added if required, 
+    model, if known. An order_id can be added if required,
     otherwise it will be randomly assigned.
 
     Parameters

@@ -26,13 +26,13 @@ from qstrader.exchange.asset import Asset
 class Equity(Asset):
     """Stores meta data about an equity stock or "share".
 
-    Data includes its name, exchange, ticker symbol as 
+    Data includes its name, exchange, ticker symbol as
     well as a reference to its trading exchange.
 
     Parameters
     ----------
     name : str
-        The asset's name (e.g. the company name and/or 
+        The asset's name (e.g. the company name and/or
         share class).
     symbol : str
         The asset's original ticker symbol.
@@ -42,13 +42,13 @@ class Equity(Asset):
         A reference to the Exchange that the asset is
         trading on.
     tax_exempt: boolean
-        Is the share exempt from government taxation? 
+        Is the share exempt from government taxation?
         Necessary for taxation on share transactions, such
         as UK stamp duty.
     """
 
     def __init__(
-        self, name, symbol, 
+        self, name, symbol,
         exchange, tax_exempt=False
     ):
         self.name = name

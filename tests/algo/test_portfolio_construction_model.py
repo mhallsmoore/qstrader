@@ -42,11 +42,11 @@ def check_equal_order_properties(test_class, diff_orders, test_orders):
     """
     test_class.assertEqual(
         [
-            (o.created_dt, o.asset.symbol, o.quantity) 
+            (o.created_dt, o.asset.symbol, o.quantity)
             for o in diff_orders
         ],
         [
-            (o.created_dt, o.asset.symbol, o.quantity) 
+            (o.created_dt, o.asset.symbol, o.quantity)
             for o in test_orders
         ]
     )
@@ -87,16 +87,22 @@ class PortfolioConstructionModelTests(unittest.TestCase):
         self.rmm = RiskModelMock()
         self.tcmm = TransactionCostModelMock()
         self.pcm = PortfolioConstructionModel(
-            self.start_dt, self.broker, 
-            self.broker_portfolio_id, 
+            self.start_dt, self.broker,
+            self.broker_portfolio_id,
             self.rmm, self.tcmm
         )
 
         # Generate 20 tickers of the form "AAA", "BBB",
         # ..., "SSS", TTT".
-        self.assets = dict( 
-            (k,v) for k, v in [
-                (letter*3, Equity("%s Inc." % letter*3, letter*3, "NYSE"))
+        self.assets = dict(
+            (k, v) for k, v in [
+                (
+                    letter * 3,
+                    Equity(
+                        "%s Inc." % letter * 3,
+                        letter * 3, "NYSE"
+                    )
+                )
                 for letter in string.ascii_uppercase[:20]
             ]
         )
@@ -110,7 +116,7 @@ class PortfolioConstructionModelTests(unittest.TestCase):
         self.assertEqual(self.pcm.start_dt, self.start_dt)
         self.assertEqual(self.pcm.broker, self.broker)
         self.assertEqual(
-            self.pcm.broker_portfolio_id, 
+            self.pcm.broker_portfolio_id,
             self.broker_portfolio_id
         )
         self.assertEqual(self.pcm.risk_model, self.rmm)
@@ -152,7 +158,7 @@ class PortfolioConstructionModelTests(unittest.TestCase):
 
     def test_check_long_only_forecasts_negative(self):
         """
-        Test '_check_long_only_forecasts' for negative forecast 
+        Test '_check_long_only_forecasts' for negative forecast
         value.
         """
         start_dt = pd.Timestamp("2017-01-05 08:00:00")
@@ -180,7 +186,7 @@ class PortfolioConstructionModelTests(unittest.TestCase):
         """
         Test _construct_desired_alpha_portfolio returns {}
 
-        Needed because in this base class (which should not be 
+        Needed because in this base class (which should not be
         instantiated directly) there is no portfolio construction
         logic directly.
         """
@@ -192,7 +198,7 @@ class PortfolioConstructionModelTests(unittest.TestCase):
         """
         Test _construct_desired_risk_portfolio returns {}
 
-        Needed because in this base class (which should not be 
+        Needed because in this base class (which should not be
         instantiated directly) there is no portfolio construction
         logic directly.
         """
@@ -204,7 +210,7 @@ class PortfolioConstructionModelTests(unittest.TestCase):
         """
         Test _construct_desired_trans_cost_portfolio returns {}
 
-        Needed because in this base class (which should not be 
+        Needed because in this base class (which should not be
         instantiated directly) there is no portfolio construction
         logic directly.
         """
@@ -264,7 +270,7 @@ class PortfolioConstructionModelTests(unittest.TestCase):
             self.assets["HHH"]: {"quantity": 55},
         }
 
-        # Test #1 - Long only desired, zero portfolio at broker        
+        # Test #1 - Long only desired, zero portfolio at broker
         bp1 = {}
         diff_orders1 = self.pcm._diff_desired_broker_portfolios(dp, bp1)
         test_orders1 = [
@@ -396,7 +402,7 @@ class PortfolioConstructionModelTests(unittest.TestCase):
         ]
         check_equal_order_properties(self, diff_orders6, test_orders6)
 
-    #def test_diff_desired_broker_portfolios_short_only(self):
+    # def test_diff_desired_broker_portfolios_short_only(self):
         """
         Test the '_diff_desired_broker_portfolios' method for
         short-only desired portfolios of assets against various
@@ -413,7 +419,7 @@ class PortfolioConstructionModelTests(unittest.TestCase):
     #        "Should write test_diff_desired_broker_portfolios_short_only()"
     #    )
 
-    #def test_diff_desired_broker_portfolios_mixed(self):
+    # def test_diff_desired_broker_portfolios_mixed(self):
         """
         Test the '_diff_desired_broker_portfolios' method for
         mixed long/shrot desired portfolios of assets against

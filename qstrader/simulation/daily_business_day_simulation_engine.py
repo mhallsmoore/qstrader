@@ -22,7 +22,6 @@
 
 import datetime
 
-import numpy as np
 import pandas as pd
 from pandas.tseries.offsets import BDay
 import pytz
@@ -38,7 +37,7 @@ from qstrader.simulation.simulation_event import (
 class DailyBusinessDaySimulationEngine(SimulationEngine):
     """A SimulationEngine subclass that generates events on a daily
     frequency defaulting to Western-style business days, that is
-    Monday-Friday. 
+    Monday-Friday.
 
     In particular it does not take into account any specific
     regional holidays, such as Federal Holidays in the USA or
@@ -68,7 +67,7 @@ class DailyBusinessDaySimulationEngine(SimulationEngine):
     def _generate_business_days(self):
         """
         Generate the list of business days using midnight UTC as
-        the timestamp. 
+        the timestamp.
         """
         days = pd.date_range(
             self.starting_day, self.ending_day, freq=BDay()

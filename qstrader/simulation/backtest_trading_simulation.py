@@ -41,7 +41,7 @@ class BacktestTradingSimulation(TradingSimulation):
         # Loop over all events
         for event in self.sim_engine:
             dt = event.ts
-            
+
             # Update the exchange and all market prices
             self.exchange.update(dt)
 
@@ -54,7 +54,7 @@ class BacktestTradingSimulation(TradingSimulation):
                 self.trading_algo.update(dt)
 
             # Update performance every trading day
-            #if event.event_type == "post_market":
+            # if event.event_type == "post_market":
             #    performance.update(dt)
             # TODO: Add this in!
 

@@ -22,10 +22,7 @@
 
 import math
 
-from qstrader.algo.pcm import (
-    PortfolioConstructionModel,
-    PortfolioConstructionModelException
-)
+from qstrader.algo.pcm import PortfolioConstructionModel
 
 
 class EqualWeightPCM(PortfolioConstructionModel):
@@ -98,7 +95,7 @@ class EqualWeightPCM(PortfolioConstructionModel):
             # No forecasts so portfolio remains in cash
             # or is fully liquidated
             return {}
-        asset_weight = 1.0/float(N)
+        asset_weight = 1.0 / float(N)
         pc_dollar_weight = port_market_value * asset_weight
 
         # Equal dollar weighting portfolio construction

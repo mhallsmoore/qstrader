@@ -43,7 +43,7 @@ class AlphaModel(object):
     following, mean-reversion, momentum etc.
 
     The AlphaModel exposes two 'public' methods - update(dt) and
-    forecast(). 
+    forecast().
 
     update(dt) requires a timestamp and is used to call further
     'private' methods that update the pricing and non-pricing

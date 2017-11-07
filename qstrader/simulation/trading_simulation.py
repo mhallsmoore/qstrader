@@ -23,7 +23,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class TradingSimulation(Exception):
+class TradingSimulationException(Exception):
     pass
 
 

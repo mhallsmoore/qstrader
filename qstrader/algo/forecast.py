@@ -39,8 +39,8 @@ class Forecast(object):
         The Asset instance on which to provide a forecast.
     value : float
         The floating point value of the forecast. Such a
-        value is specific to the user. Typical examples 
-        might include +1, 0, -1 for trend following, 
+        value is specific to the user. Typical examples
+        might include +1, 0, -1 for trend following,
         -10 to +10 for 'strength' of forecasts or a
         ranking system 1,...,N for momentum stock ranking.
     created_dt : pd.Timestamp
@@ -50,7 +50,7 @@ class Forecast(object):
     """
 
     def __init__(
-        self, asset, value, 
+        self, asset, value,
         created_dt, forecast_dt
     ):
         """

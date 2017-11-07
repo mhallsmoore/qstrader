@@ -38,9 +38,6 @@ from qstrader.exchange.equity import Equity
 from qstrader.algo.forecast import Forecast
 from qstrader.algo.order import Order
 from qstrader.algo.equal_weight_pcm import EqualWeightPCM
-from qstrader.algo.pcm import (
-    PortfolioConstructionModel, PortfolioConstructionModelException
-)
 from .test_portfolio_construction_model import check_equal_order_properties
 
 
@@ -78,7 +75,7 @@ class EqualWeightPCMTests(unittest.TestCase):
         assets = [
             Equity("%s Inc." % ticker, ticker, "NYSE")
             for ticker in [
-                "%s" % (letter*3)
+                "%s" % (letter * 3)
                 for letter in string.ascii_uppercase[:9]
             ]
         ]
@@ -118,7 +115,7 @@ class EqualWeightPCMTests(unittest.TestCase):
         portfolio with some assets is fully liquidated
         (and the correct orders are generated).
         """
-                # Create timestamps
+        # Create timestamps
         start_dt = pd.Timestamp('2017-01-01 12:00:00', tz=pytz.UTC)
         cash = 2500000.0
 
@@ -126,7 +123,7 @@ class EqualWeightPCMTests(unittest.TestCase):
         assets = [
             Equity("%s Inc." % ticker, ticker, "NYSE")
             for ticker in [
-                "%s" % (letter*3)
+                "%s" % (letter * 3)
                 for letter in string.ascii_uppercase[:9]
             ]
         ]
@@ -150,7 +147,7 @@ class EqualWeightPCMTests(unittest.TestCase):
         broker.subscribe_funds_to_portfolio(bpid, cash)
 
         tn1 = Transaction(
-            assets[0], 100, start_dt, price=45.78, 
+            assets[0], 100, start_dt, price=45.78,
             order_id=1, commission=0.0
         )
         tn2 = Transaction(
@@ -196,7 +193,7 @@ class EqualWeightPCMTests(unittest.TestCase):
         assets = [
             Equity("%s Inc." % ticker, ticker, "NYSE")
             for ticker in [
-                "%s" % (letter*3)
+                "%s" % (letter * 3)
                 for letter in string.ascii_uppercase[:9]
             ]
         ]
@@ -298,7 +295,7 @@ class EqualWeightPCMTests(unittest.TestCase):
         ]
         check_equal_order_properties(self, order_list, test_order_list)
 
-    #def test_check_maintenance_of_equal_weights_over_time(self):
+    # def test_check_maintenance_of_equal_weights_over_time(self):
         """
         Checks that after an initial portfolio construction that the
         EqualWeightPCM maintains equal proportion upon three additional

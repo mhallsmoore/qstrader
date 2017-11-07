@@ -29,7 +29,7 @@ class SimulationEngineException(object):
 
 class SimulationEngine(object):
     """This abstract class provides an interface to a trading
-    event simulation engine. 
+    event simulation engine.
 
     Subclasses are designed to take a starting and ending
     timestamps and use them to generate events at a specific
@@ -43,7 +43,7 @@ class SimulationEngine(object):
     In this way the necessary events can be carried out for
     the entities in the system, such as dividend handling,
     capital changes, performance calculations and trading
-    orders.   
+    orders.
     """
 
     __metaclass__ = ABCMeta
