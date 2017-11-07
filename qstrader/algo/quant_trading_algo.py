@@ -50,4 +50,4 @@ class QuantitativeTradingAlgorithm(object):
 
         # Send the orders to the broker
         for order in order_list:
-            self.broker.execute_order(self.broker_portfolio_id, order)
+            self.broker.submit_order(self.broker_portfolio_id, order)

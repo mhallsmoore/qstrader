@@ -378,7 +378,7 @@ class SimulatedBroker(Broker):
         else:
             return bid_ask
 
-    def execute_order(self, portfolio_id, order):
+    def submit_order(self, portfolio_id, order):
         """
         Execute an Order instance against the sub-portfolio
         with ID 'portfolio_id'. For the SimulatedBroker class

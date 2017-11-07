@@ -615,7 +615,7 @@ class SimulatedBrokerTests(unittest.TestCase):
             (53.45, 53.47)
         )
 
-    def test_execute_order(self):
+    def test_submit_order(self):
         """
         Tests the execute_order method for:
         * Raises BrokerException if no portfolio_id
@@ -634,7 +634,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         quantity = 100
         order = OrderMock(asset, quantity)
         with self.assertRaises(BrokerException):
-            sb.execute_order("1234", order)
+            sb.submit_order("1234", order)
 
         # Raises BrokerException if bid/ask is (np.NaN, np.NaN)
         exchange_exception = ExchangeMockException()
@@ -644,7 +644,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
         order = OrderMock(asset, quantity)
         with self.assertRaises(BrokerException):
-            sbnp.execute_order("1234", order)
+            sbnp.submit_order("1234", order)
 
         # Checks that bid/ask are correctly set dependent on
         # order direction
@@ -657,7 +657,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
         quantity = 1000
         order = OrderMock(asset, quantity)
-        sbwp.execute_order("1234", order)
+        sbwp.submit_order("1234", order)
         port = sbwp.get_portfolio_as_dict("1234")
         self.assertEqual(port["total_cash"], 46530.0)
         self.assertEqual(port["total_value"], 100000.0)
@@ -675,7 +675,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
         quantity = -1000
         order = OrderMock(asset, quantity)
-        sbwp.execute_order("1234", order)
+        sbwp.submit_order("1234", order)
         port = sbwp.get_portfolio_as_dict("1234")
         self.assertEqual(port["total_cash"], 153450.0)
         self.assertEqual(port["total_value"], 100000.0)
