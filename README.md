@@ -6,7 +6,7 @@ It is currently being rewritten to ensure:
 
 * It is more akin to a portfolio/order management system (OMS)
 * It is significantly more optimised for intraday trading (minutely frequency)
-* It makes use of up to date versions of Python (3.4-3.6) and libraries
+* It makes use of up to date versions of Python (3.5-3.6) and libraries
 * Simulation accuracy is significantly more realistic with regards transaction costs, restrictions and regulatory constraints
 
 # Development

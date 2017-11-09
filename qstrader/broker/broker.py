@@ -134,7 +134,7 @@ class Broker(object):
         )
 
     @abstractmethod
-    def execute_order(self, portfolio_id, order):
+    def submit_order(self, portfolio_id, order):
         raise NotImplementedError(
-            "Should implement execute_order()"
+            "Should implement submit_order()"
         )

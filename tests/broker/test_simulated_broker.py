@@ -110,7 +110,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         sb2 = SimulatedBroker(
             start_dt, exchange, account_id="ACCT1234",
             base_currency="GBP", initial_funds=1e6,
-            broker_commission=ZeroBrokerCommission
+            broker_commission=ZeroBrokerCommission()
         )
         self.assertEqual(sb2.start_dt, start_dt)
         self.assertEqual(sb2.cur_dt, start_dt)
@@ -190,22 +190,21 @@ class SimulatedBrokerTests(unittest.TestCase):
         exchange = ExchangeMock()
 
         # Broker commission is None
-        bc1 = None
         sb1 = SimulatedBroker(start_dt, exchange)
         self.assertEqual(
-            type(sb1._set_broker_commission(bc1)),
-            ZeroBrokerCommission
+            sb1.broker_commission.__class__.__name__,
+            "ZeroBrokerCommission"
         )
 
         # Broker commission is specified as a subclass
         # of BrokerCommission abstract base class
-        bc2 = ZeroBrokerCommission
+        bc2 = ZeroBrokerCommission()
         sb2 = SimulatedBroker(
             start_dt, exchange, broker_commission=bc2
         )
         self.assertEqual(
-            type(sb2._set_broker_commission(bc2)),
-            ZeroBrokerCommission
+            sb2.broker_commission.__class__.__name__,
+            "ZeroBrokerCommission"
         )
 
         # Broker commission is mis-specified and thus
@@ -615,7 +614,7 @@ class SimulatedBrokerTests(unittest.TestCase):
             (53.45, 53.47)
         )
 
-    def test_execute_order(self):
+    def test_submit_order(self):
         """
         Tests the execute_order method for:
         * Raises BrokerException if no portfolio_id
@@ -634,7 +633,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         quantity = 100
         order = OrderMock(asset, quantity)
         with self.assertRaises(BrokerException):
-            sb.execute_order("1234", order)
+            sb.submit_order("1234", order)
 
         # Raises BrokerException if bid/ask is (np.NaN, np.NaN)
         exchange_exception = ExchangeMockException()
@@ -644,7 +643,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
         order = OrderMock(asset, quantity)
         with self.assertRaises(BrokerException):
-            sbnp.execute_order("1234", order)
+            sbnp.submit_order("1234", order)
 
         # Checks that bid/ask are correctly set dependent on
         # order direction
@@ -657,7 +656,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
         quantity = 1000
         order = OrderMock(asset, quantity)
-        sbwp.execute_order("1234", order)
+        sbwp.submit_order("1234", order)
         port = sbwp.get_portfolio_as_dict("1234")
         self.assertEqual(port["total_cash"], 46530.0)
         self.assertEqual(port["total_value"], 100000.0)
@@ -675,7 +674,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
         quantity = -1000
         order = OrderMock(asset, quantity)
-        sbwp.execute_order("1234", order)
+        sbwp.submit_order("1234", order)
         port = sbwp.get_portfolio_as_dict("1234")
         self.assertEqual(port["total_cash"], 153450.0)
         self.assertEqual(port["total_value"], 100000.0)

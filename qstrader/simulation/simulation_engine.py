@@ -23,27 +23,27 @@
 from abc import ABCMeta, abstractmethod
 
 
-class ExchangeException(Exception):
+class SimulationEngineException(object):
     pass
 
 
-class Exchange(object):
-    """This abstract class provides an interface to a
-    trading exchange such as the NYSE or LSE. This class
-    family is only required for backtesting simulations.
+class SimulationEngine(object):
+    """This abstract class provides an interface to a trading
+    event simulation engine.
 
-    It exposes methods for obtaining Asset pricing
-    information, along with a calendar capability for trading
-    opening times and market events.
+    Subclasses are designed to take a starting and ending
+    timestamps and use them to generate events at a specific
+    frequency that corresponds to each 'run' of the trading logic.
 
-    Unless other data sources are added, in QSTrader the
-    Exchange is the canonical source of pricing
-    information on an Asset for a backtest simulation.
+    It achieves this by overriding __iter__ and yielding Event
+    entities. These entities would include signalling an exchange
+    opening, an exchange closing, as well as pre- and post-opening
+    events to allow handling of cash-flows and corporate actions.
 
-    A SimulatedBroker entity obtains market prices from a
-    derived Exchange class, and in turn the trading
-    algorithm entity obtains the market data from the
-    SimulatedBroker.
+    In this way the necessary events can be carried out for
+    the entities in the system, such as dividend handling,
+    capital changes, performance calculations and trading
+    orders.
     """
 
     __metaclass__ = ABCMeta
@@ -52,25 +52,7 @@ class Exchange(object):
         pass
 
     @abstractmethod
-    def get_latest_asset_price(self, asset):
+    def __iter__(self):
         raise NotImplementedError(
-            "Should implement get_latest_asset_price()"
-        )
-
-    @abstractmethod
-    def get_latest_asset_prices(self, assets):
-        raise NotImplementedError(
-            "Should implement get_latest_asset_prices()"
-        )
-
-    @abstractmethod
-    def is_open_at_datetime(self, dt):
-        raise NotImplementedError(
-            "Should implement is_open_at_datetime()"
-        )
-
-    @abstractmethod
-    def is_open_now(self):
-        raise NotImplementedError(
-            "Should implement is_open_now()"
+            "Should implement __iter__()"
         )

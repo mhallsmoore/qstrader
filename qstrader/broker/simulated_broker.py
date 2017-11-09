@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 import collections
-import inspect
 
 import numpy as np
 
@@ -120,10 +119,11 @@ class SimulatedBroker(Broker):
             return ZeroBrokerCommission()
         else:
             if (
-                inspect.isclass(broker_commission) and
-                issubclass(broker_commission, BrokerCommission)
+                hasattr(broker_commission, "__class__") and
+                hasattr(broker_commission.__class__, "__name__") and
+                issubclass(broker_commission.__class__, BrokerCommission)
             ):
-                return broker_commission()
+                return broker_commission
             else:
                 raise BrokerException(
                     "Provided broker commission is not a "
@@ -377,7 +377,7 @@ class SimulatedBroker(Broker):
         else:
             return bid_ask
 
-    def execute_order(self, portfolio_id, order):
+    def submit_order(self, portfolio_id, order):
         """
         Execute an Order instance against the sub-portfolio
         with ID 'portfolio_id'. For the SimulatedBroker class
