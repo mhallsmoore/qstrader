@@ -63,7 +63,7 @@ def create_sortino_ratio(returns, periods=252):
     returns - A pandas Series representing period percentage returns.
     periods - Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
     """
-    return np.sqrt(periods) * (np.mean(returns)) / np.std(returns[returns < 0])
+    return np.sqrt(periods) * (np.mean(returns)) / np.std(returns.ix[returns < 0])
 
 
 def create_drawdowns(returns):

@@ -1,9 +1,11 @@
 sudo: false
 
 language: python
+python:
+  - "3.4"
+  - "3.5"
 
 env:
-  - PYTHON=2.7 PANDAS=0.18.0
   - PYTHON=3.4 PANDAS=0.18.0
   - PYTHON=3.5 PANDAS=0.18.0
 
@@ -14,6 +16,10 @@ env:
 #        - env: PYTHON=2.7 PANDAS=0.11.0
 
 install:
+  - wget http://interactivebrokers.github.io/downloads/twsapi_macunix.973.02.zip
+  - unzip twsapi_macunix.973.02.zip
+  - pip install IBJts/source/pythonclient/
+
   - pip install -qq flake8
   # You may want to periodically update this, although the conda update
   # conda line below will keep everything up-to-date.  We do this
