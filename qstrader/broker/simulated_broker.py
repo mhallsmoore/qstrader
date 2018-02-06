@@ -442,3 +442,5 @@ class SimulatedBroker(Broker):
                 self.portfolios[portfolio].update_market_value_of_asset(
                     asset, price, self.cur_dt
                 )
+            self.portfolios[portfolio].update(dt)
+

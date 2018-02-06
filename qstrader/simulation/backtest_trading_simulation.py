@@ -50,8 +50,8 @@ class BacktestTradingSimulation(TradingSimulation):
         self.settings = settings
         self.start_dt = self._create_start_date()
         self.end_dt = self._create_end_date()
-        self.exchange_open_time_utc = self._create_exchange_open_time()
-        self.exchange_close_time_utc = self._create_exchange_close_time()
+        self.exchange_open_time_utc = self._create_exchange_open_time_utc()
+        self.exchange_close_time_utc = self._create_exchange_close_time_utc()
         self.assets = self._create_assets()
         self.exchange = self._create_exchange()
         self.broker_commission = self._create_broker_commission()
@@ -65,15 +65,19 @@ class BacktestTradingSimulation(TradingSimulation):
         """
         TODO: Fill in doc string!
         """
-        return pd.Timestamp(self.settings.SIMULATION['START_DATE'], tz=pytz.UTC)
+        return pd.Timestamp(
+            self.settings.SIMULATION['START_DATE'], tz=pytz.UTC
+        )
 
     def _create_end_date(self):
         """
         TODO: Fill in doc string!
         """
-        return pd.Timestamp(self.settings.SIMULATION['END_DATE'], tz=pytz.UTC)
+        return pd.Timestamp(
+            self.settings.SIMULATION['END_DATE'], tz=pytz.UTC
+        )
 
-    def _create_exchange_open_time(self):
+    def _create_exchange_open_time_utc(self):
         """
         TODO: Fill in doc string!
         """
@@ -82,7 +86,7 @@ class BacktestTradingSimulation(TradingSimulation):
             tz=pytz.timezone(self.settings.EXCHANGE['TIMEZONE'])
         ).tz_convert("UTC")
 
-    def _create_exchange_close_time(self):
+    def _create_exchange_close_time_utc(self):
         """
         TODO: Fill in doc string!
         """
@@ -123,7 +127,10 @@ class BacktestTradingSimulation(TradingSimulation):
         if self.settings.BROKER['COMMISSION']['MODEL'] == "Zero Commission":
             broker_commission = ZeroBrokerCommission()
         else:
-            print("No supported Broker Commission model specified. Exiting.")
+            print(
+                "No supported Broker Commission "
+                "model specified. Exiting."
+            )
             sys.exit()
         return broker_commission
 
@@ -199,6 +206,15 @@ class BacktestTradingSimulation(TradingSimulation):
     def run(self):
         trading_events = ("market_open", "market_bar", "market_close")
 
+        # Output a basic equity curve into the statistics directory
+        perf = open(
+            os.path.join(
+                os.getcwd(), 
+                self.settings.STATISTICS_ROOT,
+                'equity.csv'
+            ), "w"
+        )
+
         # Loop over all events
         for event in self.sim_engine:
             dt = event.ts
@@ -215,9 +231,7 @@ class BacktestTradingSimulation(TradingSimulation):
                 self.qta.update(dt)
 
             # Update performance every trading day
-            # if event.event_type == "post_market":
-            #    performance.update(dt)
-            # TODO: Add this in!
-
-        # Summarise performance at end of backtest
-        # TODO: Add this in!
+            if event.event_type == "post_market":
+                ptmv = self.broker.get_account_total_market_value()['master']
+                perf.write("%s,%0.2f\n" % (dt, ptmv))
+        perf.close()
