@@ -65,7 +65,7 @@ class Exchange(object):
         )
 
     @abstractmethod
-    def get_latest_asset_price(self, asset):
+    def get_latest_asset_bid_ask(self, asset):
         raise NotImplementedError(
-            "Should implement get_latest_asset_price()"
+            "Should implement get_latest_asset_bid_ask()"
         )

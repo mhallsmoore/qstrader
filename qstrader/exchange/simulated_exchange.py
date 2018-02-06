@@ -25,6 +25,9 @@ import numpy as np
 from qstrader.exchange.exchange import (
     Exchange, ExchangeException
 )
+from qstrader.exchange.price_volume_data_source import (
+    PriceVolumeDataSourceException
+)
 
 
 class SimulatedExchange(Exchange):
@@ -65,7 +68,7 @@ class SimulatedExchange(Exchange):
         # TODO: Utilise an exchange calendar to adjust this.
         return True
 
-    def get_latest_asset_price(self, asset):
+    def get_latest_asset_bid_ask(self, asset):
         """
         Iteratively checks each provided data source for the
         availability of an Asset price and returns (bid, ask),
@@ -75,12 +78,13 @@ class SimulatedExchange(Exchange):
         price is available this returns (np.NaN, np.NaN).
         """
         for ds in self.data_sources:
-            try:
-                ds_price = ds.get_latest_asset_price_at_dt(asset, self.cur_dt)
-            except PriceVolumeDataSourceException:
-                pass
-            else:
-                return ds_price
+            if ds.asset == asset:
+                try:
+                    ds_price = ds.get_latest_asset_price_at_dt(self.cur_dt)
+                except PriceVolumeDataSourceException:
+                    pass
+                else:
+                    return ds_price
         return (np.NaN, np.NaN)
 
     def update(self, dt):

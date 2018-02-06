@@ -63,6 +63,18 @@ class Order(object):
         self.direction = np.copysign(1, self.quantity)
         self.order_id = self._set_order_id(order_id)
 
+    def __repr__(self):
+        """
+        Output a string representation of the object
+        """
+        return (
+            "Order(dt='%s', asset='%s', quantity=%s, "
+            "commission=%s, direction=%s, order_id=%s)" % (
+                self.created_dt, self.asset.name, self.quantity, 
+                self.commission, self.direction, self.order_id
+            )
+        )
+
     def _set_order_id(self, order_id):
         if order_id is None:
             return uuid.uuid4().hex
