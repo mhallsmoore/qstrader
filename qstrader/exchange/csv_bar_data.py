@@ -124,7 +124,7 @@ class CSVBarDataPriceVolumeDataSource(PriceVolumeDataSource):
             self.csv_df = pd.read_csv(
                 self.csv_filepath, parse_dates=["Date"]
             ).sort_values("Date", ascending=True)
-        except FileNotFoundError:
+        except OSError:
             raise PriceVolumeDataSourceException(
                 "Could not find CSV file '%s' on path '%s' while "
                 "attempting to load bar data CSV for asset '%s'." % (
