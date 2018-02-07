@@ -24,7 +24,6 @@ import os
 
 import numpy as np
 import pandas as pd
-import pytz
 
 from qstrader.exchange.price_volume_data_source import (
     PriceVolumeDataSource, PriceVolumeDataSourceException
@@ -39,7 +38,7 @@ class CSVBarDataPriceVolumeDataSource(PriceVolumeDataSource):
     efficiency purposes. Clients interact with the data by
     passing a timestamp into get_latest_asset_price_at_dt,
     which will return a tuple of bid and ask prices for a
-    particular asset. 
+    particular asset.
 
     For OHLCV data the bid/ask is usually not present separately,
     but rather a midpoint is used. The tuple returns:
@@ -145,7 +144,7 @@ class CSVBarDataPriceVolumeDataSource(PriceVolumeDataSource):
         """
         self.csv_df = self.csv_df.reindex(
             np.repeat(self.csv_df.index.values, 2), method='ffill'
-        ) 
+        )
         self.csv_df.reset_index(inplace=True)
         self.csv_df.loc[0::2, "Date"] += pd.Timedelta(
             hours=self.exchange_open_time_utc.hour,

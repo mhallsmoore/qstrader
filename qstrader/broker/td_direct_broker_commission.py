@@ -23,7 +23,7 @@
 import pandas as pd
 
 from qstrader.broker.broker_commission import (
-    BrokerCommission, BrokerCommissionException
+    BrokerCommission
 )
 
 

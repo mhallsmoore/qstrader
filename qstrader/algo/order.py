@@ -70,7 +70,7 @@ class Order(object):
         return (
             "Order(dt='%s', asset='%s', quantity=%s, "
             "commission=%s, direction=%s, order_id=%s)" % (
-                self.created_dt, self.asset.name, self.quantity, 
+                self.created_dt, self.asset.name, self.quantity,
                 self.commission, self.direction, self.order_id
             )
         )

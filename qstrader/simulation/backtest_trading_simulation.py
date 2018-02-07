@@ -28,7 +28,6 @@ import pytz
 
 from qstrader.exchange.equity import Equity
 from qstrader.algo.fixed_weight_alpha_model import FixedWeightAlphaModel
-from qstrader.algo.equal_weight_pcm import EqualWeightPCM
 from qstrader.algo.fixed_weight_pcm import FixedWeightPCM
 from qstrader.algo.quant_trading_algo import QuantitativeTradingAlgorithm
 from qstrader.broker.simulated_broker import SimulatedBroker
@@ -39,7 +38,6 @@ from qstrader.simulation.daily_business_day_simulation_engine import (
     DailyBusinessDaySimulationEngine
 )
 from qstrader.simulation.trading_simulation import TradingSimulation
-
 
 
 class BacktestTradingSimulation(TradingSimulation):
@@ -209,7 +207,7 @@ class BacktestTradingSimulation(TradingSimulation):
         # Output a basic equity curve into the statistics directory
         perf = open(
             os.path.join(
-                os.getcwd(), 
+                os.getcwd(),
                 self.settings.STATISTICS_ROOT,
                 'equity.csv'
             ), "w"

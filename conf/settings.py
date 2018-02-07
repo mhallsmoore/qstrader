@@ -2,6 +2,7 @@
 
 import os
 
+
 def project_path(*args):
     paths = [os.path.dirname(__file__)] + list(args)
     return os.path.normpath(os.path.join(*paths))

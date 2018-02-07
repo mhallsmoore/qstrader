@@ -433,7 +433,7 @@ class SimulatedBroker(Broker):
         Updates the current SimulatedBroker timestamp
         """
         self.cur_dt = dt
-        
+
         # Update portfolio asset values
         for portfolio in self.portfolios:
             for asset in self.portfolios[portfolio].pos_handler.positions:
@@ -443,4 +443,3 @@ class SimulatedBroker(Broker):
                     asset, price, self.cur_dt
                 )
             self.portfolios[portfolio].update(dt)
-
