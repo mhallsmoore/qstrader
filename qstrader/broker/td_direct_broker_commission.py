@@ -23,7 +23,7 @@
 import pandas as pd
 
 from qstrader.broker.broker_commission import (
-    BrokerCommission, BrokerCommissionException
+    BrokerCommission
 )
 
 
@@ -90,11 +90,6 @@ class TDDirectBrokerCommission(BrokerCommission):
         class doc string.
         """
         commission = 0.0
-        if consideration < 0.0:
-            raise BrokerCommissionException(
-                'Trade size of £%0.2f is negative. Cannot calculate '
-                'commission for negative trade sizes.'
-            )
 
         # Calculate activity and appropriate rate
         if broker is None:
@@ -133,11 +128,6 @@ class TDDirectBrokerCommission(BrokerCommission):
         Certain shares are exempt from stamp duty so they
         must be checked first.
         """
-        if consideration < 0.0:
-            raise BrokerCommissionException(
-                'Trade size of £%0.2f is negative. Cannot calculate '
-                'stamp duty for negative trade sizes.'
-            )
         # Check if share is exempt from stamp duty
         if asset.tax_exempt:
             return 0.0
@@ -150,15 +140,11 @@ class TDDirectBrokerCommission(BrokerCommission):
         Calculate the total of any commission and/or tax
         for the trade of size 'consideration'.
         """
-        if consideration < 0.0:
-            raise BrokerCommissionException(
-                'Trade size of £%0.2f is negative. Cannot calculate '
-                'total cost for negative trade sizes.'
-            )
+        consideration_pos = abs(consideration)
         commission = self._calc_commission(
-            asset, consideration, broker=broker
+            asset, consideration_pos, broker=broker
         )
         tax = self._calc_tax(
-            asset, consideration, broker=broker
+            asset, consideration_pos, broker=broker
         )
         return commission + tax

@@ -85,7 +85,8 @@ class PortfolioConstructionModel(object):
 
     def __init__(
         self, start_dt, broker, broker_portfolio_id,
-        risk_model=None, transaction_cost_model=None
+        risk_model=None, transaction_cost_model=None,
+        rebalance_times=None
     ):
         """
         Initialise the PortfolioConstructionModel.
@@ -95,6 +96,8 @@ class PortfolioConstructionModel(object):
         self.broker_portfolio_id = broker_portfolio_id
         self.risk_model = risk_model
         self.transaction_cost_model = transaction_cost_model
+        self.rebalance_times = rebalance_times
+        self.rebalance_count = 0
         # Set current time and list of forecasts
         self.forecasts = []
         self.cur_dt = start_dt
@@ -280,4 +283,8 @@ class PortfolioConstructionModel(object):
         order_list = self._diff_desired_broker_portfolios(
             desired_portfolio, broker_portfolio
         )
-        return order_list
+        if self.rebalance_times is None and self.rebalance_count > 0:
+            return []
+        else:
+            self.rebalance_count += 1
+            return order_list

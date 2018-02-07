@@ -5,6 +5,7 @@ omit =
     qstrader/broker/broker.py
     qstrader/broker/broker_commission.py
     qstrader/exchange/exchange.py
+    qstrader/exchange/price_volume_data_source.py
     qstrader/simulation/simulation_engine.py
     qstrader/simulation/trading_simulation.py
     # Omit package versioning

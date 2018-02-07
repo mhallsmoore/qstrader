@@ -433,3 +433,13 @@ class SimulatedBroker(Broker):
         Updates the current SimulatedBroker timestamp
         """
         self.cur_dt = dt
+
+        # Update portfolio asset values
+        for portfolio in self.portfolios:
+            for asset in self.portfolios[portfolio].pos_handler.positions:
+                # TODO: Modify this to use bid/ask direction!
+                price = self.get_latest_asset_price(asset)[0]
+                self.portfolios[portfolio].update_market_value_of_asset(
+                    asset, price, self.cur_dt
+                )
+            self.portfolios[portfolio].update(dt)

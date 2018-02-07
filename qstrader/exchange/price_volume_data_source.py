@@ -23,28 +23,14 @@
 from abc import ABCMeta, abstractmethod
 
 
-class ExchangeException(Exception):
+class PriceVolumeDataSourceException(Exception):
     pass
 
 
-class Exchange(object):
-    """This abstract class provides an interface to a
-    trading exchange such as the NYSE or LSE. This class
-    family is only required for simulations, rather than
-    live or paper trading.
-
-    It exposes methods for obtaining Asset pricing
-    information, along with a calendar capability for trading
-    opening times and market events.
-
-    Unless other data sources are added, in QSTrader the
-    Exchange is the canonical source of pricing
-    information on an Asset for a simulation.
-
-    A SimulatedBroker entity obtains market prices from a
-    derived Exchange class, and in turn the trading
-    algorithm entity obtains the market data from the
-    SimulatedBroker.
+class PriceVolumeDataSource(object):
+    """Provides an abstract interface to a data store (such as
+    RDBMS, CSV file, time-series DB) that stores "bar" data in
+    the form of Open-High-Low-Close-Volume data.
     """
 
     __metaclass__ = ABCMeta
@@ -53,19 +39,7 @@ class Exchange(object):
         pass
 
     @abstractmethod
-    def is_open_at_datetime(self, dt):
+    def get_latest_asset_price_at_dt(self, asset, dt):
         raise NotImplementedError(
-            "Should implement is_open_at_datetime()"
-        )
-
-    @abstractmethod
-    def is_open_now(self):
-        raise NotImplementedError(
-            "Should implement is_open_now()"
-        )
-
-    @abstractmethod
-    def get_latest_asset_bid_ask(self, asset):
-        raise NotImplementedError(
-            "Should implement get_latest_asset_bid_ask()"
+            "Should implement get_latest_asset_price_at_dt()"
         )

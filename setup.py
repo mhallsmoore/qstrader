@@ -24,7 +24,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/development.html#single-sourcing-the-version
-    #version='0.0.2',
+    # version='0.0.2',
     version=__version__,
 
     description='QuantStart.com - Advanced Trading Infrastructure',

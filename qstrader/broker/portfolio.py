@@ -438,3 +438,11 @@ class Portfolio(object):
         sys.stdout.write(" |\n")
         print_row_divider(repeats)
         sys.stdout.write("\n")
+
+    def update(self, dt):
+        """
+        TODO: Fill in this doc string!
+        """
+        self.total_value = 0.0
+        self.total_value = self.pos_handler.total_market_value()
+        self.total_value += self.total_cash
