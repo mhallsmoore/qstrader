@@ -55,6 +55,7 @@ class BacktestTradingSimulation(TradingSimulation):
         self.broker_commission = self._create_broker_commission()
         self.broker = self._create_broker()
         self.alpha_models = self._create_alpha_models()
+        self.rebalance_times = self._create_rebalance_event_times()
         self.pcm = self._create_portfolio_construction()
         self.qta = self._create_quant_trading_algo()
         self.sim_engine = self._create_simulation_engine()
@@ -166,13 +167,27 @@ class BacktestTradingSimulation(TradingSimulation):
         ]
         return alpha_models
 
+    def _create_rebalance_event_times(self):
+        """
+        TODO: Fill in doc string!
+        """
+        rebalance_dates = pd.date_range(
+            start=self.start_dt, end=self.end_dt, freq='W-WED'
+        )
+        rebalance_times = [
+            pd.Timestamp("%s 00:00:00" % date, tz=pytz.utc)
+            for date in rebalance_dates
+        ]
+        return rebalance_times
+
     def _create_portfolio_construction(self):
         """
         TODO: Fill in doc string!
         """
         pcm = FixedWeightPCM(
             self.start_dt, self.broker, self.portfolio_id,
-            transaction_cost_model=self.broker_commission
+            transaction_cost_model=self.broker_commission,
+            rebalance_times=self.rebalance_times
         )
         return pcm
 
@@ -225,11 +240,10 @@ class BacktestTradingSimulation(TradingSimulation):
             self.broker.update(dt)
 
             # Update the trading algo to generate new orders
-            if event.event_type in trading_events:
-                self.qta.update(dt)
+            self.qta.update(dt)
 
             # Update performance every trading day
             if event.event_type == "post_market":
-                ptmv = self.broker.get_account_total_market_value()['master']
-                perf.write("%s,%0.2f\n" % (dt, ptmv))
+                equity = self.broker.get_portfolio_as_dict('1234')['total_equity']
+                perf.write("%s,%0.2f\n" % (dt, equity))
         perf.close()

@@ -84,6 +84,7 @@ class Portfolio(object):
         self.name = name
         self.total_value = starting_cash
         self.total_cash = starting_cash
+        self.total_equity = starting_cash
 
     def _set_currency(self):
         """
@@ -126,6 +127,7 @@ class Portfolio(object):
             )
         self.total_cash += amount
         self.total_value += amount
+        self.total_equity += amount
         pe = PortfolioEvent(
             date=dt, type='subscription',
             description="SUBSCRIPTION",
@@ -164,6 +166,7 @@ class Portfolio(object):
             )
         self.total_cash -= amount
         self.total_value -= amount
+        self.total_equity -= amount
         pe = PortfolioEvent(
             date=dt, type='withdrawal',
             description="WITHDRAWAL",
@@ -198,6 +201,7 @@ class Portfolio(object):
         self.pos_handler.transact_position(tn)
         self.total_cash -= tn_total_cost
         self.total_value -= tn.commission
+        self.total_equity -= tn.commission
 
         # Form Portfolio history details
         direction = "LONG" if tn.direction > 0 else "SHORT"
@@ -249,6 +253,7 @@ class Portfolio(object):
 
         self.total_cash += total_div
         self.total_value += total_div
+        self.total_equity += total_div
         description = "DIVIDEND %s %s %0.2f%s %s" % (
             quantity, asset.name.upper(),
             div_per_share, self.currency,
@@ -332,6 +337,7 @@ class Portfolio(object):
         port_dict = self.holdings_to_dict()
         port_dict["total_cash"] = self.total_cash
         port_dict["total_value"] = self.total_value
+        port_dict["total_equity"] = self.total_equity
         return port_dict
 
     def holdings_to_console(self):
@@ -446,3 +452,7 @@ class Portfolio(object):
         self.total_value = 0.0
         self.total_value = self.pos_handler.total_market_value()
         self.total_value += self.total_cash
+
+        self.total_equity = 0.0
+        self.total_equity = self.pos_handler.total_unr_gain()
+        self.total_equity += self.total_cash

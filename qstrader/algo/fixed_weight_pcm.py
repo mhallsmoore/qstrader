@@ -73,13 +73,15 @@ class FixedWeightPCM(PortfolioConstructionModel):
     def __init__(
         self, start_dt, broker,
         broker_portfolio_id, risk_model=None,
-        transaction_cost_model=None
+        transaction_cost_model=None,
+        rebalance_times=None
     ):
         super().__init__(
             start_dt, broker,
             broker_portfolio_id,
             risk_model=risk_model,
-            transaction_cost_model=transaction_cost_model
+            transaction_cost_model=transaction_cost_model,
+            rebalance_times=rebalance_times
         )
 
     def _check_all_forecasts(self, forecasts):

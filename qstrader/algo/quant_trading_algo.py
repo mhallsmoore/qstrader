@@ -47,6 +47,7 @@ class QuantitativeTradingAlgorithm(object):
         # Generate the list of orders
         self.pcm.update(dt)
         order_list = self.pcm.generate_orders(forecasts)
+        order_list = sorted(order_list, key=lambda x: x.quantity)
 
         # Send the orders to the broker
         for order in order_list:

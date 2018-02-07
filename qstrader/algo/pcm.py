@@ -97,7 +97,6 @@ class PortfolioConstructionModel(object):
         self.risk_model = risk_model
         self.transaction_cost_model = transaction_cost_model
         self.rebalance_times = rebalance_times
-        self.rebalance_count = 0
         # Set current time and list of forecasts
         self.forecasts = []
         self.cur_dt = start_dt
@@ -213,7 +212,7 @@ class PortfolioConstructionModel(object):
             if asset not in broker_portfolio:
                 broker_portfolio[asset] = {"quantity": 0}
         for asset in broker_portfolio:
-            if asset not in ("total_cash", "total_value"):
+            if asset not in ("total_cash", "total_value", "total_equity"):
                 if asset not in desired_portfolio:
                     desired_portfolio[asset] = {"quantity": 0}
 
@@ -237,6 +236,21 @@ class PortfolioConstructionModel(object):
             if diff_portfolio[asset]["quantity"] != 0
         ]
         return final_order_list
+
+    def _is_rebalance_event(self):
+        """
+        If there are no rebalance times provided then assume rebalancing
+        on every event.
+
+        If rebalance times are provided then only rebalance if the current
+        time, as far as the PCM is concerned, is found in the list of
+        specified rebalance times.
+        """
+        if self.rebalance_times is None or self.rebalance_times == []:
+            return True
+        if self.cur_dt in self.rebalance_times:
+            return True
+        return False
 
     def update(self, dt):
         """
@@ -267,24 +281,24 @@ class PortfolioConstructionModel(object):
         if self._check_all_forecasts(forecasts):
             self.forecasts = forecasts
 
-        # Generate the desired portfolio
-        alpha_portfolio = self._construct_desired_alpha_portfolio()
-        risk_portfolio = self._construct_desired_risk_portfolio(
-            alpha_portfolio
-        )
-        desired_portfolio = self._construct_desired_trans_cost_portfolio(
-            risk_portfolio
-        )
+        # Only calculate portfolio logic if rebalancing is necessary
+        if self._is_rebalance_event():
+            # Generate the desired portfolio
+            alpha_portfolio = self._construct_desired_alpha_portfolio()
+            risk_portfolio = self._construct_desired_risk_portfolio(
+                alpha_portfolio
+            )
+            desired_portfolio = self._construct_desired_trans_cost_portfolio(
+                risk_portfolio
+            )
 
-        # Obtain latest broker portfolio and create diff Order list
-        broker_portfolio = self.broker.get_portfolio_as_dict(
-            self.broker_portfolio_id
-        )
-        order_list = self._diff_desired_broker_portfolios(
-            desired_portfolio, broker_portfolio
-        )
-        if self.rebalance_times is None and self.rebalance_count > 0:
-            return []
-        else:
-            self.rebalance_count += 1
+            # Obtain latest broker portfolio and create diff Order list
+            broker_portfolio = self.broker.get_portfolio_as_dict(
+                self.broker_portfolio_id
+            )
+            order_list = self._diff_desired_broker_portfolios(
+                desired_portfolio, broker_portfolio
+            )      
             return order_list
+        else:
+            return []
