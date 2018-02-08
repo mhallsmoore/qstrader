@@ -38,6 +38,7 @@ from qstrader.simulation.daily_business_day_simulation_engine import (
     DailyBusinessDaySimulationEngine
 )
 from qstrader.simulation.trading_simulation import TradingSimulation
+from qstrader.statistics.simple_statistics import SimpleStatistics
 
 
 class BacktestTradingSimulation(TradingSimulation):
@@ -59,6 +60,7 @@ class BacktestTradingSimulation(TradingSimulation):
         self.pcm = self._create_portfolio_construction()
         self.qta = self._create_quant_trading_algo()
         self.sim_engine = self._create_simulation_engine()
+        self.statistics = self._create_statistics()
 
     def _create_start_date(self):
         """
@@ -211,6 +213,13 @@ class BacktestTradingSimulation(TradingSimulation):
         )
         return sim_engine
 
+    def _create_statistics(self):
+        """
+        TODO: Fill in doc string!
+        """
+        statistics = SimpleStatistics(self.broker)
+        return statistics
+
     def output_holdings(self):
         """
         TODO: Fill in doc string!
@@ -229,15 +238,6 @@ class BacktestTradingSimulation(TradingSimulation):
     def run(self):
         trading_events = ("market_open", "market_bar", "market_close")
 
-        # Output a basic equity curve into the statistics directory
-        perf = open(
-            os.path.join(
-                os.getcwd(),
-                self.settings.STATISTICS_ROOT,
-                'equity.csv'
-            ), "w"
-        )
-
         # Loop over all events
         for event in self.sim_engine:
             dt = event.ts
@@ -254,6 +254,7 @@ class BacktestTradingSimulation(TradingSimulation):
 
             # Update performance every trading day
             if event.event_type == "post_market":
-                equity = self.broker.get_portfolio_as_dict('1234')['total_equity']
-                perf.write("%s,%0.2f\n" % (dt, equity))
-        perf.close()
+                self.statistics.update(dt)
+
+        # Plot the results using Matplotlib        
+        self.statistics.plot_results()
