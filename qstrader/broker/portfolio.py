@@ -189,6 +189,7 @@ class Portfolio(object):
             )
         tn_share_cost = tn.price * tn.quantity
         tn_total_cost = tn_share_cost + tn.commission
+        print(tn.price, tn_total_cost, self.total_cash)
         if tn_total_cost > self.total_cash:
             raise PortfolioException(
                 'Not enough cash in the portfolio to '
@@ -209,12 +210,20 @@ class Portfolio(object):
             direction, tn.quantity, tn.asset.name.upper(),
             tn.price, datetime.datetime.strftime(tn.dt, "%d/%m/%Y")
         )
-        pe = PortfolioEvent(
-            date=tn.dt, type='asset_transaction',
-            description=description,
-            debit=round(tn_total_cost, 2), credit=0.0,
-            balance=round(self.total_cash, 2)
-        )
+        if direction == "LONG":
+            pe = PortfolioEvent(
+                date=tn.dt, type='asset_transaction',
+                description=description,
+                debit=round(tn_total_cost, 2), credit=0.0,
+                balance=round(self.total_cash, 2)
+            )
+        else:
+            pe = PortfolioEvent(
+                date=tn.dt, type='asset_transaction',
+                description=description,
+                debit=0.0, credit=-1.0*round(tn_total_cost, 2),
+                balance=round(self.total_cash, 2)
+            )
         self.history.append(pe)
         self.cur_dt = transaction.dt
 

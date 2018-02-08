@@ -187,7 +187,8 @@ class BacktestTradingSimulation(TradingSimulation):
         pcm = FixedWeightPCM(
             self.start_dt, self.broker, self.portfolio_id,
             transaction_cost_model=self.broker_commission,
-            rebalance_times=self.rebalance_times
+            rebalance_times=self.rebalance_times,
+            adjustment_factor=0.99  # TODO: Do not hardcode this
         )
         return pcm
 
@@ -216,6 +217,15 @@ class BacktestTradingSimulation(TradingSimulation):
         """
         self.broker.portfolios[self.portfolio_id].holdings_to_console()
 
+    def output_portfolio_history(self):
+        """
+        TODO: Fill in doc string!
+        """
+        hist_df = self.broker.portfolios[
+            self.portfolio_id
+        ].history_to_df()
+        print(hist_df)
+
     def run(self):
         trading_events = ("market_open", "market_bar", "market_close")
 
@@ -231,6 +241,7 @@ class BacktestTradingSimulation(TradingSimulation):
         # Loop over all events
         for event in self.sim_engine:
             dt = event.ts
+            print("\n", dt, event.event_type)
 
             # Update the exchange and all market prices
             self.exchange.update(dt)

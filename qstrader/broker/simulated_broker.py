@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import collections
+import queue
 
 import numpy as np
 
@@ -243,7 +243,7 @@ class SimulatedBroker(Broker):
                 name=name
             )
             self.portfolios[portfolio_id_str] = p
-            self.open_orders[portfolio_id_str] = collections.deque()
+            self.open_orders[portfolio_id_str] = queue.Queue()
 
     def list_all_portfolios(self):
         """
@@ -377,28 +377,10 @@ class SimulatedBroker(Broker):
         else:
             return bid_ask
 
-    def submit_order(self, portfolio_id, order):
+    def _execute_order(self, portfolio_id, order):
         """
-        Execute an Order instance against the sub-portfolio
-        with ID 'portfolio_id'. For the SimulatedBroker class
-        specifically there are no restrictions on this occuring
-        beyond having sufficient cash in the sub-portfolio to
-        allow this to occur.
-
-        This does not take into settlement dates, as with most
-        brokerage accounts. The cash is taken immediately upon
-        entering a long position and returned immediately upon
-        closing out the position.
+        TODO: Fill in doc string!
         """
-        # Check that the portfolio actually exists
-        if portfolio_id not in self.portfolios.keys():
-            raise BrokerException(
-                "Portfolio with ID '%s' does not exist. Order with "
-                "ID '%s' was not executed." % (
-                    portfolio_id, order.order_id
-                )
-            )
-
         # Obtain a price for the asset, if no price then
         # raise a BrokerException
         price_err_msg = "Could not obtain a latest market price for " \
@@ -421,12 +403,38 @@ class SimulatedBroker(Broker):
             order.asset, consideration, self
         )
 
+        print("EXECUTE ORDER", self.cur_dt, order)
+
         # Create a transaction entity and update the portfolio
         txn = Transaction(
             order.asset, order.quantity, self.cur_dt,
             price, order.order_id, commission=total_commission
         )
         self.portfolios[portfolio_id].transact_asset(txn)
+
+    def submit_order(self, portfolio_id, order):
+        """
+        Execute an Order instance against the sub-portfolio
+        with ID 'portfolio_id'. For the SimulatedBroker class
+        specifically there are no restrictions on this occuring
+        beyond having sufficient cash in the sub-portfolio to
+        allow this to occur.
+
+        This does not take into settlement dates, as with most
+        brokerage accounts. The cash is taken immediately upon
+        entering a long position and returned immediately upon
+        closing out the position.
+        """
+        # Check that the portfolio actually exists
+        if portfolio_id not in self.portfolios.keys():
+            raise BrokerException(
+                "Portfolio with ID '%s' does not exist. Order with "
+                "ID '%s' was not executed." % (
+                    portfolio_id, order.order_id
+                )
+            )
+        print("SUBMIT ORDER", self.cur_dt, order)
+        self.open_orders[portfolio_id].put(order)
 
     def update(self, dt):
         """
@@ -443,3 +451,10 @@ class SimulatedBroker(Broker):
                     asset, price, self.cur_dt
                 )
             self.portfolios[portfolio].update(dt)
+
+        # Try to execute orders
+        if self.exchange.is_open_at_datetime(self.cur_dt):
+            for portfolio in self.portfolios:
+                while not self.open_orders[portfolio].empty():
+                    order = self.open_orders[portfolio].get()
+                    self._execute_order(portfolio, order)
