@@ -7,3 +7,7 @@ CURRENCIES = [
     "HKD", "HUF", "ILS", "JPY", "MXN", "NOK", "NZD", "PLN",
     "RUB", "SEK", "SGD", "USD", "ZAR"
 ]
+
+LOGGING = {
+    'DATE_FORMAT': '%Y-%m-%d %H:%M:%S'
+}

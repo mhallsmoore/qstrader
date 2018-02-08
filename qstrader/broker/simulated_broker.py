@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import logging
 import queue
 
 import numpy as np
@@ -79,6 +80,14 @@ class SimulatedBroker(Broker):
         self.cash_balances = self._set_cash_balances()
         self.portfolios = self._set_initial_portfolios()
         self.open_orders = self._set_initial_open_orders()
+
+        self.logger = logging.getLogger('SimulatedBroker')
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.info(
+            '(%s) SimulatedBroker instance initialised' % 
+            self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]
+            )
+        )
 
     def _set_base_currency(self, base_currency):
         """
@@ -168,6 +177,12 @@ class SimulatedBroker(Broker):
                 "'%s' to the broker account." % amount
             )
         self.cash_balances[self.base_currency] += amount
+        self.logger.info(
+            '(%s) %0.2f subscribed to broker account "%s"' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                amount, self.account_id
+            )
+        )
 
     def withdraw_funds_from_account(self, amount):
         """
@@ -190,6 +205,12 @@ class SimulatedBroker(Broker):
                 )
             )
         self.cash_balances[self.base_currency] -= amount
+        self.logger.info(
+            '(%s) %0.2f withdrawn from broker account "%s"' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                amount, self.account_id
+            )
+        )
 
     def get_account_cash_balance(self, currency=None):
         """
@@ -244,6 +265,12 @@ class SimulatedBroker(Broker):
             )
             self.portfolios[portfolio_id_str] = p
             self.open_orders[portfolio_id_str] = queue.Queue()
+            self.logger.info(
+                '(%s) Portfolio "%s" created at broker "%s"' % (
+                    self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                    portfolio_id_str, self.account_id
+                )
+            )
 
     def list_all_portfolios(self):
         """
@@ -284,6 +311,12 @@ class SimulatedBroker(Broker):
             )
         self.portfolios[portfolio_id].subscribe_funds(self.cur_dt, amount)
         self.cash_balances[self.base_currency] -= amount
+        self.logger.info(
+            '(%s) %0.2f subscribed to portfolio "%s"' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                amount, portfolio_id
+            )
+        )
 
     def withdraw_funds_from_portfolio(self, portfolio_id, amount):
         """
@@ -317,6 +350,12 @@ class SimulatedBroker(Broker):
             self.cur_dt, amount
         )
         self.cash_balances[self.base_currency] += amount
+        self.logger.info(
+            '(%s) %0.2f withdrawn from portfolio "%s"' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                amount, portfolio_id
+            )
+        )
 
     def get_portfolio_cash_balance(self, portfolio_id):
         """
@@ -403,14 +442,22 @@ class SimulatedBroker(Broker):
             order.asset, consideration, self
         )
 
-        print("EXECUTE ORDER", self.cur_dt, order)
-
         # Create a transaction entity and update the portfolio
         txn = Transaction(
             order.asset, order.quantity, self.cur_dt,
             price, order.order_id, commission=total_commission
         )
         self.portfolios[portfolio_id].transact_asset(txn)
+        self.logger.info(
+            '(%s) Order executed for %s - Qty: %s, '
+            'Price: %0.2f, Consideration: %0.2f, '
+            'Commission: %0.2f, Total Cost: %0.2f' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                order.asset.symbol, order.quantity, 
+                price, consideration, total_commission,
+                consideration + total_commission
+            )
+        )
 
     def submit_order(self, portfolio_id, order):
         """
@@ -433,8 +480,13 @@ class SimulatedBroker(Broker):
                     portfolio_id, order.order_id
                 )
             )
-        print("SUBMIT ORDER", self.cur_dt, order)
         self.open_orders[portfolio_id].put(order)
+        self.logger.info(
+            '(%s) Order submitted for %s - Qty: %s' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                order.asset.symbol, order.quantity
+            )
+        )
 
     def update(self, dt):
         """

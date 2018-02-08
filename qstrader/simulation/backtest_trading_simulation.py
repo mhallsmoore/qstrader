@@ -241,7 +241,6 @@ class BacktestTradingSimulation(TradingSimulation):
         # Loop over all events
         for event in self.sim_engine:
             dt = event.ts
-            print("\n", dt, event.event_type)
 
             # Update the exchange and all market prices
             self.exchange.update(dt)

@@ -23,12 +23,14 @@
 import datetime
 from collections import namedtuple
 import locale
+import logging
 import math
 import sys
 
 import pandas as pd
 
 from qstrader.broker.position_handler import PositionHandler
+from qstrader import settings
 from qstrader.utils.console import (
     string_colour, GREEN, RED, CYAN, WHITE
 )
@@ -86,6 +88,15 @@ class Portfolio(object):
         self.total_cash = starting_cash
         self.total_equity = starting_cash
 
+        self.logger = logging.getLogger('Portfolio')
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.info(
+            '(%s) Portfolio "%s" instance initialised' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                self.portfolio_id
+            )
+        )
+
     def _set_currency(self):
         """
         Apply the correct currency symbols. Currently
@@ -136,6 +147,14 @@ class Portfolio(object):
         )
         self.history.append(pe)
         self.cur_dt = dt
+        self.logger.info(
+            '(%s) Funds subscribed to portfolio "%s" '
+            '- Credit: %0.2f, Balance: %0.2f' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                self.portfolio_id, round(amount, 2),
+                round(self.total_cash, 2)
+            )
+        )
 
     def withdraw_funds(self, dt, amount):
         """
@@ -175,6 +194,14 @@ class Portfolio(object):
         )
         self.history.append(pe)
         self.cur_dt = dt
+        self.logger.info(
+            '(%s) Funds withdrawn from portfolio "%s" '
+            '- Debit: %0.2f, Balance: %0.2f' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                self.portfolio_id, round(amount, 2),
+                round(self.total_cash, 2)
+            )
+        )
 
     def transact_asset(self, transaction):
         """
@@ -189,7 +216,7 @@ class Portfolio(object):
             )
         tn_share_cost = tn.price * tn.quantity
         tn_total_cost = tn_share_cost + tn.commission
-        print(tn.price, tn_total_cost, self.total_cash)
+
         if tn_total_cost > self.total_cash:
             raise PortfolioException(
                 'Not enough cash in the portfolio to '
@@ -217,12 +244,28 @@ class Portfolio(object):
                 debit=round(tn_total_cost, 2), credit=0.0,
                 balance=round(self.total_cash, 2)
             )
+            self.logger.info(
+                '(%s) Asset "%s" transacted LONG in portfolio "%s" '
+                '- Debit: %0.2f, Balance: %0.2f' % (
+                    tn.dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                    tn.asset.symbol, self.portfolio_id,
+                    round(tn_total_cost, 2), round(self.total_cash, 2)
+                )
+            )
         else:
             pe = PortfolioEvent(
                 date=tn.dt, type='asset_transaction',
                 description=description,
                 debit=0.0, credit=-1.0*round(tn_total_cost, 2),
                 balance=round(self.total_cash, 2)
+            )
+            self.logger.info(
+                '(%s) Asset "%s" transacted SHORT in portfolio "%s" '
+                '- Credit: %0.2f, Balance: %0.2f' % (
+                    tn.dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                    tn.asset.symbol, self.portfolio_id,
+                    -1.0*round(tn_total_cost, 2), round(self.total_cash, 2)
+                )
             )
         self.history.append(pe)
         self.cur_dt = transaction.dt
@@ -276,6 +319,12 @@ class Portfolio(object):
         )
         self.history.append(pe)
         self.cur_dt = dt
+        self.logger.info(
+            '(%s) %0.2f subscribed to broker account "%s"' % (
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                amount, self.account_id
+            )
+        )
 
     def update_market_value_of_asset(
         self, asset, current_trade_price, current_trade_date
