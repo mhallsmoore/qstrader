@@ -20,8 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import logging
+
 from qstrader.exchange.asset import Asset
 from qstrader.algo.order import Order
+from qstrader import settings
 
 
 class PortfolioConstructionModelException(Exception):
@@ -100,6 +103,13 @@ class PortfolioConstructionModel(object):
         # Set current time and list of forecasts
         self.forecasts = []
         self.cur_dt = start_dt
+
+        self.logger = logging.getLogger('PortfolioConstructionModel')
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.info(
+            '(%s) PortfolioConstructionModel instance initialised' % 
+            self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"])
+        )
 
     def _check_sane_forecasts(self, forecasts):
         """
@@ -283,6 +293,11 @@ class PortfolioConstructionModel(object):
 
         # Only calculate portfolio logic if rebalancing is necessary
         if self._is_rebalance_event():
+            self.logger.info(
+                '(%s) PortfolioConstructionModel beginning rebalance logic' % 
+                self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"])
+            )
+
             # Generate the desired portfolio
             alpha_portfolio = self._construct_desired_alpha_portfolio()
             risk_portfolio = self._construct_desired_risk_portfolio(
@@ -298,7 +313,14 @@ class PortfolioConstructionModel(object):
             )
             order_list = self._diff_desired_broker_portfolios(
                 desired_portfolio, broker_portfolio
-            )      
+            )
+            self.logger.info(
+                '(%s) PortfolioConstructionModel finished '
+                'rebalance logic with %s order(s)' % (
+                    self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
+                    len(order_list)
+                )
+            )
             return order_list
         else:
             return []
