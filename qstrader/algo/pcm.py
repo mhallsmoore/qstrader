@@ -107,7 +107,7 @@ class PortfolioConstructionModel(object):
         self.logger = logging.getLogger('PortfolioConstructionModel')
         self.logger.setLevel(logging.DEBUG)
         self.logger.info(
-            '(%s) PortfolioConstructionModel instance initialised' % 
+            '(%s) PortfolioConstructionModel instance initialised' %
             self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"])
         )
 
@@ -222,7 +222,9 @@ class PortfolioConstructionModel(object):
             if asset not in broker_portfolio:
                 broker_portfolio[asset] = {"quantity": 0}
         for asset in broker_portfolio:
-            if asset not in ("total_cash", "total_value", "total_equity"):
+            if asset not in (
+                "total_cash", "total_securities_value", "total_equity"
+            ):
                 if asset not in desired_portfolio:
                     desired_portfolio[asset] = {"quantity": 0}
 
@@ -294,7 +296,7 @@ class PortfolioConstructionModel(object):
         # Only calculate portfolio logic if rebalancing is necessary
         if self._is_rebalance_event():
             self.logger.info(
-                '(%s) PortfolioConstructionModel beginning rebalance logic' % 
+                '(%s) PortfolioConstructionModel beginning rebalance logic' %
                 self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"])
             )
 

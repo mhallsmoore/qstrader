@@ -233,7 +233,8 @@ class PortfolioConstructionModelTests(unittest.TestCase):
         }
         bp = {
             "total_cash": 5000.0,
-            "total_value": 10832.0,
+            "total_securities_value": 5832.0,
+            "total_equity": 10832.0,
             self.assets["AAA"]: {"quantity": -24},
             self.assets["BBB"]: {"quantity": 3726},
         }

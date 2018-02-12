@@ -81,8 +81,9 @@ class PortfolioTests(unittest.TestCase):
         self.assertEqual(port1.starting_cash, 0.0)
         self.assertEqual(port1.portfolio_id, None)
         self.assertEqual(port1.name, None)
-        self.assertEqual(port1.total_value, 0.0)
+        self.assertEqual(port1.total_securities_value, 0.0)
         self.assertEqual(port1.total_cash, 0.0)
+        self.assertEqual(port1.total_equity, 0.0)
 
         # Test a Portfolio with keyword arguments
         port2 = Portfolio(
@@ -95,7 +96,8 @@ class PortfolioTests(unittest.TestCase):
         self.assertEqual(port2.starting_cash, 1234567.56)
         self.assertEqual(port2.portfolio_id, 12345)
         self.assertEqual(port2.name, "My Second Test Portfolio")
-        self.assertEqual(port2.total_value, 1234567.56)
+        self.assertEqual(port2.total_equity, 1234567.56)
+        self.assertEqual(port2.total_securities_value, 0.0)
         self.assertEqual(port2.total_cash, 1234567.56)
 
     def test_portfolio_currency_settings(self):
@@ -150,7 +152,8 @@ class PortfolioTests(unittest.TestCase):
         # amount, generates correct event and modifies time
         port.subscribe_funds(later_dt, pos_cash)
         self.assertEqual(port.total_cash, 1000.0)
-        self.assertEqual(port.total_value, 1000.0)
+        self.assertEqual(port.total_securities_value, 0.0)
+        self.assertEqual(port.total_equity, 1000.0)
         pe = PortfolioEvent(
             date=later_dt, type='subscription',
             description="SUBSCRIPTION", debit=0.0,
@@ -200,7 +203,8 @@ class PortfolioTests(unittest.TestCase):
             credit=1000.0, balance=1000.0
         )
         self.assertEqual(port_cor.total_cash, 1000.0)
-        self.assertEqual(port_cor.total_value, 1000.0)
+        self.assertEqual(port_cor.total_securities_value, 0.0)
+        self.assertEqual(port_cor.total_equity, 1000.0)
         self.assertEqual(port_cor.history, [pe_sub])
         self.assertEqual(port_cor.cur_dt, later_dt)
         # Now withdraw
@@ -211,7 +215,8 @@ class PortfolioTests(unittest.TestCase):
             credit=0.0, balance=532.0
         )
         self.assertEqual(port_cor.total_cash, 532.0)
-        self.assertEqual(port_cor.total_value, 532.0)
+        self.assertEqual(port_cor.total_securities_value, 0.0)
+        self.assertEqual(port_cor.total_equity, 532.0)
         self.assertEqual(port_cor.history, [pe_sub, pe_wdr])
         self.assertEqual(port_cor.cur_dt, even_later_dt)
 
@@ -220,9 +225,9 @@ class PortfolioTests(unittest.TestCase):
         Test transact_asset raises for incorrect time
         Test transact_asset raises for transaction total
         cost exceeding total cash
-        Test correct total_cash and total_value for correct
-        transaction (commission etc), correct portfolio event
-        and correct time update
+        Test correct total_cash and total_securities_value
+        for correct transaction (commission etc), correct
+        portfolio event and correct time update
         """
         start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
         earlier_dt = pd.Timestamp('2017-10-04 08:00:00', tz=pytz.UTC)
@@ -247,7 +252,8 @@ class PortfolioTests(unittest.TestCase):
         # cost exceeding total cash
         port.subscribe_funds(later_dt, 1000.0)
         self.assertEqual(port.total_cash, 1000.0)
-        self.assertEqual(port.total_value, 1000.0)
+        self.assertEqual(port.total_securities_value, 0.0)
+        self.assertEqual(port.total_equity, 1000.0)
         pe_sub1 = PortfolioEvent(
             date=later_dt, type='subscription',
             description="SUBSCRIPTION", debit=0.0,
@@ -264,12 +270,13 @@ class PortfolioTests(unittest.TestCase):
         with self.assertRaises(PortfolioException):
             port.transact_asset(tn_large)
 
-        # Test correct total_cash and total_value for correct
-        # transaction (commission etc), correct portfolio event
-        # and correct time update
+        # Test correct total_cash and total_securities_value
+        # for correct transaction (commission etc), correct
+        # portfolio event and correct time update
         port.subscribe_funds(even_later_dt, 99000.0)
         self.assertEqual(port.total_cash, 100000.0)
-        self.assertEqual(port.total_value, 100000.0)
+        self.assertEqual(port.total_securities_value, 0.0)
+        self.assertEqual(port.total_equity, 100000.0)
         pe_sub2 = PortfolioEvent(
             date=even_later_dt, type='subscription',
             description="SUBSCRIPTION", debit=0.0,
@@ -285,7 +292,8 @@ class PortfolioTests(unittest.TestCase):
         )
         port.transact_asset(tn_even_later)
         self.assertEqual(port.total_cash, 43284.22)
-        self.assertEqual(port.total_value, 99984.22)
+        self.assertEqual(port.total_securities_value, 56700.00)
+        self.assertEqual(port.total_equity, 99984.22)
         description = "LONG 100 ACME INC. 567.00 07/10/2017"
         pe_tn = PortfolioEvent(
             date=even_later_dt, type="asset_transaction",
@@ -356,7 +364,8 @@ class PortfolioTests(unittest.TestCase):
             balance=43319.89
         )
         self.assertEqual(port.total_cash, 43319.89)
-        self.assertEqual(port.total_value, 100019.89)
+        self.assertEqual(port.total_securities_value, 56700.00)
+        self.assertEqual(port.total_equity, 100019.89)
         self.assertEqual(port.cur_dt, even_later_dt)
         # Dividend #2
         port.cash_dividend(much_later_dt, asset, 0.42538)
@@ -368,7 +377,8 @@ class PortfolioTests(unittest.TestCase):
             balance=43362.42
         )
         self.assertEqual(port.total_cash, 43362.42)
-        self.assertEqual(port.total_value, 100062.42)
+        self.assertEqual(port.total_securities_value, 56700.00)
+        self.assertEqual(port.total_equity, 100062.42)
         self.assertEqual(port.history, [pe_sub, pe_tn, pe_div1, pe_div2])
         self.assertEqual(port.cur_dt, much_later_dt)
 
@@ -525,7 +535,8 @@ class PortfolioTests(unittest.TestCase):
         port_dict = port.portfolio_to_dict()
         test_dict = {
             "total_cash": 100000.0,
-            "total_value": 100000.0
+            "total_securities_value": 0.0,
+            "total_equity": 100000.0
         }
         self.assertEqual(port_dict, test_dict)
 
@@ -540,7 +551,7 @@ class PortfolioTests(unittest.TestCase):
             "\x1b[0m*======================================================" \
             "============================================*\n" \
             "| Holding | Quantity | Price | Change |      Book Cost " \
-            "|   Market Value |            Gain          | \n" \
+            "|   Market Value |      Unrealised Gain     | \n" \
             "*======================================================" \
             "============================================*\n" \
             "*======================================================" \
@@ -582,7 +593,7 @@ class PortfolioTests(unittest.TestCase):
             "\x1b[0m*======================================================" \
             "============================================*\n" \
             "| Holding | Quantity | Price | Change |      Book Cost " \
-            "|   Market Value |            Gain          | \n" \
+            "|   Market Value |      Unrealised Gain     | \n" \
             "*======================================================" \
             "============================================*\n" \
             "|     AAA |      100 |     - |      - |     $56,715.78 " \
@@ -608,7 +619,7 @@ class PortfolioTests(unittest.TestCase):
             "\x1b[0m*======================================================" \
             "============================================*\n" \
             "| Holding | Quantity | Price | Change |      Book Cost " \
-            "|   Market Value |            Gain          | \n" \
+            "|   Market Value |      Unrealised Gain     | \n" \
             "*======================================================" \
             "============================================*\n" \
             "|     AAA |      100 |     - |      - |     $56,715.78 " \

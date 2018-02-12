@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import collections
+import queue
 import unittest
 
 import numpy as np
@@ -42,6 +42,9 @@ class ExchangeMock(object):
     def get_latest_asset_bid_ask(self, asset):
         return (np.NaN, np.NaN)
 
+    def is_open_at_datetime(self, dt):
+        return True
+
 
 class ExchangeMockException(object):
     def __init__(self):
@@ -50,6 +53,9 @@ class ExchangeMockException(object):
     def get_latest_asset_bid_ask(self, asset):
         raise ExchangeException("No price available!")
 
+    def is_open_at_datetime(self, dt):
+        return True
+
 
 class ExchangeMockPrice(object):
     def __init__(self):
@@ -57,6 +63,9 @@ class ExchangeMockPrice(object):
 
     def get_latest_asset_bid_ask(self, asset):
         return (53.45, 53.47)
+
+    def is_open_at_datetime(self, dt):
+        return True
 
 
 class OrderMock(object):
@@ -372,7 +381,7 @@ class SimulatedBrokerTests(unittest.TestCase):
 
         # Check that the market value is correct
         self.assertEqual(
-            sb.get_account_total_market_value(),
+            sb.get_account_total_equity(),
             {
                 "1": 100000.0,
                 "2": 100000.0,
@@ -399,7 +408,7 @@ class SimulatedBrokerTests(unittest.TestCase):
         self.assertTrue("1234" in sb.portfolios)
         self.assertTrue(isinstance(sb.portfolios["1234"], Portfolio))
         self.assertTrue("1234" in sb.open_orders)
-        self.assertTrue(isinstance(sb.open_orders["1234"], collections.deque))
+        self.assertTrue(isinstance(sb.open_orders["1234"], queue.Queue))
 
         # If portfolio is already in the dictionary
         # then raise BrokerException
@@ -557,7 +566,7 @@ class SimulatedBrokerTests(unittest.TestCase):
 
         # Check correct values obtained after cash transfers
         self.assertEqual(
-            sb.get_portfolio_total_market_value("1234"),
+            sb.get_portfolio_total_equity("1234"),
             100000.0
         )
 
@@ -583,7 +592,11 @@ class SimulatedBrokerTests(unittest.TestCase):
         # Check correct values obtained after cash transfers
         self.assertEqual(
             sb.get_portfolio_as_dict("1234"),
-            {"total_value": 100000.0, "total_cash": 100000.0}
+            {
+                "total_cash": 100000.0,
+                "total_securities_value": 0.0,
+                "total_equity": 100000.0
+            }
         )
 
     def test_get_latest_asset_price(self):
@@ -643,10 +656,11 @@ class SimulatedBrokerTests(unittest.TestCase):
         asset = AssetMock("Royal Dutch Shell Class B", "RDSB")
         order = OrderMock(asset, quantity)
         with self.assertRaises(BrokerException):
-            sbnp.submit_order("1234", order)
+            sbnp._execute_order("1234", order)
 
         # Checks that bid/ask are correctly set dependent on
         # order direction
+
         # Positive direction
         exchange_price = ExchangeMockPrice()
         sbwp = SimulatedBroker(start_dt, exchange_price)
@@ -657,14 +671,18 @@ class SimulatedBrokerTests(unittest.TestCase):
         quantity = 1000
         order = OrderMock(asset, quantity)
         sbwp.submit_order("1234", order)
+        sbwp.update(start_dt)
+
         port = sbwp.get_portfolio_as_dict("1234")
         self.assertEqual(port["total_cash"], 46530.0)
-        self.assertEqual(port["total_value"], 100000.0)
+        self.assertEqual(port["total_securities_value"], 53470.0)
+        self.assertEqual(port["total_equity"], 100000.0)
         self.assertEqual(port[asset]["book_cost"], 53470.0)
         self.assertEqual(port[asset]["gain"], 0.0)
         self.assertEqual(port[asset]["market_value"], 53470.0)
         self.assertEqual(port[asset]["perc_gain"], 0.0)
         self.assertEqual(port[asset]["quantity"], 1000)
+
         # Negative direction
         exchange_price = ExchangeMockPrice()
         sbwp = SimulatedBroker(start_dt, exchange_price)
@@ -675,9 +693,12 @@ class SimulatedBrokerTests(unittest.TestCase):
         quantity = -1000
         order = OrderMock(asset, quantity)
         sbwp.submit_order("1234", order)
+        sbwp.update(start_dt)
+
         port = sbwp.get_portfolio_as_dict("1234")
         self.assertEqual(port["total_cash"], 153450.0)
-        self.assertEqual(port["total_value"], 100000.0)
+        self.assertEqual(port["total_securities_value"], -53450.0)
+        self.assertEqual(port["total_equity"], 100000.0)
         self.assertEqual(port[asset]["book_cost"], -53450.0)
         self.assertEqual(port[asset]["gain"], 0.0)
         self.assertEqual(port[asset]["market_value"], -53450.0)

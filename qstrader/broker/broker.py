@@ -86,6 +86,12 @@ class Broker(object):
         )
 
     @abstractmethod
+    def get_account_total_equity(self):
+        raise NotImplementedError(
+            "Should implement get_account_total_equity()"
+        )
+
+    @abstractmethod
     def create_portfolio(self, portfolio_id, name):
         raise NotImplementedError(
             "Should implement create_portfolio()"
@@ -119,6 +125,12 @@ class Broker(object):
     def get_portfolio_total_market_value(self, portfolio_id):
         raise NotImplementedError(
             "Should implement get_portfolio_total_market_value()"
+        )
+
+    @abstractmethod
+    def get_portfolio_total_equity(self, portfolio_id):
+        raise NotImplementedError(
+            "Should implement get_portfolio_total_equity()"
         )
 
     @abstractmethod

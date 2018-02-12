@@ -89,7 +89,7 @@ class FixedWeightPCM(PortfolioConstructionModel):
             transaction_cost_model=transaction_cost_model,
             rebalance_times=rebalance_times
         )
-        self.adjustment_factor=adjustment_factor
+        self.adjustment_factor = adjustment_factor
 
     def _check_all_forecasts(self, forecasts):
         """
@@ -117,8 +117,8 @@ class FixedWeightPCM(PortfolioConstructionModel):
         provided Forecasts that rescales the forecast 'values' if they
         do not sum to 1.0.
         """
-        # Obtain the current portfolio market value
-        port_market_value = self.broker.get_portfolio_total_market_value(
+        # Obtain the current portfolio equity
+        port_equity = self.broker.get_portfolio_total_equity(
             self.broker_portfolio_id
         )
 
@@ -135,7 +135,7 @@ class FixedWeightPCM(PortfolioConstructionModel):
         for forecast in self.forecasts:
             asset = forecast.asset
             asset_weight = scaled_forecast_weights[asset]
-            pc_dollar_weight = port_market_value * asset_weight
+            pc_dollar_weight = port_equity * asset_weight
             # Calculate tax and commission for this asset
             # (note some assets are tax free)
             est_commission = self.transaction_cost_model._calc_commission(

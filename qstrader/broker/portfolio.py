@@ -84,8 +84,8 @@ class Portfolio(object):
         self.starting_cash = starting_cash
         self.portfolio_id = portfolio_id
         self.name = name
-        self.total_value = starting_cash
         self.total_cash = starting_cash
+        self.total_securities_value = 0.0
         self.total_equity = starting_cash
 
         self.logger = logging.getLogger('Portfolio')
@@ -137,7 +137,6 @@ class Portfolio(object):
                 self._currency_format(amount)
             )
         self.total_cash += amount
-        self.total_value += amount
         self.total_equity += amount
         pe = PortfolioEvent(
             date=dt, type='subscription',
@@ -184,7 +183,6 @@ class Portfolio(object):
                 )
             )
         self.total_cash -= amount
-        self.total_value -= amount
         self.total_equity -= amount
         pe = PortfolioEvent(
             date=dt, type='withdrawal',
@@ -228,8 +226,8 @@ class Portfolio(object):
             )
         self.pos_handler.transact_position(tn)
         self.total_cash -= tn_total_cost
-        self.total_value -= tn.commission
-        self.total_equity -= tn.commission
+        self.total_securities_value += tn_share_cost
+        self.total_equity = self.total_cash + self.total_securities_value
 
         # Form Portfolio history details
         direction = "LONG" if tn.direction > 0 else "SHORT"
@@ -256,7 +254,7 @@ class Portfolio(object):
             pe = PortfolioEvent(
                 date=tn.dt, type='asset_transaction',
                 description=description,
-                debit=0.0, credit=-1.0*round(tn_total_cost, 2),
+                debit=0.0, credit=-1.0 * round(tn_total_cost, 2),
                 balance=round(self.total_cash, 2)
             )
             self.logger.info(
@@ -264,7 +262,7 @@ class Portfolio(object):
                 '- Credit: %0.2f, Balance: %0.2f' % (
                     tn.dt.strftime(settings.LOGGING["DATE_FORMAT"]),
                     tn.asset.symbol, self.portfolio_id,
-                    -1.0*round(tn_total_cost, 2), round(self.total_cash, 2)
+                    -1.0 * round(tn_total_cost, 2), round(self.total_cash, 2)
                 )
             )
         self.history.append(pe)
@@ -304,7 +302,6 @@ class Portfolio(object):
         ) / 100.0
 
         self.total_cash += total_div
-        self.total_value += total_div
         self.total_equity += total_div
         description = "DIVIDEND %s %s %0.2f%s %s" % (
             quantity, asset.name.upper(),
@@ -320,9 +317,9 @@ class Portfolio(object):
         self.history.append(pe)
         self.cur_dt = dt
         self.logger.info(
-            '(%s) %0.2f subscribed to broker account "%s"' % (
+            '(%s) Cash dividend of %0.2f received by portfolio "%s"' % (
                 self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                amount, self.account_id
+                total_div, self.portfolio_id
             )
         )
 
@@ -394,7 +391,7 @@ class Portfolio(object):
         """
         port_dict = self.holdings_to_dict()
         port_dict["total_cash"] = self.total_cash
-        port_dict["total_value"] = self.total_value
+        port_dict["total_securities_value"] = self.total_securities_value
         port_dict["total_equity"] = self.total_equity
         return port_dict
 
@@ -430,8 +427,8 @@ class Portfolio(object):
         print_row_divider(repeats)
         sys.stdout.write(
             "| Holding | Quantity | Price | Change |"
-            "      Book Cost |   Market Value |       "
-            "     Gain          | \n"
+            "      Book Cost |   Market Value |     "
+            " Unrealised Gain     | \n"
         )
         print_row_divider(repeats)
 
@@ -507,10 +504,5 @@ class Portfolio(object):
         """
         TODO: Fill in this doc string!
         """
-        self.total_value = 0.0
-        self.total_value = self.pos_handler.total_market_value()
-        self.total_value += self.total_cash
-
-        self.total_equity = 0.0
-        self.total_equity = self.pos_handler.total_unr_gain()
-        self.total_equity += self.total_cash
+        self.total_securities_value = self.pos_handler.total_market_value()
+        self.total_equity = self.total_securities_value + self.total_cash

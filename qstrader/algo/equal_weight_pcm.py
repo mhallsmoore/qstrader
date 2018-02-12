@@ -85,7 +85,7 @@ class EqualWeightPCM(PortfolioConstructionModel):
         on a 1/N basis, for N assets.
         """
         # Obtain the current portfolio market value
-        port_market_value = self.broker.get_portfolio_total_market_value(
+        port_equity = self.broker.get_portfolio_total_equity(
             self.broker_portfolio_id
         )
 
@@ -96,7 +96,7 @@ class EqualWeightPCM(PortfolioConstructionModel):
             # or is fully liquidated
             return {}
         asset_weight = 1.0 / float(N)
-        pc_dollar_weight = port_market_value * asset_weight
+        pc_dollar_weight = port_equity * asset_weight
 
         # Equal dollar weighting portfolio construction
         alpha_portfolio = {}

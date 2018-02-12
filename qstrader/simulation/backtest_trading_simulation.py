@@ -179,7 +179,7 @@ class BacktestTradingSimulation(TradingSimulation):
         rebalance_times = [
             pd.Timestamp("%s 00:00:00" % date, tz=pytz.utc)
             for date in rebalance_dates
-        ]
+        ][:1]
         return rebalance_times
 
     def _create_portfolio_construction(self):
@@ -236,25 +236,14 @@ class BacktestTradingSimulation(TradingSimulation):
         print(hist_df)
 
     def run(self):
-        trading_events = ("market_open", "market_bar", "market_close")
-
-        # Loop over all events
+        """
+        TODO: Fill in doc string!
+        """
         for event in self.sim_engine:
             dt = event.ts
-
-            # Update the exchange and all market prices
             self.exchange.update(dt)
-
-            # Update the brokerage to modify portfolios
-            # and/or carry out new orders
             self.broker.update(dt)
-
-            # Update the trading algo to generate new orders
             self.qta.update(dt)
-
-            # Update performance every trading day
             if event.event_type == "post_market":
                 self.statistics.update(dt)
-
-        # Plot the results using Matplotlib        
         self.statistics.plot_results()

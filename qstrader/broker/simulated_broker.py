@@ -84,9 +84,8 @@ class SimulatedBroker(Broker):
         self.logger = logging.getLogger('SimulatedBroker')
         self.logger.setLevel(logging.DEBUG)
         self.logger.info(
-            '(%s) SimulatedBroker instance initialised' % 
-            self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]
-            )
+            '(%s) SimulatedBroker instance initialised' %
+            self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"])
         )
 
     def _set_base_currency(self, base_currency):
@@ -245,6 +244,22 @@ class SimulatedBroker(Broker):
         tmv_dict["master"] = master_tmv
         return tmv_dict
 
+    def get_account_total_equity(self):
+        """
+        Retrieve the total equity of the account, across
+        each portfolio.
+        """
+        equity_dict = {}
+        master_equity = 0.0
+        for portfolio in self.portfolios.values():
+            port_equity = self.get_portfolio_total_equity(
+                portfolio.portfolio_id
+            )
+            equity_dict[portfolio.portfolio_id] = port_equity
+            master_equity += port_equity
+        equity_dict["master"] = master_equity
+        return equity_dict
+
     def create_portfolio(self, portfolio_id, name=None):
         """
         Create a new sub-portfolio with ID 'portfolio_id' and
@@ -381,7 +396,20 @@ class SimulatedBroker(Broker):
                 "Cannot return total market value for a "
                 "non-existent portfolio." % portfolio_id
             )
-        return self.portfolios[portfolio_id].total_value
+        return self.portfolios[portfolio_id].total_securities_value
+
+    def get_portfolio_total_equity(self, portfolio_id):
+        """
+        Returns the current total equity of a Portfolio
+        with ID 'portfolio_id'.
+        """
+        if portfolio_id not in self.portfolios.keys():
+            raise BrokerException(
+                "Portfolio with ID '%s' does not exist. "
+                "Cannot return total equity for a "
+                "non-existent portfolio." % portfolio_id
+            )
+        return self.portfolios[portfolio_id].total_equity
 
     def get_portfolio_as_dict(self, portfolio_id):
         """
@@ -453,7 +481,7 @@ class SimulatedBroker(Broker):
             'Price: %0.2f, Consideration: %0.2f, '
             'Commission: %0.2f, Total Cost: %0.2f' % (
                 self.cur_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                order.asset.symbol, order.quantity, 
+                order.asset.symbol, order.quantity,
                 price, consideration, total_commission,
                 consideration + total_commission
             )

@@ -22,10 +22,7 @@
 
 from qstrader.statistics.statistics import Statistics
 
-import datetime
-import os
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -41,21 +38,21 @@ class SimpleStatistics(Statistics):
         Takes in a Broker to obtain performance information.
         """
         self.broker = broker
-        self.gain = []
+        self.equity = []
 
     def update(self, dt):
         """
         Update all statistics that must be tracked over time.
         """
-        self.gain.append(
-            (dt, self.broker.get_portfolio_as_dict('1234')['total_equity'])
+        self.equity.append(
+            (dt, self.broker.get_account_total_equity()["master"])
         )
 
     def calc_equity(self):
         """
         Calculate the equity curve
         """
-        df = pd.DataFrame(self.gain, columns=["Timestamp", "Equity"])
+        df = pd.DataFrame(self.equity, columns=["Timestamp", "Equity"])
         return df
 
     def plot_results(self):
@@ -75,7 +72,6 @@ class SimpleStatistics(Statistics):
         # Plot the equity curve
         ax1 = fig.add_subplot(111, ylabel='Gain ($)')
         df["Equity"].plot(ax=ax1, color=sns.color_palette()[0])
-        print(df["Equity"].tail())
 
         # Rotate dates
         fig.autofmt_xdate()
