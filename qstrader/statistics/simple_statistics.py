@@ -52,7 +52,8 @@ class SimpleStatistics(Statistics):
         """
         Calculate the equity curve
         """
-        df = pd.DataFrame(self.equity, columns=["Timestamp", "Equity"])
+        df = pd.DataFrame(self.equity, columns=["timestamp", "equity"])
+        df["returns"] = df["equity"].pct_change()
         return df
 
     def plot_results(self):
@@ -70,8 +71,12 @@ class SimpleStatistics(Statistics):
         fig.patch.set_facecolor('white')
 
         # Plot the equity curve
-        ax1 = fig.add_subplot(111, ylabel='Gain ($)')
-        df["Equity"].plot(ax=ax1, color=sns.color_palette()[0])
+        ax1 = fig.add_subplot(211, ylabel='Equity ($)')
+        df["equity"].plot(ax=ax1, color=sns.color_palette()[0])
+
+        # Plot the equity curve
+        ax2 = fig.add_subplot(212, ylabel='Returns (%)')
+        df["returns"].plot(ax=ax2, color=sns.color_palette()[1])
 
         # Rotate dates
         fig.autofmt_xdate()

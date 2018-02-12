@@ -32,13 +32,14 @@ from qstrader.algo.fixed_weight_pcm import FixedWeightPCM
 from qstrader.algo.quant_trading_algo import QuantitativeTradingAlgorithm
 from qstrader.broker.simulated_broker import SimulatedBroker
 from qstrader.broker.zero_broker_commission import ZeroBrokerCommission
+from qstrader.broker.td_direct_broker_commission import TDDirectBrokerCommission
 from qstrader.exchange.csv_bar_data import CSVBarDataPriceVolumeDataSource
 from qstrader.exchange.simulated_exchange import SimulatedExchange
 from qstrader.simulation.daily_business_day_simulation_engine import (
     DailyBusinessDaySimulationEngine
 )
 from qstrader.simulation.trading_simulation import TradingSimulation
-from qstrader.statistics.simple_statistics import SimpleStatistics
+from qstrader.statistics.tearsheet_statistics import TearsheetStatistics
 
 
 class BacktestTradingSimulation(TradingSimulation):
@@ -46,6 +47,8 @@ class BacktestTradingSimulation(TradingSimulation):
     """
 
     def __init__(self, settings):
+        self.commission_models = self._create_commission_model_dict()
+        self.alpha_models = self._create_alpha_model_dict()
         self.settings = settings
         self.start_dt = self._create_start_date()
         self.end_dt = self._create_end_date()
@@ -62,9 +65,28 @@ class BacktestTradingSimulation(TradingSimulation):
         self.sim_engine = self._create_simulation_engine()
         self.statistics = self._create_statistics()
 
+    def _create_commission_model_dict(self):
+        """
+        Creates the mapping between user input broker commission
+        choices and the class name.
+        """
+        return {
+            "Zero": ZeroBrokerCommission,
+            "TD Direct": TDDirectBrokerCommission
+        }
+
+    def _create_alpha_model_dict(self):
+        """
+        Creates the mapping between user input alpha model
+        choices and the class name.
+        """
+        return {
+            "Fixed Weight": FixedWeightAlphaModel
+        }
+
     def _create_start_date(self):
         """
-        TODO: Fill in doc string!
+        Set the starting timestamp of the backtest simulation in UTC.
         """
         return pd.Timestamp(
             self.settings.SIMULATION['START_DATE'], tz=pytz.UTC
@@ -72,7 +94,7 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_end_date(self):
         """
-        TODO: Fill in doc string!
+        Set the ending timestamp of the backtest simulation in UTC.
         """
         return pd.Timestamp(
             self.settings.SIMULATION['END_DATE'], tz=pytz.UTC
@@ -80,7 +102,8 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_exchange_open_time_utc(self):
         """
-        TODO: Fill in doc string!
+        Set the exchange daily opening time of the backtest simulation
+        in UTC.
         """
         return pd.Timestamp(
             self.settings.EXCHANGE['OPENING_UTC'],
@@ -89,7 +112,8 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_exchange_close_time_utc(self):
         """
-        TODO: Fill in doc string!
+        Set the exchange daily closing time of the backtest simulation
+        in UTC.
         """
         return pd.Timestamp(
             self.settings.EXCHANGE['CLOSING_UTC'],
@@ -98,7 +122,10 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_assets(self):
         """
-        TODO: Fill in doc string!
+        Load in the list of specified assets. Currently hardcoded
+        as Equity assets.
+
+        TODO: In later versions, eliminate hardcoding of Equity
         """
         tickers = self.settings.DATA['ASSETS']
         assets = [
@@ -109,7 +136,7 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_exchange(self):
         """
-        TODO: Fill in doc string!
+        Create a SimulatedExchange with the appropriate CSV Data sources
         """
         csv_dir = os.path.join(os.getcwd(), self.settings.DATA['ROOT'])
         data_sources = [
@@ -123,10 +150,11 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_broker_commission(self):
         """
-        TODO: Fill in doc string!
+        Create the broker commission instance, if supported.
         """
-        if self.settings.BROKER['COMMISSION']['MODEL'] == "Zero Commission":
-            broker_commission = ZeroBrokerCommission()
+        comm_model = self.settings.BROKER['COMMISSION']['MODEL']
+        if comm_model in self.commission_models:
+            broker_commission = self.commission_models[comm_model]()
         else:
             print(
                 "No supported Broker Commission "
@@ -137,7 +165,8 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_broker(self):
         """
-        TODO: Fill in doc string!
+        Create the SimulatedBroker with an appropriate default
+        portfolio as given in the configuration.
         """
         acct_name = self.settings.BROKER['ACCOUNT_NAME']
         init_cash = self.settings.BROKER['INITIAL_CASH']
@@ -155,12 +184,15 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_alpha_models(self):
         """
-        TODO: Fill in doc string!
+        Creates a set of FixedWeightAlphaModel instances if the user
+        has specified 'Fixed Weight' in the configuration file.
+
+        TODO: Eliminate the hardcoded alpha model here.
         """
         if self.settings.SIMULATION['ALPHA']['MODEL'] == "Fixed Weight":
             alpha_model = FixedWeightAlphaModel
         else:
-            print("No support Alpha Model model specified. Exiting.")
+            print("No supported Alpha Model model specified. Exiting.")
         alpha_models = [
             alpha_model(
                 asset, self.start_dt,
@@ -179,7 +211,7 @@ class BacktestTradingSimulation(TradingSimulation):
         rebalance_times = [
             pd.Timestamp("%s 00:00:00" % date, tz=pytz.utc)
             for date in rebalance_dates
-        ][:1]
+        ]
         return rebalance_times
 
     def _create_portfolio_construction(self):
@@ -196,7 +228,9 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_quant_trading_algo(self):
         """
-        TODO: Fill in doc string!
+        Create the quant trading algo code which ties together the
+        alpha model and portfolio construction to generate orders
+        for a broker.
         """
         qta = QuantitativeTradingAlgorithm(
             self.start_dt, self.broker, self.portfolio_id,
@@ -206,7 +240,10 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_simulation_engine(self):
         """
-        TODO: Fill in doc string!
+        Create a simulation engine instance to generate the events
+        used for the quant trading algorithm to act upon.
+
+        TODO: Currently hardcoded to daily events
         """
         sim_engine = DailyBusinessDaySimulationEngine(
             self.start_dt, self.end_dt
@@ -215,20 +252,23 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def _create_statistics(self):
         """
-        TODO: Fill in doc string!
+        Create a statistics instance to process the results of the
+        trading backtest.
         """
-        statistics = SimpleStatistics(self.broker)
+        statistics = TearsheetStatistics(
+            self.broker, title=self.settings.SIMULATION['TITLE']
+        )
         return statistics
 
     def output_holdings(self):
         """
-        TODO: Fill in doc string!
+        Output the portfolio holdings to the console.
         """
         self.broker.portfolios[self.portfolio_id].holdings_to_console()
 
     def output_portfolio_history(self):
         """
-        TODO: Fill in doc string!
+        Output the portfolio transaction history.
         """
         hist_df = self.broker.portfolios[
             self.portfolio_id
@@ -237,7 +277,11 @@ class BacktestTradingSimulation(TradingSimulation):
 
     def run(self):
         """
-        TODO: Fill in doc string!
+        Loop over all simulation events, update the time and subsequently
+        update the exchange, broker and quant algorithm logic to generate
+        new orders. At the end of each trading day, calculate performance
+        and add to the statistics instance. At the end of the simulation
+        output the results of the simulation via a simple plot.
         """
         for event in self.sim_engine:
             dt = event.ts
