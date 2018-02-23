@@ -60,7 +60,7 @@ STATISTICS_ROOT = 'statistics'
 SIMULATION = {
     'TITLE': 'Fixed-Weight 60-40 SPY/AGG Portfolio Weekly Rebalanced',
     'START_DATE': '2006-11-01',
-    'END_DATE': '2016-10-12', 
+    'END_DATE': '2016-10-12',
     'ALPHA': {
         'MODEL': 'Fixed Weight',
         'WEIGHTS': {'SPY': 0.6, 'AGG': 0.4}
