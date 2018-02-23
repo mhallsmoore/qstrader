@@ -48,9 +48,9 @@ class BacktestTradingSimulation(TradingSimulation):
     """
 
     def __init__(self, settings):
+        self.settings = settings
         self.commission_models = self._create_commission_model_dict()
         self.alpha_models = self._create_alpha_model_dict()
-        self.settings = settings
         self.start_dt = self._create_start_date()
         self.end_dt = self._create_end_date()
         self.exchange_open_time_utc = self._create_exchange_open_time_utc()
@@ -194,6 +194,7 @@ class BacktestTradingSimulation(TradingSimulation):
             alpha_model = FixedWeightAlphaModel
         else:
             print("No supported Alpha Model model specified. Exiting.")
+            sys.exit()
         alpha_models = [
             alpha_model(
                 asset, self.start_dt,

@@ -38,6 +38,9 @@ class WeeklyRebalance(Rebalance):
         self, start_date, end_date,
         weekday, pre_market=True
     ):
+        """
+        Initialise the WeeklyRebalance instance.
+        """
         self.weekday = self._set_weekday(weekday)
         self.start_date = start_date
         self.end_date = end_date
