@@ -30,6 +30,7 @@ from qstrader.exchange.equity import Equity
 from qstrader.algo.fixed_weight_alpha_model import FixedWeightAlphaModel
 from qstrader.algo.fixed_weight_pcm import FixedWeightPCM
 from qstrader.algo.quant_trading_algo import QuantitativeTradingAlgorithm
+from qstrader.algo.weekly_rebalance import WeeklyRebalance
 from qstrader.broker.simulated_broker import SimulatedBroker
 from qstrader.broker.zero_broker_commission import ZeroBrokerCommission
 from qstrader.broker.td_direct_broker_commission import TDDirectBrokerCommission
@@ -205,14 +206,8 @@ class BacktestTradingSimulation(TradingSimulation):
         """
         TODO: Fill in doc string!
         """
-        rebalance_dates = pd.date_range(
-            start=self.start_dt, end=self.end_dt, freq='W-WED'
-        )
-        rebalance_times = [
-            pd.Timestamp("%s 00:00:00" % date, tz=pytz.utc)
-            for date in rebalance_dates
-        ]
-        return rebalance_times
+        reb = WeeklyRebalance(self.start_dt, self.end_dt, 'WED')
+        return reb.output_rebalances()
 
     def _create_portfolio_construction(self):
         """
