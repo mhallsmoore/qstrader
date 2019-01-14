@@ -3,6 +3,7 @@
 .DS_Store
 __pycache__
 out
+cover
 
 # Packages
 *.egg
