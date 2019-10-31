@@ -5,10 +5,10 @@ import queue
 import numpy as np
 
 from qstrader import settings
-from qstrader.broker.base import Broker
-from qstrader.broker.fee_model.base import FeeModel
-from qstrader.broker.portfolio.base import Portfolio
-from qstrader.broker.transaction.base import Transaction
+from qstrader.broker.broker import Broker
+from qstrader.broker.fee_model.fee_model import FeeModel
+from qstrader.broker.portfolio.portfolio import Portfolio
+from qstrader.broker.transaction.transaction import Transaction
 from qstrader.broker.fee_model.zero_fee_model import ZeroFeeModel
 
 
