@@ -7,8 +7,8 @@ before_install:
   - export PYTHONPATH=$PYTHONPATH:$(pwd) 
 
 install:
-  - pip install numpy
-  - pip install pandas
+  - pip install -r requirements/base.txt
+  - pip install -r requirements/tests.txt
   - pip install pytest
   - pip install pytest-cov
   - pip install coveralls
@@ -16,7 +16,7 @@ install:
 
 script:
   - pytest --cov=qstrader/
-  - flake8 --ignore E501 tests
+  - flake8 --ignore E501 tests qstrader
 
 after_success:
   - coveralls
