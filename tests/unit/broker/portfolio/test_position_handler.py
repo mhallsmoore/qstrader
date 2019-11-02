@@ -180,7 +180,7 @@ def test_update_commission():
     )
     ph.transact_position(trans_pos_1)
     ph.update_commission(asset1, 15.97)
-    
+
     # Asset 2
     asset2 = Equity('Microsoft, Inc.', 'MSFT')
     dt2 = pd.Timestamp('2015-05-07')
@@ -190,7 +190,7 @@ def test_update_commission():
     )
     ph.transact_position(trans_pos_2)
     ph.update_commission(asset2, 8.35)
-    
+
     # Check all total values
     assert ph.total_book_cost() == 71928.07
     assert ph.total_market_value() == 71903.75
@@ -228,6 +228,6 @@ def test_update_position_for_non_none_values():
     )
 
     assert ph.positions[asset1].quantity == quantity
-    assert ph.positions[asset1].current_price == current_price 
+    assert ph.positions[asset1].current_price == current_price
     assert ph.positions[asset1].current_dt == current_dt
     assert ph.positions[asset1].book_cost_pu == book_cost_pu

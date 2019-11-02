@@ -90,7 +90,7 @@ class Position(object):
         trading commissions.
         """
         if self.asset != asset:
-            raise PositionException(
+            raise ValueError(
                 'Failed to adjust book cost for Position on asset '
                 '%s due to attempt being made to adjust asset %s.' % {
                     self.asset, asset
@@ -147,7 +147,7 @@ class Position(object):
                     # is open, or a short position has been covered
                     # and we've now gone long
                     self.book_cost_pu = transaction.price
-                #else:
+                # else:
                 #    # TODO: Implement this branch
                 #    raise NotImplementedError(
                 #        'Opposing direction with transaction less than position quantity '
@@ -156,8 +156,7 @@ class Position(object):
 
         # Update the current trade information
         if (
-            self.current_dt is None or
-            transaction.dt > self.current_dt
+            self.current_dt is None or transaction.dt > self.current_dt
         ):
             self.current_price = transaction.price
             self.current_dt = transaction.dt

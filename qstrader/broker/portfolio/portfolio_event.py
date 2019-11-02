@@ -6,7 +6,7 @@ class PortfolioEvent(object):
     Parameters
     ----------
     dt : `datetime`
-        Datetime of the event. 
+        Datetime of the event.
     type : `str`
         The type of portfolio event, e.g. 'subscription', 'withdrawal'.
     description ; `str`

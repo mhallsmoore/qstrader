@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 class FeeModel(object):
     """
     Abstract class to handle the calculation of brokerage
-    commission, fees and taxes. 
+    commission, fees and taxes.
     """
 
     __metaclass__ = ABCMeta
