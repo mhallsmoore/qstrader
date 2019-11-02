@@ -1,7 +1,10 @@
 language: python
 
 python:
-  - "3.6"
+  - "3.7"
+
+before_install:
+  - export PYTHONPATH=$PYTHONPATH:$(pwd) 
 
 install:
   - pip install numpy
