@@ -9,10 +9,6 @@ before_install:
 install:
   - pip install -r requirements/base.txt
   - pip install -r requirements/tests.txt
-  - pip install pytest
-  - pip install pytest-cov
-  - pip install coveralls
-  - pip install flake8
 
 script:
   - pytest --cov=qstrader/
