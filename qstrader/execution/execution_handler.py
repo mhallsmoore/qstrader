@@ -15,7 +15,7 @@ class ExecutionHandler(object):
         Whether to actually submit orders to the Broker or silently
         discard them. Defaults to False -> Do not send orders.
     execution_algo : `ExecutionAlgorithm`, optional
-        The derived ExecutionAlgorithm instance to use for the 
+        The derived ExecutionAlgorithm instance to use for the
         execution strategy.
     data_handler : `DataHandler`, optional
         The derived DataHandler instances used to (optionally) obtain any
