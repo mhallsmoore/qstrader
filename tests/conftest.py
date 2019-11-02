@@ -17,7 +17,7 @@ class Helpers:
             The second order list.
         """
         for order_1, order_2 in zip(orders_1, orders_2):
-            assert order_1._order_attribs_equal(order_2) 
+            assert order_1._order_attribs_equal(order_2)
 
 
 @pytest.fixture

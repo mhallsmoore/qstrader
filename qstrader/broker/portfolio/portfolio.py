@@ -1,7 +1,5 @@
 import datetime
 import logging
-import math
-import sys
 
 import pandas as pd
 
@@ -66,7 +64,7 @@ class Portfolio(object):
         )
 
         self._initialise_portfolio_with_cash()
- 
+
     def _initialise_portfolio_with_cash(self):
         """
         Initialise the portfolio with a (default) currency Cash Asset
@@ -80,14 +78,14 @@ class Portfolio(object):
             current_dt=self.current_dt
         )
         self.pos_handler.positions[self.cash_position_key] = cash_position
-        
+
         if self.starting_cash > 0.0:
             self.history.append(
                 PortfolioEvent.create_subscription(
                     self.current_dt, self.starting_cash, self.starting_cash
                 )
             )
-        
+
         self.logger.info(
             '(%s) Funds subscribed to portfolio "%s" '
             '- Credit: %0.2f, Balance: %0.2f' % (
@@ -105,7 +103,7 @@ class Portfolio(object):
         currency Cash Asset Position.
         """
         return 'CASH:%s' % self.currency
- 
+
     @property
     def total_cash(self):
         """
@@ -155,11 +153,11 @@ class Portfolio(object):
             quantity=new_quantity,
             current_dt=self.current_dt
         )
-            
+
         self.history.append(
             PortfolioEvent.create_subscription(self.current_dt, amount, self.total_cash)
         )
-        
+
         self.logger.info(
             '(%s) Funds subscribed to portfolio "%s" '
             '- Credit: %0.2f, Balance: %0.2f' % (
@@ -211,7 +209,7 @@ class Portfolio(object):
         self.history.append(
             PortfolioEvent.create_withdrawal(self.current_dt, amount, self.total_cash)
         )
-         
+
         self.logger.info(
             '(%s) Funds withdrawn from portfolio "%s" '
             '- Debit: %0.2f, Balance: %0.2f' % (
@@ -346,7 +344,7 @@ class Portfolio(object):
             )
 
     def history_to_df(self):
-        """ 
+        """
         Creates a Pandas DataFrame of the Portfolio history.
         """
         records = [pe.to_dict() for pe in self.history]

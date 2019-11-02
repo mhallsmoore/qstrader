@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 import pytz
 
-from qstrader.broker.fee_model.fee_model import FeeModel
 from qstrader.broker.portfolio.portfolio import Portfolio
 from qstrader.broker.simulated_broker import SimulatedBroker
 from qstrader.broker.fee_model.zero_fee_model import ZeroFeeModel
@@ -38,7 +37,7 @@ class DataHandlerMock(object):
         return (np.NaN, np.NaN)
 
     def get_asset_latest_mid_price(self, dt, asset):
-        return np.NaN 
+        return np.NaN
 
 
 class DataHandlerMockPrice(object):
@@ -78,7 +77,7 @@ def test_initial_settings_for_default_simulated_broker():
     assert sb1.start_dt == start_dt
     assert sb1.current_dt == start_dt
     assert sb1.exchange == exchange
-    assert sb1.account_id == None
+    assert sb1.account_id is None
     assert sb1.base_currency == "USD"
     assert sb1.initial_funds == 0.0
     assert type(sb1.fee_model) == ZeroFeeModel
@@ -89,7 +88,7 @@ def test_initial_settings_for_default_simulated_broker():
             [0.0] * len(settings.SUPPORTED['CURRENCIES'])
         )
     )
-    
+
     assert sb1.cash_balances == tcb1
     assert sb1.portfolios == {}
     assert sb1.open_orders == {}
@@ -100,7 +99,7 @@ def test_initial_settings_for_default_simulated_broker():
         base_currency="GBP", initial_funds=1e6,
         fee_model=ZeroFeeModel
     )
-    
+
     assert sb2.start_dt == start_dt
     assert sb2.current_dt == start_dt
     assert sb2.exchange == exchange

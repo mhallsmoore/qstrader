@@ -38,7 +38,7 @@ def test_position_long_twice():
         book_cost_pu=950.0,
         current_price=950.0
     )
-    
+
     dt = pd.Timestamp('2015-05-06')
     transaction = Transaction(
         asset,
@@ -49,7 +49,7 @@ def test_position_long_twice():
         commission=None
     )
     position.update(transaction)
-    
+
     assert position.quantity == 200
     assert position.book_cost_pu == 955.0
     assert position.direction == 1.0
@@ -81,7 +81,7 @@ def test_position_long_close():
         order_id=123, commission=None
     )
     position.update(transaction)
-    
+
     assert position.quantity == 0
     assert position.book_cost_pu == 0.0
     assert position.direction == 1.0
@@ -144,7 +144,7 @@ def test_position_long_short_negative_gain():
         book_cost_pu=960.0,
         current_price=950.0
     )
-    
+
     dt = pd.Timestamp('2015-05-06')
     transaction = Transaction(
         asset,
@@ -155,7 +155,7 @@ def test_position_long_short_negative_gain():
         commission=None
     )
     position.update(transaction)
-    
+
     assert position.quantity == 50
     assert position.book_cost_pu == 960.0
     assert position.direction == 1.0
@@ -183,7 +183,7 @@ def test_position_three_longs_one_short_one_long():
     Final qty is 400, but book cost is now £1,075 (£2.6875 p/u).
     """
     asset = Equity('Apple, Inc.', 'AAPL')
-    
+
     # Initial long
     position = Position(
         asset,
@@ -191,7 +191,7 @@ def test_position_three_longs_one_short_one_long():
         book_cost_pu=1.0,
         current_price=1.0
     )
-    
+
     # Second long
     dt = pd.Timestamp('2015-05-06')
     transaction = Transaction(
@@ -205,7 +205,7 @@ def test_position_three_longs_one_short_one_long():
     position.update(transaction)
     assert position.quantity == 200
     assert position.book_cost_pu == 1.5
-    
+
     # Third long
     dt = pd.Timestamp('2015-05-07')
     transaction = Transaction(
@@ -219,7 +219,7 @@ def test_position_three_longs_one_short_one_long():
     position.update(transaction)
     assert position.quantity == 400
     assert position.book_cost_pu == 2.25
-    
+
     # First short
     dt = pd.Timestamp('2015-05-08')
     transaction = Transaction(
@@ -233,7 +233,7 @@ def test_position_three_longs_one_short_one_long():
     position.update(transaction)
     assert position.quantity == 300
     assert position.book_cost_pu == 2.25
-    
+
     # Final long
     dt = pd.Timestamp('2015-05-09')
     transaction = Transaction(
@@ -245,7 +245,7 @@ def test_position_three_longs_one_short_one_long():
         commission=None
     )
     position.update(transaction)
-    
+
     assert position.quantity == 400
     assert position.book_cost_pu == 2.6875
     assert position.direction == 1.0
@@ -269,7 +269,7 @@ def test_position_short_twice():
         book_cost_pu=950.0,
         current_price=950.0
     )
-    
+
     dt = pd.Timestamp('2015-05-06')
     transaction = Transaction(
         asset,
@@ -280,7 +280,7 @@ def test_position_short_twice():
         commission=None
     )
     position.update(transaction)
-    
+
     assert position.quantity == -200
     assert position.book_cost_pu == 955.0
     assert position.direction == -1.0
@@ -337,7 +337,7 @@ def test_position_short_long_insufficient_cover():
         order_id=123, commission=None
     )
     position.update(transaction)
-    
+
     assert position.quantity == -50
     assert position.book_cost_pu == 950.0
     assert position.direction == -1.0
@@ -366,7 +366,7 @@ def test_position_short_long_excess_cover():
         order_id=123, commission=None
     )
     position.update(transaction)
-    
+
     assert position.quantity == 75
     assert position.book_cost_pu == 873.0
     assert position.direction == 1.0
@@ -391,7 +391,7 @@ def test_position_short_goes_to_half():
     dt = pd.Timestamp('2015-05-06')
     position.current_price = 25.0
     position.current_trade_date = dt
-    
+
     assert position.quantity == -100
     assert position.book_cost_pu == 50.0
     assert position.direction == -1.0
@@ -416,7 +416,7 @@ def test_position_short_goes_to_zero():
     dt = pd.Timestamp('2015-05-06')
     position.current_price = 0.0
     position.current_trade_date = dt
-    
+
     assert position.quantity == -100
     assert position.book_cost_pu == 50.0
     assert position.direction == -1.0
@@ -444,7 +444,7 @@ def test_update_for_incorrect_asset():
         asset2, quantity=50, dt=dt, price=960.0,
         order_id=123, commission=None
     )
-    
+
     with pytest.raises(Exception):
         position.update(transaction)
 
@@ -463,7 +463,7 @@ def test_update_book_cost_for_commission_for_incorrect_asset():
         asset1, quantity=100, book_cost_pu=950.0,
         current_price=950.0
     )
-    
+
     with pytest.raises(Exception):
         position.update_book_cost_for_commission(asset2, 23.00)
 
@@ -478,7 +478,7 @@ def test_update_book_cost_for_commission_for_no_commission():
         asset, quantity=100, book_cost_pu=950.0,
         current_price=950.0
     )
-    
+
     assert position.update_book_cost_for_commission(asset, 0.0) is None
     assert position.update_book_cost_for_commission(asset, None) is None
 
@@ -508,6 +508,6 @@ def test_update_book_cost_for_commission_some_commission():
         current_price=50.0
     )
     position.update_book_cost_for_commission(asset, 15.0)
-    
+
     assert position.book_cost_pu == 50.15
     assert position.book_cost == 5015.0

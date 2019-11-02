@@ -441,7 +441,7 @@ class SimulatedBroker(Broker):
         # Check that sufficient cash exists to carry out the
         # order, else scale it down
         est_total_cost = consideration + total_commission
-        total_cash = self.portfolios[portfolio_id].total_cash 
+        total_cash = self.portfolios[portfolio_id].total_cash
 
         scaled_quantity = order.quantity
         if est_total_cost > total_cash:
@@ -519,7 +519,7 @@ class SimulatedBroker(Broker):
             for portfolio in self.portfolios:
                 while not self.open_orders[portfolio].empty():
                     orders.append((portfolio, self.open_orders[portfolio].get()))
-            
+
             sorted_orders = sorted(orders, key=lambda x: x[1].direction)
-            for portfolio, order in sorted_orders:    
+            for portfolio, order in sorted_orders:
                 self._execute_order(dt, portfolio, order)

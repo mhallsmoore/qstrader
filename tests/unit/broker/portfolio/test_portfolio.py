@@ -21,8 +21,8 @@ def test_initial_settings_for_default_portfolio():
     assert port1.current_dt == start_dt
     assert port1.currency == "USD"
     assert port1.starting_cash == 0.0
-    assert port1.portfolio_id == None
-    assert port1.name == None
+    assert port1.portfolio_id is None
+    assert port1.name is None
     assert port1.total_non_cash_equity == 0.0
     assert port1.total_cash == 0.0
     assert port1.total_equity == 0.0
@@ -50,7 +50,6 @@ def test_portfolio_currency_settings():
     formatter produces the correct strings.
     """
     start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
-    cash = 1234567.56
 
     # Test a US portfolio produces correct values
     cur1 = "USD"
@@ -135,7 +134,7 @@ def test_withdraw_funds_behaviour():
     # Test withdraw_funds raises for not enough cash
     port_broke = Portfolio(start_dt)
     port_broke.subscribe_funds(later_dt, 1000.0)
-    
+
     with pytest.raises(ValueError):
         port_broke.withdraw_funds(later_dt, 2000.0)
 
@@ -204,7 +203,7 @@ def test_transact_asset_behaviour():
     assert port.total_cash == 1000.0
     assert port.total_non_cash_equity == 0.0
     assert port.total_equity == 1000.0
-    
+
     pe_sub1 = PortfolioEvent(
         dt=later_dt, type='subscription',
         description="SUBSCRIPTION", debit=0.0,
@@ -225,11 +224,11 @@ def test_transact_asset_behaviour():
     # for correct transaction (commission etc), correct
     # portfolio event and correct time update
     port.subscribe_funds(even_later_dt, 99000.0)
-    
+
     assert port.total_cash == 100000.0
     assert port.total_non_cash_equity == 0.0
     assert port.total_equity == 100000.0
-    
+
     pe_sub2 = PortfolioEvent(
         dt=even_later_dt, type='subscription',
         description="SUBSCRIPTION", debit=0.0,
@@ -244,18 +243,18 @@ def test_transact_asset_behaviour():
         commission=15.78
     )
     port.transact_asset(tn_even_later)
-    
+
     assert port.total_cash == 43284.22
     assert port.total_non_cash_equity == 56700.00
     assert port.total_equity == 99984.22
-    
+
     description = "LONG 100 EQ:AAA 567.00 07/10/2017"
     pe_tn = PortfolioEvent(
         dt=even_later_dt, type="asset_transaction",
         description=description, debit=56715.78,
         credit=0.0, balance=43284.22
     )
-    
+
     assert port.history == [pe_sub1, pe_sub2, pe_tn]
     assert port.current_dt == even_later_dt
 
