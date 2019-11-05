@@ -1,4 +1,4 @@
-from qstrader.execution.execution_algo.base import ExecutionAlgorithm
+from qstrader.execution.execution_algo.execution_algo import ExecutionAlgorithm
 
 
 class MarketOrderExecutionAlgorithm(ExecutionAlgorithm):
