@@ -1,4 +1,4 @@
-[![GitHub](https://img.shields.io/github/license/mhallsmoore/qstrader)]
+![GitHub](https://img.shields.io/github/license/mhallsmoore/qstrader)
 [![Build Status](https://travis-ci.org/mhallsmoore/qstrader.svg?branch=development)](https://travis-ci.org/mhallsmoore/qstrader/branches)
 [![Coverage Status](https://coveralls.io/repos/github/mhallsmoore/qstrader/badge.svg?branch=development)](https://coveralls.io/github/mhallsmoore/qstrader?branch=development)
 
