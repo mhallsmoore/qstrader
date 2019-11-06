@@ -9,13 +9,10 @@ class StaticUniverse(Universe):
     Parameters
     ----------
     asset_list : `list[str]`
-        The list of assets symbols that form the StaticUniverse.
+        The list of Asset symbols that form the StaticUniverse.
     """
 
-    def __init__(
-        self,
-        asset_list
-    ):
+    def __init__(self, asset_list):
         self.asset_list = asset_list
 
     def get_assets(self, dt):

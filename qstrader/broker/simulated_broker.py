@@ -18,9 +18,6 @@ class SimulatedBroker(Broker):
     provides sensible defaults for both currency (USD) and
     transaction cost handling for execution.
 
-    The default transaction costs do not include slippage
-    or market impact but do take into account commission.
-
     The default commission/fee model is a ZeroFeeModel
     that charges no commission or tax (such as stamp duty).
 
@@ -88,6 +85,16 @@ class SimulatedBroker(Broker):
         Check and set the base currency from a list of
         allowed currencies. Raise ValueError if the
         currency is currently not supported by QSTrader.
+
+        Parameters
+        ----------
+        base_currency : `str`
+            The base currency string.
+
+        Returns
+        -------
+        `str`
+            The base currency string.
         """
         if base_currency not in settings.SUPPORTED['CURRENCIES']:
             raise ValueError(
@@ -103,6 +110,16 @@ class SimulatedBroker(Broker):
         Check and set the initial funds for the broker
         master account. Raise ValueError if the
         amount is negative.
+
+        Parameters
+        ----------
+        initial_funds : `float`
+            The initial cash provided to the Broker.
+
+        Returns
+        -------
+        `float`
+            The checked initial funds.
         """
         if initial_funds < 0.0:
             raise ValueError(
@@ -117,6 +134,16 @@ class SimulatedBroker(Broker):
         """
         Check and set the FeeModel instance for the broker.
         The class default is no commission (ZeroFeeModel).
+
+        Parameters
+        ----------
+        fee_model : `FeeModel` (class)
+            The commission/fee model class provided to the Broker.
+
+        Returns
+        -------
+        `FeeModel` (instance)
+            The instantiated FeeModel class.
         """
         if issubclass(fee_model, FeeModel):
             return fee_model()
@@ -132,6 +159,12 @@ class SimulatedBroker(Broker):
         Set the appropriate cash balances in the various
         supported currencies, depending upon the availability
         of initial funds.
+
+        Returns
+        -------
+        `dict{str: float}`
+            The mapping of cash currency strings to
+            amount stored by broker in local currency.
         """
         cash_dict = dict(
             (currency, 0.0)
@@ -144,12 +177,22 @@ class SimulatedBroker(Broker):
     def _set_initial_portfolios(self):
         """
         Set the appropriate initial portfolios dictionary.
+
+        Returns
+        -------
+        `dict`
+            The empty initial portfolio dictionary.
         """
         return {}
 
     def _set_initial_open_orders(self):
         """
         Set the appropriate initial open orders dictionary.
+
+        Returns
+        -------
+        `dict`
+            The empty initial open orders dictionary.
         """
         return {}
 
@@ -157,6 +200,11 @@ class SimulatedBroker(Broker):
         """
         Subscribe an amount of cash in the base currency
         to the broker master cash account.
+
+        Parameters
+        ----------
+        amount : `float`
+            The amount of cash to subscribe to the master account.
         """
         if amount < 0.0:
             raise ValueError(
@@ -177,6 +225,11 @@ class SimulatedBroker(Broker):
         from the broker master cash account, assuming an
         amount equal to or more cash is present. If less
         cash is present, a ValueError is raised.
+
+        Parameters
+        ----------
+        amount : `float`
+            The amount of cash to withdraw from the master account.
         """
         if amount < 0:
             raise ValueError(
@@ -205,6 +258,11 @@ class SimulatedBroker(Broker):
         if a currency is provided, the cash value itself.
         Raises a ValueError if the currency is not
         found within the currency cash dictionary.
+
+        Parameters
+        ----------
+        currency : `str`, optional
+            The currency string to obtain the cash balance for.
         """
         if currency is None:
             return self.cash_balances
@@ -220,6 +278,11 @@ class SimulatedBroker(Broker):
         """
         Retrieve the total non-cash equity of the account, across
         each portfolio.
+
+        Returns
+        -------
+        `dict`
+            The dictionary of each portfolio's total market value.
         """
         tmv_dict = {}
         master_tmv = 0.0
@@ -236,6 +299,11 @@ class SimulatedBroker(Broker):
         """
         Retrieve the total equity of the account, across
         each portfolio.
+
+        Returns
+        -------
+        `dict`
+            The dictionary of each portfolio's total equity.
         """
         equity_dict = {}
         master_equity = 0.0
@@ -252,6 +320,13 @@ class SimulatedBroker(Broker):
         """
         Create a new sub-portfolio with ID 'portfolio_id' and
         an optional name given by 'name'.
+
+        Parameters
+        ----------
+        portfolio_id : `str`
+            The portfolio ID string.
+        name : `str`, optional
+            The optional name string of the portfolio.
         """
         portfolio_id_str = str(portfolio_id)
         if portfolio_id_str in self.portfolios.keys():
@@ -279,6 +354,11 @@ class SimulatedBroker(Broker):
         """
         List all of the sub-portfolios associated with this
         broker account in order of portfolio ID.
+
+        Returns
+        -------
+        `list`
+            The list of portfolios associated with the broker account.
         """
         if self.portfolios == {}:
             return []
@@ -292,6 +372,13 @@ class SimulatedBroker(Broker):
         Subscribe funds to a particular sub-portfolio, assuming
         it exists and the cash amount is positive. Otherwise raise
         a ValueError.
+
+        Parameters
+        ----------
+        portfolio_id : `str`
+            The portfolio ID string.
+        amount : `float`
+            The amount of cash to subscribe to the portfolio.
         """
         if amount < 0.0:
             raise ValueError(
@@ -327,6 +414,13 @@ class SimulatedBroker(Broker):
         it exists, the cash amount is positive and there is
         sufficient remaining cash in the sub-portfolio to
         withdraw. Otherwise raise a ValueError.
+
+        Parameters
+        ----------
+        portfolio_id : `str`
+            The portfolio ID string.
+        amount : `float`
+            The amount of cash to withdraw from the portfolio.
         """
         if amount < 0.0:
             raise ValueError(
@@ -364,6 +458,16 @@ class SimulatedBroker(Broker):
         """
         Retrieve the cash balance of a sub-portfolio, if
         it exists. Otherwise raise a ValueError.
+
+        Parameters
+        ----------
+        portfolio_id : `str`
+            The portfolio ID string.
+
+        Returns
+        -------
+        `float`
+            The cash balance of the portfolio.
         """
         if portfolio_id not in self.portfolios.keys():
             raise ValueError(
@@ -377,6 +481,16 @@ class SimulatedBroker(Broker):
         """
         Returns the current total non-cash equity of a Portfolio
         with ID 'portfolio_id'.
+
+        Parameters
+        ----------
+        portfolio_id : `str`
+            The portfolio ID string.
+
+        Returns
+        -------
+        `float`
+            The non-cash equity of the portfolio.
         """
         if portfolio_id not in self.portfolios.keys():
             raise KeyError(
@@ -390,6 +504,16 @@ class SimulatedBroker(Broker):
         """
         Returns the current total equity of a Portfolio
         with ID 'portfolio_id'.
+
+        Parameters
+        ----------
+        portfolio_id : `str`
+            The portfolio ID string.
+
+        Returns
+        -------
+        `float`
+            The total equity of the portfolio.
         """
         if portfolio_id not in self.portfolios.keys():
             raise KeyError(
@@ -402,9 +526,19 @@ class SimulatedBroker(Broker):
     def get_portfolio_as_dict(self, portfolio_id):
         """
         Return a particular portfolio with ID 'portolio_id' as
-        a dictionary with Asset objects as keys, with various
+        a dictionary with Asset symbol strings as keys, with various
         attributes as sub-dictionaries. This includes 'quantity',
         'book_cost', 'market_value', 'gain' and 'perc_gain'.
+
+        Parameters
+        ----------
+        portfolio_id : `str`
+            The portfolio ID string.
+
+        Returns
+        -------
+        `dict{str}`
+            The portfolio representation of Assets as a dictionary.
         """
         if portfolio_id not in self.portfolios.keys():
             raise KeyError(
@@ -415,15 +549,31 @@ class SimulatedBroker(Broker):
 
     def _execute_order(self, dt, portfolio_id, order):
         """
+        For a given portfolio ID string, create a Transaction instance from
+        the provided Order and ensure the Portfolio is appropriately updated
+        with the new information.
+
+        Parameters
+        ----------
+        dt : `pd.Timestamp`
+            The current timestamp.
+        portfolio_id : `str`
+            The portfolio ID string.
+        order : `Order`
+            The Order instance to create the Transaction for.
         """
         # Obtain a price for the asset, if no price then
         # raise a ValueError
-        price_err_msg = "Could not obtain a latest market price for " \
-            "Asset with ticker symbol '%s'. Order with ID '%s' was " \
+        price_err_msg = (
+            "Could not obtain a latest market price for "
+            "Asset with ticker symbol '%s'. Order with ID '%s' was "
             "not executed." % (
                 order.asset, order.order_id
             )
-        bid_ask = self.data_handler.get_asset_latest_bid_ask_price(dt, order.asset)
+        )
+        bid_ask = self.data_handler.get_asset_latest_bid_ask_price(
+            dt, order.asset
+        )
         if bid_ask == (np.NaN, np.NaN):
             raise ValueError(price_err_msg)
 
@@ -481,6 +631,13 @@ class SimulatedBroker(Broker):
         brokerage accounts. The cash is taken immediately upon
         entering a long position and returned immediately upon
         closing out the position.
+
+        Parameters
+        ----------
+        portfolio_id : `str`
+            The portfolio ID string.
+        order : `Order`
+            The Order instance to submit.
         """
         # Check that the portfolio actually exists
         if portfolio_id not in self.portfolios.keys():
@@ -500,7 +657,12 @@ class SimulatedBroker(Broker):
 
     def update(self, dt):
         """
-        Updates the current SimulatedBroker timestamp
+        Updates the current SimulatedBroker timestamp.
+
+        Parameters
+        ----------
+        dt : `pd.Timestamp`
+            The current timestamp to update the Broker to.
         """
         self.current_dt = dt
 
@@ -508,7 +670,9 @@ class SimulatedBroker(Broker):
         for portfolio in self.portfolios:
             for asset in self.portfolios[portfolio].pos_handler.positions:
                 if not asset.startswith('CASH'):
-                    mid_price = self.data_handler.get_asset_latest_mid_price(dt, asset)
+                    mid_price = self.data_handler.get_asset_latest_mid_price(
+                        dt, asset
+                    )
                     self.portfolios[portfolio].update_market_value_of_asset(
                         asset, mid_price, self.current_dt
                     )
@@ -518,7 +682,9 @@ class SimulatedBroker(Broker):
             orders = []
             for portfolio in self.portfolios:
                 while not self.open_orders[portfolio].empty():
-                    orders.append((portfolio, self.open_orders[portfolio].get()))
+                    orders.append(
+                        (portfolio, self.open_orders[portfolio].get())
+                    )
 
             sorted_orders = sorted(orders, key=lambda x: x[1].direction)
             for portfolio, order in sorted_orders:
