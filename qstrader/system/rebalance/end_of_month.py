@@ -80,5 +80,10 @@ class EndOfMonthRebalance(Rebalance):
     def output_rebalances(self):
         """
         Output the rebalance timestamp list.
+
+        Returns
+        -------
+        `list[pd.Timestamp]`
+            The list of rebalance timestamps.
         """
         return self.rebalances
