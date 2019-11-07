@@ -43,6 +43,11 @@ class Transaction(object):
         """
         Provides a representation of the Transaction
         to allow full recreation of the object.
+
+        Returns
+        -------
+        `str`
+            The string representation of the Transaction.
         """
         return "%s(asset=%s, quantity=%s, dt=%s, " \
             "price=%s, order_id=%s)" % (
