@@ -34,11 +34,6 @@ class Position(object):
         current_price=0.0,
         current_dt=None
     ):
-        """
-        Initialise the Position object and calculate the
-        position direction (long or short), represented
-        by a +1 or -1.
-        """
         self.asset = asset
         self.quantity = quantity
         self.direction = np.copysign(1, self.quantity)
@@ -51,6 +46,11 @@ class Position(object):
         """
         Provides a representation of the Position object to allow
         full recreation of the object.
+
+        Returns
+        -------
+        `str`
+            The string representation of the Position.
         """
         return "%s(asset=%s, quantity=%s, book_cost_pu=%s, " \
             "current_price=%s)" % (
@@ -63,6 +63,11 @@ class Position(object):
         """
         Return the market value of the position based on the
         current trade price provided.
+
+        Returns
+        -------
+        `float`
+            The current market value of the Position.
         """
         return self.current_price * self.quantity
 
@@ -71,6 +76,11 @@ class Position(object):
         """
         Calculate the unrealised absolute gain in currency
         of the position based solely on the market value.
+
+        Returns
+        -------
+        `float`
+            The unrealised gain of the Position.
         """
         return self.market_value - self.book_cost
 
@@ -79,6 +89,11 @@ class Position(object):
         """
         Calculate the unrealised percentage gain of the
         position based solely on the market value.
+
+        Returns
+        -------
+        `float`
+            The unrealised percentage gain of the Position.
         """
         if self.book_cost == 0.0:
             return 0.0
@@ -88,6 +103,13 @@ class Position(object):
         """
         Handles the adjustment to the position book cost due to
         trading commissions.
+
+        Parameters
+        ----------
+        asset : `str`
+            The asset symbol string.
+        commission : `float`
+            The commission to be applied to the book cost.
         """
         if self.asset != asset:
             raise ValueError(
@@ -117,6 +139,11 @@ class Position(object):
         """
         Calculates the adjustments to the Position that occur
         once new units in an Asset are bought and sold.
+
+        Parameters
+        ----------
+        transaction : `Transaction`
+            The Transaction to update the Position with.
         """
         if self.asset != transaction.asset:
             raise ValueError(
@@ -150,7 +177,8 @@ class Position(object):
                 # else:
                 #    # TODO: Implement this branch
                 #    raise NotImplementedError(
-                #        'Opposing direction with transaction less than position quantity '
+                #        'Opposing direction with transaction less '
+                #        'than position quantity '
                 #        'is not yet implemented.'
                 #    )
 
