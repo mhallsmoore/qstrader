@@ -74,7 +74,9 @@ class ExecutionHandler(object):
         -------
         `None`
         """
-        final_orders = self._apply_execution_algo_to_rebalances(dt, rebalance_orders)
+        final_orders = self._apply_execution_algo_to_rebalances(
+            dt, rebalance_orders
+        )
 
         # If order submission is specified then send the
         # individual order items to the Broker instance
