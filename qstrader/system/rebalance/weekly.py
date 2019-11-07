@@ -11,6 +11,18 @@ class WeeklyRebalance(Rebalance):
     ending dates provided.
 
     All timestamps produced are set to UTC.
+
+    Parameters
+    ----------
+    start_date : `pd.Timestamp`
+        The starting timestamp of the rebalance range.
+    end_date : `pd.Timestamp`
+        The ending timestamp of the rebalance range.
+    weekday : `str`
+        The three-letter string representation of the weekday
+        to rebalance on once per week.
+    pre_market : `Boolean`, optional
+        Whether to utilise pre-market or post-market time.
     """
 
     def __init__(
@@ -20,9 +32,6 @@ class WeeklyRebalance(Rebalance):
         weekday,
         pre_market=False
     ):
-        """
-        Initialise the WeeklyRebalance instance.
-        """
         self.weekday = self._set_weekday(weekday)
         self.start_date = start_date
         self.end_date = end_date
@@ -33,6 +42,18 @@ class WeeklyRebalance(Rebalance):
         """
         Checks that the weekday string corresponds to
         a business weekday.
+
+        Parameters
+        ----------
+        weekday : `str`
+            The three-letter string representation of the weekday
+            to rebalance on once per week.
+
+        Returns
+        -------
+        `str`
+            The uppercase three-letter string representation of the
+            weekday to rebalance on once per week.
         """
         weekdays = ("MON", "TUE", "WED", "THU", "FRI")
         if weekday.upper() not in weekdays:
@@ -45,11 +66,29 @@ class WeeklyRebalance(Rebalance):
 
     def _set_market_time(self, pre_market):
         """
+        Sets the appropriate time for rebalancing during the day,
+        either pre-market or post-market.
+
+        Parameters
+        ----------
+        pre_market : `Boolean`
+            Whether to utilise pre-market or post-market time.
+
+        Returns
+        -------
+        `str`
+            The string representation of the market time.
         """
         return "00:00:00" if pre_market else "23:59:00"
 
     def _generate_rebalances(self):
         """
+        Output the rebalance timestamp list.
+
+        Returns
+        -------
+        `list[pd.Timestamp]`
+            The list of rebalance timestamps.
         """
         rebalance_dates = pd.date_range(
             start=self.start_date,
