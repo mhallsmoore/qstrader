@@ -46,6 +46,11 @@ class DailyBusinessDaySimulationEngine(SimulationEngine):
         """
         Generate the list of business days using midnight UTC as
         the timestamp.
+
+        Returns
+        -------
+        `list[pd.Timestamp]`
+            The business day range list.
         """
         days = pd.date_range(
             self.starting_day, self.ending_day, freq=BDay()
