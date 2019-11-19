@@ -289,7 +289,7 @@ class BacktestTradingSession(TradingSession):
             self.broker.portfolios[self.portfolio_id].pos_handler.positions
         )
 
-    def run(self):
+    def run(self, results=True):
         """
         Execute the simulation engine by iterating over all
         simulation events, rebalancing the quant trading
@@ -316,5 +316,6 @@ class BacktestTradingSession(TradingSession):
 
         # At the end of the simulation output the
         # holdings and plot the tearsheet
-        self.output_holdings()
-        self.statistics.plot_results()
+        if results:
+            self.output_holdings()
+            self.statistics.plot_results()
