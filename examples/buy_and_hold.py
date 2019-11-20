@@ -19,5 +19,6 @@ if __name__ == "__main__":
         assets,
         alpha_model,
         rebalance='buy_and_hold',
+        cash_buffer_percentage=0.05
     )
     backtest.run()

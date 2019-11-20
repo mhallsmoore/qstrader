@@ -1,5 +1,4 @@
 import os
-import pprint
 
 from qstrader.asset.equity import Equity
 from qstrader.asset.universe.static import StaticUniverse
@@ -15,6 +14,11 @@ from qstrader.system.rebalance.buy_and_hold import BuyAndHoldRebalance
 from qstrader.system.rebalance.end_of_month import EndOfMonthRebalance
 from qstrader.system.rebalance.weekly import WeeklyRebalance
 from qstrader.trading.trading_session import TradingSession
+
+
+DEFAULT_ACCOUNT_NAME = 'Backtest Simulated Broker Account'
+DEFAULT_PORTFOLIO_ID = '000001'
+DEFAULT_PORTFOLIO_NAME = 'Backtest Simulated Broker Portfolio'
 
 
 class BacktestTradingSession(TradingSession):
@@ -39,6 +43,17 @@ class BacktestTradingSession(TradingSession):
         The initial account equity (defaults to $1MM)
     rebalance : `str`, optional
         The rebalance frequency of the backtest, defaulting to 'weekly'.
+    account_name : `str`, optional
+        The name of the simulated broker account.
+    portfolio_id : `str`, optional
+        The ID of the portfolio being used for the backtest.
+    portfolio_name : `str`, optional
+        The name of the portfolio being used for the backtest.
+    cash_buffer_percentage : `float`, optional
+        The percentage of the portfolio to retain in cash.
+    fees : `FeeModel` class (not instance), optional
+        The optional FeeModel class to use for transaction cost estimates.
+        TODO: FeeModels are currently not supported.
     """
 
     def __init__(
@@ -49,7 +64,12 @@ class BacktestTradingSession(TradingSession):
         alpha_model,
         initial_cash=1e6,
         rebalance='weekly',
-        fees=None
+        account_name=DEFAULT_ACCOUNT_NAME,
+        portfolio_id=DEFAULT_PORTFOLIO_ID,
+        portfolio_name=DEFAULT_PORTFOLIO_NAME,
+        cash_buffer_percentage=0.05,
+        fees=None,
+        **kwargs
     ):
         self.start_dt = start_dt
         self.end_dt = end_dt
@@ -57,24 +77,32 @@ class BacktestTradingSession(TradingSession):
         self.alpha_model = alpha_model
         self.initial_cash = initial_cash
         self.rebalance = rebalance
+        self.account_name = account_name
+        self.portfolio_id = portfolio_id
+        self.portfolio_name = portfolio_name
+        self.cash_buffer_percentage = cash_buffer_percentage
         self.fees = fees
 
-        # Create the exchange and market hours
         self.exchange = self._create_exchange()
-
-        # Create the appropriate data sources
         self.universe = self._create_asset_universe()
         self.data_handler = self._create_data_handler()
-
-        # Initialise the broker and broker fee model
         self.fee_model = self._create_broker_fee_model()
         self.broker = self._create_broker()
-
-        # Simulation engine
         self.sim_engine = self._create_simulation_engine()
 
-        # Quant trading engine and rebalancing
+        if rebalance == 'weekly':
+            if 'rebalance_weekday' in kwargs:
+                self.rebalance_weekday = kwargs['rebalance_weekday']
+            else:
+                raise ValueError(
+                    "Rebalance frequency was set to 'weekly' but no specific "
+                    "weekday was provided. Try adding the 'rebalance_weekday' "
+                    "keyword argument to the instantiation of "
+                    "BacktestTradingSession, e.g. with 'WED'."
+                )
         self.rebalance_schedule = self._create_rebalance_event_times()
+
+        # Create the full quantitative trading system
         self.qts = self._create_quant_trading_system()
 
         # Performance output
@@ -191,15 +219,11 @@ class BacktestTradingSession(TradingSession):
         `SimulatedBroker`
             The simulated broker instance.
         """
-        acct_name = 'Backtest Simulated Broker Account'
-        self.portfolio_id = '000001'
-        self.portfolio_name = 'Backtest Simulated Broker Portfolio'
-
         broker = SimulatedBroker(
             self.start_dt,
             self.exchange,
             self.data_handler,
-            account_id=acct_name,
+            account_id=self.account_name,
             initial_funds=self.initial_cash,
             fee_model=self.fee_model
         )
@@ -242,7 +266,9 @@ class BacktestTradingSession(TradingSession):
                 'QSTrader does not yet support daily rebalancing.'
             )
         elif self.rebalance == 'weekly':
-            rebalancer = WeeklyRebalance(self.start_dt, self.end_dt, 'WED')
+            rebalancer = WeeklyRebalance(
+                self.start_dt, self.end_dt, self.rebalance_weekday
+            )
         elif self.rebalance == 'end_of_month':
             rebalancer = EndOfMonthRebalance(self.start_dt, self.end_dt)
         else:
@@ -270,6 +296,7 @@ class BacktestTradingSession(TradingSession):
             self.portfolio_id,
             self.data_handler,
             self.alpha_model,
+            self.cash_buffer_percentage,
             submit_orders=True
         )
         return qts
@@ -278,16 +305,19 @@ class BacktestTradingSession(TradingSession):
         """
         Create a statistics instance to process the results of the
         trading backtest.
+
+        Returns
+        -------
+        `TearsheetStatistics`
+            The tearsheet statistics instance.
         """
-        return TearsheetStatistics(self.broker, title='Backtest Simulation')
+        return TearsheetStatistics(self.broker, title=self.portfolio_name)
 
     def output_holdings(self):
         """
         Output the portfolio holdings to the console.
         """
-        pprint.pprint(
-            self.broker.portfolios[self.portfolio_id].pos_handler.positions
-        )
+        self.broker.portfolios[self.portfolio_id].holdings_to_console()
 
     def run(self, results=True):
         """
