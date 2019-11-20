@@ -1,5 +1,7 @@
 import os
 
+import pandas as pd
+
 from qstrader.asset.equity import Equity
 from qstrader.asset.universe.static import StaticUniverse
 from qstrader.broker.simulated_broker import SimulatedBroker
@@ -8,7 +10,6 @@ from qstrader.data.backtest_data_handler import BacktestDataHandler
 from qstrader.data.daily_bar_csv import CSVDailyBarDataSource
 from qstrader.exchange.simulated_exchange import SimulatedExchange
 from qstrader.simulation.daily_bday import DailyBusinessDaySimulationEngine
-from qstrader.statistics.tearsheet import TearsheetStatistics
 from qstrader.system.qts import QuantTradingSystem
 from qstrader.system.rebalance.buy_and_hold import BuyAndHoldRebalance
 from qstrader.system.rebalance.end_of_month import EndOfMonthRebalance
@@ -102,11 +103,8 @@ class BacktestTradingSession(TradingSession):
                 )
         self.rebalance_schedule = self._create_rebalance_event_times()
 
-        # Create the full quantitative trading system
         self.qts = self._create_quant_trading_system()
-
-        # Performance output
-        self.statistics = self._create_statistics()
+        self.equity_curve = []
 
     def _is_rebalance_event(self, dt):
         """
@@ -301,23 +299,39 @@ class BacktestTradingSession(TradingSession):
         )
         return qts
 
-    def _create_statistics(self):
+    def _update_equity_curve(self, dt):
         """
-        Create a statistics instance to process the results of the
-        trading backtest.
+        Update the equity curve values.
 
-        Returns
-        -------
-        `TearsheetStatistics`
-            The tearsheet statistics instance.
+        Parameters
+        ----------
+        dt : `pd.Timestamp`
+            The time at which the total account equity is obtained.
         """
-        return TearsheetStatistics(self.broker, title=self.portfolio_name)
+        self.equity_curve.append(
+            (dt, self.broker.get_account_total_equity()["master"])
+        )
 
     def output_holdings(self):
         """
         Output the portfolio holdings to the console.
         """
         self.broker.portfolios[self.portfolio_id].holdings_to_console()
+
+    def get_equity_curve(self):
+        """
+        Returns the Equity Curve as a Pandas DataFrame.
+
+        Returns
+        -------
+        `pd.DataFrame`
+            The datetime-indexed equity curve of the strategy.
+        """
+        equity_df = pd.DataFrame(
+            self.equity_curve, columns=['Date', 'Equity']
+        ).set_index('Date')
+        equity_df.index = equity_df.index.date
+        return equity_df
 
     def run(self, results=True):
         """
@@ -342,10 +356,9 @@ class BacktestTradingSession(TradingSession):
             # Out of market hours we want a daily
             # performance update
             if event.event_type == "post_market":
-                self.statistics.update(dt)
+                self._update_equity_curve(dt)
 
         # At the end of the simulation output the
         # holdings and plot the tearsheet
         if results:
             self.output_holdings()
-            self.statistics.plot_results()
