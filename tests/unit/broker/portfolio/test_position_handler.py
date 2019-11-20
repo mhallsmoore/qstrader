@@ -143,7 +143,7 @@ def test_total_values_for_two_separate_transactions():
     asset1 = Equity('Amazon, Inc.', 'AMZN')
     dt1 = pd.Timestamp('2015-05-06')
     trans_pos_1 = Transaction(
-        asset1, quantity=75, dt=dt1, price=483.45,
+        asset1.symbol, quantity=75, dt=dt1, price=483.45,
         order_id=1, commission=15.97
     )
     ph.transact_position(trans_pos_1)
@@ -152,7 +152,7 @@ def test_total_values_for_two_separate_transactions():
     asset2 = Equity('Microsoft, Inc.', 'MSFT')
     dt2 = pd.Timestamp('2015-05-07')
     trans_pos_2 = Transaction(
-        asset2, quantity=250, dt=dt2, price=142.58,
+        asset2.symbol, quantity=250, dt=dt2, price=142.58,
         order_id=2, commission=8.35
     )
     ph.transact_position(trans_pos_2)
@@ -175,21 +175,21 @@ def test_update_commission():
     asset1 = Equity('Amazon, Inc.', 'AMZN')
     dt1 = pd.Timestamp('2015-05-06')
     trans_pos_1 = Transaction(
-        asset1, quantity=75, dt=dt1, price=483.45,
+        asset1.symbol, quantity=75, dt=dt1, price=483.45,
         order_id=1, commission=0.0
     )
     ph.transact_position(trans_pos_1)
-    ph.update_commission(asset1, 15.97)
+    ph.update_commission(asset1.symbol, 15.97)
 
     # Asset 2
     asset2 = Equity('Microsoft, Inc.', 'MSFT')
     dt2 = pd.Timestamp('2015-05-07')
     trans_pos_2 = Transaction(
-        asset2, quantity=250, dt=dt2, price=142.58,
+        asset2.symbol, quantity=250, dt=dt2, price=142.58,
         order_id=2, commission=0.0
     )
     ph.transact_position(trans_pos_2)
-    ph.update_commission(asset2, 8.35)
+    ph.update_commission(asset2.symbol, 8.35)
 
     # Check all total values
     assert ph.total_book_cost() == 71928.07

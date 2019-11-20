@@ -19,5 +19,9 @@ if __name__ == "__main__":
         assets,
         alpha_model,
         rebalance='end_of_month',
+        account_name='Strategic Asset Allocation Account',
+        portfolio_id='SAA001',
+        portfolio_name='Strategic Asset Allocation - 60/40 US Equities/Bonds (SPY/AGG)',
+        cash_buffer_percentage=0.05
     )
     backtest.run()
