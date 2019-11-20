@@ -1,5 +1,6 @@
 import datetime
 import logging
+import sys
 
 import pandas as pd
 
@@ -8,6 +9,9 @@ from qstrader.asset.asset import Asset
 from qstrader.broker.portfolio.portfolio_event import PortfolioEvent
 from qstrader.broker.portfolio.position import Position
 from qstrader.broker.portfolio.position_handler import PositionHandler
+from qstrader.utils.console import (
+    string_colour, GREEN, RED, CYAN, WHITE
+)
 
 
 class Portfolio(object):
@@ -126,6 +130,29 @@ class Portfolio(object):
         Obtain the total market value of the portfolio excluding cash.
         """
         return self.total_equity - self.total_cash
+
+    @property
+    def total_non_cash_unrealised_gain(self):
+        """
+        Calculate the sum of all the positions'
+        unrealised gains.
+        """
+        return sum(
+            pos.unrealised_gain
+            for asset, pos in self.pos_handler.positions.items()
+            if not asset.startswith('CASH')
+        )
+
+    @property
+    def total_non_cash_unrealised_percentage_gain(self):
+        """
+        Calculate the total unrealised percentage gain
+        on the positions.
+        """
+        tbc = self.pos_handler.total_book_cost()
+        if tbc == 0.0:
+            return 0.0
+        return (self.total_non_cash_equity - tbc) / tbc * 100.0
 
     def subscribe_funds(self, dt, amount):
         """
@@ -353,3 +380,117 @@ class Portfolio(object):
                 "date", "type", "description", "debit", "credit", "balance"
             ]
         ).set_index(keys=["date"])
+
+    def holdings_to_console(self):
+        """
+        Output the portfolio holdings information to the console.
+        """
+        def print_row_divider(repeats, symbol="=", cap="*"):
+            """
+            Prints a row divider for the table.
+            """
+            sys.stdout.write(
+                "%s%s%s\n" % (cap, symbol * repeats, cap)
+            )
+
+        # Sort the assets based on their name, not ticker symbol
+        pos_sorted = sorted(
+            self.pos_handler.positions.items(),
+            key=lambda x: x[0]
+        )
+
+        # Output the name and ID of the portfolio
+        sys.stdout.write(
+            string_colour(
+                "\nPortfolio Holdings | %s - %s\n\n" % (
+                    self.portfolio_id, self.name
+                ), colour=CYAN
+            )
+        )
+
+        # Create the header row and dividers
+        repeats = 99
+        print_row_divider(repeats)
+        sys.stdout.write(
+            "|  Holding | Quantity | Price | Change |"
+            "      Book Cost |   Market Value |     "
+            " Unrealised Gain     | \n"
+        )
+        print_row_divider(repeats)
+
+        # Create the asset holdings rows for each ticker
+        ticker_format = '| {0:>8} | {1:>8d} | {2:>5} | ' \
+            '{3:>6} | {4:>14} | {5:>14} |'
+        for asset, pos in pos_sorted:
+            if asset.startswith('CASH'):
+                pos_quantity = 0
+                pos_book_cost = pos.market_value
+                pos_unrealised_gain = '0.00'
+                pos_unrealised_percentage_gain = '0.00%'
+            else:
+                pos_quantity = int(pos.quantity)
+                pos_book_cost = pos.book_cost
+                pos_unrealised_gain = "%0.2f" % pos.unrealised_gain
+                pos_unrealised_percentage_gain = "%0.2f%%" % pos.unrealised_percentage_gain
+            sys.stdout.write(
+                ticker_format.format(
+                    asset, pos_quantity, "-", "-",
+                    "%0.2f" % pos_book_cost,
+                    "%0.2f" % pos.market_value
+                )
+            )
+            # Colour the gain as red, green or white depending upon
+            # whether it is negative, positive or breakeven
+            colour = WHITE
+            if pos.unrealised_gain > 0.0:
+                colour = GREEN
+            elif pos.unrealised_gain < 0.0:
+                colour = RED
+            gain_str = string_colour(
+                pos_unrealised_gain,
+                colour=colour
+            )
+            perc_gain_str = string_colour(
+                pos_unrealised_percentage_gain,
+                colour=colour
+            )
+            sys.stdout.write(" " * (25 - len(gain_str)))
+            sys.stdout.write(gain_str)
+            sys.stdout.write(" " * (22 - len(perc_gain_str)))
+            sys.stdout.write(str(perc_gain_str))
+            sys.stdout.write(" |\n")
+
+        # Create the totals row
+        print_row_divider(repeats)
+        total_format = '| {0:>8} | {1:25} | {2:>14} | {3:>14} |'
+        sys.stdout.write(
+            total_format.format(
+                "Total", " ",
+                "%0.2f" % self.pos_handler.total_book_cost(),
+                "%0.2f" % self.pos_handler.total_market_value()
+            )
+        )
+        # Utilise the correct colour for the totals
+        # of gain and percentage gain
+        colour = WHITE
+        total_gain = self.pos_handler.total_unrealised_gain()
+        perc_total_gain = self.pos_handler.total_unrealised_percentage_gain()
+        if total_gain > 0.0:
+            colour = GREEN
+        elif total_gain < 0.0:
+            colour = RED
+        gain_str = string_colour(
+            "%0.2f" % total_gain,
+            colour=colour
+        )
+        perc_gain_str = string_colour(
+            "%0.2f%%" % perc_total_gain,
+            colour=colour
+        )
+        sys.stdout.write(" " * (25 - len(gain_str)))
+        sys.stdout.write(gain_str)
+        sys.stdout.write(" " * (22 - len(perc_gain_str)))
+        sys.stdout.write(str(perc_gain_str))
+        sys.stdout.write(" |\n")
+        print_row_divider(repeats)
+        sys.stdout.write("\n")

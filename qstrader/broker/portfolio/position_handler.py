@@ -77,38 +77,80 @@ class PositionHandler(object):
                 asset, commission
             )
 
-    def total_book_cost(self):
+    def total_non_cash_book_cost(self):
         """
-        Calculate the sum of all the Positions' book costs.
+        Calculate the sum of all the Positions' book costs
+        excluding cash.
         """
         return sum(
             pos.book_cost
             for asset, pos in self.positions.items()
         )
 
+    def total_book_cost(self):
+        """
+        Calculate the sum of all the Positions' book cost
+        including cash.
+        """
+        return sum(
+            pos.book_cost if not asset.startswith('CASH') else pos.market_value
+            for asset, pos in self.positions.items()
+        )
+
+    def total_non_cash_market_value(self):
+        """
+        Calculate the sum of all the positions' market values
+        excluding cash.
+        """
+        return sum(
+            0.0 if asset.startswith('CASH') else pos.market_value
+            for asset, pos in self.positions.items()
+        )
+
     def total_market_value(self):
         """
-        Calculate the sum of all the positions' market values.
+        Calculate the sum of all the positions' market values
+        including cash.
         """
         return sum(
             pos.market_value
             for asset, pos in self.positions.items()
         )
 
-    def total_unrealised_gain(self):
+    def total_non_cash_unrealised_gain(self):
         """
         Calculate the sum of all the positions'
-        unrealised gains.
+        unrealised gains excluding cash.
         """
         return sum(
             pos.unrealised_gain
             for asset, pos in self.positions.items()
         )
 
+    def total_unrealised_gain(self):
+        """
+        Calculate the sum of all the positions'
+        unrealised gains including cash.
+        """
+        return sum(
+            0.0 if asset.startswith('CASH') else pos.unrealised_gain
+            for asset, pos in self.positions.items()
+        )
+
+    def total_non_cash_unrealised_percentage_gain(self):
+        """
+        Calculate the total unrealised percentage gain
+        on the positions excluding cash.
+        """
+        tbc = self.total_non_cash_book_cost()
+        if tbc == 0.0:
+            return 0.0
+        return (self.total_non_cash_market_value() - tbc) / tbc * 100.0
+
     def total_unrealised_percentage_gain(self):
         """
         Calculate the total unrealised percentage gain
-        on the positions.
+        on the positions including cash.
         """
         tbc = self.total_book_cost()
         if tbc == 0.0:
