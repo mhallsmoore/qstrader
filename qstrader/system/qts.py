@@ -98,7 +98,7 @@ class QuantTradingSystem(object):
             data_handler=self.data_handler
         )
 
-    def __call__(self, dt):
+    def __call__(self, dt, stats=None):
         """
         Construct the portfolio and (optionally) execute the orders
         with the broker.
@@ -107,13 +107,16 @@ class QuantTradingSystem(object):
         ----------
         dt : `pd.Timestamp`
             The current time.
+        stats : `dict`, optional
+            An optional statistics dictionary to append values to
+            throughout the simulation lifetime.
 
         Returns
         -------
         `None`
         """
         # Construct the target portfolio
-        rebalance_orders = self.portfolio_construction_model(dt)
+        rebalance_orders = self.portfolio_construction_model(dt, stats=stats)
 
         # Execute the orders
         self.execution_handler(dt, rebalance_orders)
