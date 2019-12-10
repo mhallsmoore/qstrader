@@ -39,6 +39,7 @@ class JSONStatistics(object):
     def __init__(
         self,
         equity_curve,
+        target_allocations,
         strategy_id=None,
         strategy_name=None,
         benchmark_curve=None,
@@ -48,6 +49,7 @@ class JSONStatistics(object):
         output_filename='statistics.json'
     ):
         self.equity_curve = equity_curve
+        self.target_allocations = target_allocations
         self.strategy_id = strategy_id
         self.strategy_name = strategy_name
         self.benchmark_curve = benchmark_curve
@@ -83,6 +85,38 @@ class JSONStatistics(object):
             )
             for k, v in series.to_dict().items()
         ]
+
+    @staticmethod
+    def _dataframe_to_column_list(df):
+        """
+        Converts Pandas DataFrame indexed by date-time into
+        list of tuples indexed by milliseconds since epoch.
+
+        Parameters
+        ----------
+        df : `pd.DataFrame`
+            The Pandas DataFrame to be converted.
+
+        Returns
+        -------
+        `list[tuple]`
+            The list of epoch-indexed tuple values.
+        """
+        col_list = []
+        for k, v in df.to_dict().items():
+            name = k.replace('EQ:', '')
+            date_val_tups = [
+                (
+                    int(
+                        datetime.datetime.combine(
+                            date_key, datetime.datetime.min.time()
+                        ).timestamp() * 1000.0
+                    ), date_val
+                )
+                for date_key, date_val in v.items()
+            ]
+            col_list.append({'name': name, 'data': date_val_tups})
+        return col_list
 
     @staticmethod
     def _calculate_returns(curve):
@@ -139,6 +173,11 @@ class JSONStatistics(object):
 
         return stats
 
+    def _calculate_allocations(self, allocations):
+        """
+        """
+        return JSONStatistics._dataframe_to_column_list(allocations)
+
     def _create_full_statistics(self):
         """
         Create the 'full' statistics dictionary, which has an entry for the
@@ -153,6 +192,9 @@ class JSONStatistics(object):
 
         JSONStatistics._calculate_returns(self.equity_curve)
         full_stats['strategy'] = self._calculate_statistics(self.equity_curve)
+        full_stats['strategy']['target_allocations'] = self._calculate_allocations(
+            self.target_allocations
+        )
 
         if self.benchmark_curve is not None:
             JSONStatistics._calculate_returns(self.benchmark_curve)
