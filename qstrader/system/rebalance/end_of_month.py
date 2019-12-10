@@ -66,7 +66,7 @@ class EndOfMonthRebalance(Rebalance):
         rebalance_dates = pd.date_range(
             start=self.start_dt,
             end=self.end_dt,
-            freq='M'
+            freq='BM'
         )
 
         rebalance_times = [

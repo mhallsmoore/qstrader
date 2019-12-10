@@ -55,6 +55,9 @@ class BacktestTradingSession(TradingSession):
     fees : `FeeModel` class (not instance), optional
         The optional FeeModel class to use for transaction cost estimates.
         TODO: FeeModels are currently not supported.
+    burn_in_dt : `pd.Timestamp`, optional
+        The optional date provided to begin tracking strategy statistics,
+        which is used for strategies requiring a period of data 'burn in'
     """
 
     def __init__(
@@ -70,6 +73,7 @@ class BacktestTradingSession(TradingSession):
         portfolio_name=DEFAULT_PORTFOLIO_NAME,
         cash_buffer_percentage=0.05,
         fees=None,
+        burn_in_dt=None,
         **kwargs
     ):
         self.start_dt = start_dt
@@ -83,6 +87,7 @@ class BacktestTradingSession(TradingSession):
         self.portfolio_name = portfolio_name
         self.cash_buffer_percentage = cash_buffer_percentage
         self.fees = fees
+        self.burn_in_dt = burn_in_dt
 
         self.exchange = self._create_exchange()
         self.universe = self._create_asset_universe()
@@ -354,9 +359,14 @@ class BacktestTradingSession(TradingSession):
                 self.qts(dt)
 
             # Out of market hours we want a daily
-            # performance update
+            # performance update, but only if we
+            # are past the 'burn in' period
             if event.event_type == "post_market":
-                self._update_equity_curve(dt)
+                if self.burn_in_dt is not None:
+                    if dt >= self.burn_in_dt:
+                        self._update_equity_curve(dt)
+                else:
+                    self._update_equity_curve(dt)
 
         # At the end of the simulation output the
         # holdings and plot the tearsheet
