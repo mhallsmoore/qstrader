@@ -15,9 +15,21 @@ class JSONStatistics(object):
     ----------
     equity_curve : `pd.DataFrame`
         The equity curve DataFrame indexed by date-time.
+    strategy_id : `str`, optional
+        The optional ID string for the strategy to pass to
+        the statistics dict.
+    strategy_name : `str`, optional
+        The optional name string for the strategy to pass to
+        the statistics dict.
     benchmark_curve : `pd.DataFrame`, optional
         The (optional) equity curve DataFrame for the benchmark
         indexed by time.
+    benchmark_id : `str`, optional
+        The optional ID string for the benchmark to pass to
+        the statistics dict.
+    benchmark_name : `str`, optional
+        The optional name string for the benchmark to pass to
+        the statistics dict.
     periods : `int`, optional
         The number of periods to use for Sharpe ratio calculation.
     output_filename : `str`
@@ -27,12 +39,20 @@ class JSONStatistics(object):
     def __init__(
         self,
         equity_curve,
+        strategy_id=None,
+        strategy_name=None,
         benchmark_curve=None,
+        benchmark_id=None,
+        benchmark_name=None,
         periods=252,
         output_filename='statistics.json'
     ):
         self.equity_curve = equity_curve
+        self.strategy_id = strategy_id
+        self.strategy_name = strategy_name
         self.benchmark_curve = benchmark_curve
+        self.benchmark_id = benchmark_id
+        self.benchmark_name = benchmark_name
         self.periods = periods
         self.output_filename = output_filename
         self.statistics = self._create_full_statistics()
@@ -137,6 +157,15 @@ class JSONStatistics(object):
         if self.benchmark_curve is not None:
             JSONStatistics._calculate_returns(self.benchmark_curve)
             full_stats['benchmark'] = self._calculate_statistics(self.benchmark_curve)
+
+        if self.strategy_id is not None:
+            full_stats['strategy_id'] = self.strategy_id
+        if self.strategy_name is not None:
+            full_stats['strategy_name'] = self.strategy_name
+        if self.benchmark_id is not None:
+            full_stats['benchmark_id'] = self.benchmark_id
+        if self.benchmark_name is not None:
+            full_stats['benchmark_name'] = self.benchmark_name
 
         return full_stats
 
