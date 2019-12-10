@@ -110,6 +110,7 @@ class BacktestTradingSession(TradingSession):
 
         self.qts = self._create_quant_trading_system()
         self.equity_curve = []
+        self.target_allocations = []
 
     def _is_rebalance_event(self, dt):
         """
@@ -255,8 +256,6 @@ class BacktestTradingSession(TradingSession):
         Creates the list of rebalance timestamps used to determine when
         to execute the quant trading strategy throughout the backtest.
 
-        TODO: Currently supports only weekly rebalances.
-
         Returns
         -------
         `List[pd.Timestamp]`
@@ -325,7 +324,7 @@ class BacktestTradingSession(TradingSession):
 
     def get_equity_curve(self):
         """
-        Returns the Equity Curve as a Pandas DataFrame.
+        Returns the equity curve as a Pandas DataFrame.
 
         Returns
         -------
@@ -338,12 +337,33 @@ class BacktestTradingSession(TradingSession):
         equity_df.index = equity_df.index.date
         return equity_df
 
+    def get_target_allocations(self):
+        """
+        Returns the target allocations as a Pandas DataFrame
+        utilising the same index as the equity curve with
+        forward-filled dates.
+
+        Returns
+        -------
+        `pd.DataFrame`
+            The datetime-indexed target allocations of the strategy.
+        """
+        equity_curve = self.get_equity_curve()
+        alloc_df = pd.DataFrame(self.target_allocations).set_index('Date')
+        alloc_df.index = alloc_df.index.date
+        alloc_df = alloc_df.reindex(index=equity_curve.index, method='ffill')
+        if self.burn_in_dt is not None:
+            alloc_df = alloc_df[self.burn_in_dt:]
+        return alloc_df
+
     def run(self, results=True):
         """
         Execute the simulation engine by iterating over all
         simulation events, rebalancing the quant trading
         system at the appropriate schedule.
         """
+        stats = {'target_allocations': []}
+
         for event in self.sim_engine:
             # Output the system event and timestamp
             dt = event.ts
@@ -356,7 +376,7 @@ class BacktestTradingSession(TradingSession):
             # out a full run of the quant trading system
             if self._is_rebalance_event(dt):
                 print(event.ts, "REBALANCE")
-                self.qts(dt)
+                self.qts(dt, stats=stats)
 
             # Out of market hours we want a daily
             # performance update, but only if we
@@ -367,6 +387,8 @@ class BacktestTradingSession(TradingSession):
                         self._update_equity_curve(dt)
                 else:
                     self._update_equity_curve(dt)
+
+        self.target_allocations = stats['target_allocations']
 
         # At the end of the simulation output the
         # holdings and plot the tearsheet

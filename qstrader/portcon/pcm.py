@@ -230,7 +230,7 @@ class PortfolioConstructionModel(object):
         assets = self.universe.get_assets(dt)
         return {asset: 0.0 for asset in assets}
 
-    def __call__(self, dt):
+    def __call__(self, dt, stats=None):
         """
         Execute the portfolio construction process at a particular
         provided date-time.
@@ -242,7 +242,11 @@ class PortfolioConstructionModel(object):
         Parameters
         ----------
         dt : `pd.Timestamp`
-            The date-time used to for Asset list determination and weight generation.
+            The date-time used to for Asset list determination and
+            weight generation.
+        stats : `dict`, optional
+            An optional statistics dictionary to append values to
+            throughout the simulation lifetime.
 
         Returns
         -------
@@ -266,6 +270,12 @@ class PortfolioConstructionModel(object):
         full_weights = self._create_full_asset_weight_vector(
             full_zero_weights, optimised_weights
         )
+
+        # TODO: Improve this with a full statistics logging handler
+        if stats is not None:
+            alloc_dict = {'Date': dt}
+            alloc_dict.update(full_weights)
+            stats['target_allocations'].append(alloc_dict)
 
         # Calculate target portfolio in notional
         target_portfolio = self._generate_target_portfolio(dt, full_weights)
