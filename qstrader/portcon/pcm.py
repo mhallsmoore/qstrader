@@ -29,7 +29,7 @@ class PortfolioConstructionModel(object):
     cost_model : `TransactionCostModel`, optional
         The optional transaction cost model for Assets in the Universe.
     data_handler : `DataHandler`, optional
-        THe optional data handler used within portfolio construction.
+        The optional data handler used within portfolio construction.
     """
 
     def __init__(
