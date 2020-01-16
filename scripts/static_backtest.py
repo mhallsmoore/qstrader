@@ -48,7 +48,8 @@ def obtain_allocations(allocations):
 @click.option('--allocations', 'allocations', help='Allocations key-values, i.e. "SPY:0.6,AGG:0.4"')
 @click.option('--title', 'strat_title', help='Backtest strategy title')
 @click.option('--id', 'strat_id', help='Backtest strategy ID string')
-def cli(start_date, end_date, allocations, strat_title, strat_id):
+@click.option('--tearsheet', 'tearsheet', is_flag=True, default=False, help='Whether to display the (blocking) tearsheet plot')
+def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
     start_dt = pd.Timestamp('%s 00:00:00' % start_date, tz=pytz.UTC)
 
     if end_date is None:
@@ -106,13 +107,13 @@ def cli(start_date, end_date, allocations, strat_title, strat_id):
     )
     stats.to_file()
 
-    # Performance Output
-    tearsheet = TearsheetStatistics(
-        strategy_equity=strategy_backtest.get_equity_curve(),
-        benchmark_equity=benchmark_backtest.get_equity_curve(),
-        title=strat_title
-    )
-    tearsheet.plot_results()
+    if tearsheet:
+        tearsheet = TearsheetStatistics(
+            strategy_equity=strategy_backtest.get_equity_curve(),
+            benchmark_equity=benchmark_backtest.get_equity_curve(),
+            title=strat_title
+        )
+        tearsheet.plot_results()
 
 
 if __name__ == "__main__":
