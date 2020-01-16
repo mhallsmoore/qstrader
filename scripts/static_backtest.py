@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import sys
 
 import click
@@ -49,7 +50,13 @@ def obtain_allocations(allocations):
 @click.option('--id', 'strat_id', help='Backtest strategy ID string')
 def cli(start_date, end_date, allocations, strat_title, strat_id):
     start_dt = pd.Timestamp('%s 00:00:00' % start_date, tz=pytz.UTC)
-    end_dt = pd.Timestamp('%s 23:59:00' % end_date, tz=pytz.UTC)
+
+    if end_date is None:
+        # Use yesterday's date
+        yesterday = (datetime.now() - timedelta(1)).strftime('%Y-%m-%d')
+        end_dt = pd.Timestamp('%s 23:59:00' % yesterday, tz=pytz.UTC)
+    else:
+        end_dt = pd.Timestamp('%s 23:59:00' % end_date, tz=pytz.UTC)
 
     alloc_dict = obtain_allocations(allocations)
 
