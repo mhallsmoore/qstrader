@@ -132,6 +132,32 @@ class JSONStatistics(object):
         curve['Returns'] = curve['Equity'].pct_change().fillna(0.0)
         curve['CumReturns'] = np.exp(np.log(1 + curve['Returns']).cumsum())
 
+    def _calculate_monthly_aggregated_returns(self, returns):
+        """
+        """
+        month_returns = perf.aggregate_returns(returns, 'monthly')
+        return list(zip(month_returns.index, month_returns))
+
+    def _calculate_monthly_aggregated_returns_hc(self, returns):
+        """
+        """
+        month_returns = perf.aggregate_returns(returns, 'monthly')
+
+        data = []
+
+        years = month_returns.index.levels[0].tolist()
+        years_range = range(0, len(years))
+        months_range = range(0, 12)
+
+        for month in months_range:
+            for year in years_range:
+                try: 
+                    data.append([month, year, 100.0 * month_returns.loc[(years[year], month + 1)]])
+                except KeyError:  # Truncated year, so no data available
+                    pass
+
+        return data
+
     def _calculate_statistics(self, curve):
         """
         Creates a dictionary of various statistics associated with
@@ -159,6 +185,8 @@ class JSONStatistics(object):
         stats['equity_curve'] = JSONStatistics._series_to_tuple_list(curve['Equity'])
         stats['returns'] = JSONStatistics._series_to_tuple_list(curve['Returns'])
         stats['cum_returns'] = JSONStatistics._series_to_tuple_list(curve['CumReturns'])
+        stats['monthly_agg_returns'] = self._calculate_monthly_aggregated_returns(curve['Returns'])
+        stats['monthly_agg_returns_hc'] = self._calculate_monthly_aggregated_returns_hc(curve['Returns'])
 
         # Drawdown statistics
         stats['drawdowns'] = JSONStatistics._series_to_tuple_list(dd_s)
