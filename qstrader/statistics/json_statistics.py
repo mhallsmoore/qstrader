@@ -134,12 +134,37 @@ class JSONStatistics(object):
 
     def _calculate_monthly_aggregated_returns(self, returns):
         """
+        Calculate the monthly aggregated returns as a list of tuples,
+        with the first entry a further tuple of (year, month) and the
+        second entry the returns. 0% -> 0.0, 100% -> 1.0
+
+        Parameters
+        ----------
+        returns : `pd.Series`
+            The Series of daily returns values.
+
+        Returns
+        -------
+        `list[tuple]`
+            The list of tuple-based returns: [((year, month), return)]
         """
         month_returns = perf.aggregate_returns(returns, 'monthly')
         return list(zip(month_returns.index, month_returns))
 
     def _calculate_monthly_aggregated_returns_hc(self, returns):
         """
+        Calculate the monthly aggregated returns in the format
+        utilised by Highcharts. 0% -> 0.0, 100% -> 100.0
+
+        Parameters
+        ----------
+        returns : `pd.Series`
+            The Series of daily returns values.
+
+        Returns
+        -------
+        `list[list]`
+            The list of list-based returns: [[month, year, return]]
         """
         month_returns = perf.aggregate_returns(returns, 'monthly')
 
@@ -151,12 +176,50 @@ class JSONStatistics(object):
 
         for month in months_range:
             for year in years_range:
-                try: 
+                try:
                     data.append([month, year, 100.0 * month_returns.loc[(years[year], month + 1)]])
                 except KeyError:  # Truncated year, so no data available
                     pass
 
         return data
+
+    def _calculate_yearly_aggregated_returns(self, returns):
+        """
+        Calculate the yearly aggregated returns as a list of tuples,
+        with the first entry being the year integer and the
+        second entry the returns. 0% -> 0.0, 100% -> 1.0
+
+        Parameters
+        ----------
+        returns : `pd.Series`
+            The Series of daily returns values.
+
+        Returns
+        -------
+        `list[tuple]`
+            The list of tuple-based returns: [(year, return)]
+        """
+        year_returns = perf.aggregate_returns(returns, 'yearly')
+        return list(zip(year_returns.index, year_returns))
+
+    def _calculate_yearly_aggregated_returns_hc(self, returns):
+        """
+        Calculate the yearly aggregated returns in the format
+        utilised by Highcharts. 0% -> 0.0, 100% -> 100.0
+
+        Parameters
+        ----------
+        returns : `list[tuple]`
+            The list of tuples, with the first index being the year
+            integer and the second index being the return.
+
+        Returns
+        -------
+        `list[float]`
+            The list of returns.
+        """
+        year_returns = self._calculate_yearly_aggregated_returns(returns)
+        return [year[1] * 100.0 for year in year_returns]
 
     def _calculate_statistics(self, curve):
         """
@@ -185,8 +248,12 @@ class JSONStatistics(object):
         stats['equity_curve'] = JSONStatistics._series_to_tuple_list(curve['Equity'])
         stats['returns'] = JSONStatistics._series_to_tuple_list(curve['Returns'])
         stats['cum_returns'] = JSONStatistics._series_to_tuple_list(curve['CumReturns'])
+
+        # Month/year aggregated returns
         stats['monthly_agg_returns'] = self._calculate_monthly_aggregated_returns(curve['Returns'])
         stats['monthly_agg_returns_hc'] = self._calculate_monthly_aggregated_returns_hc(curve['Returns'])
+        stats['yearly_agg_returns'] = self._calculate_yearly_aggregated_returns(curve['Returns'])
+        stats['yearly_agg_returns_hc'] = self._calculate_yearly_aggregated_returns_hc(curve['Returns'])
 
         # Drawdown statistics
         stats['drawdowns'] = JSONStatistics._series_to_tuple_list(dd_s)
