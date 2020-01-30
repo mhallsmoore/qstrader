@@ -221,6 +221,74 @@ class JSONStatistics(object):
         year_returns = self._calculate_yearly_aggregated_returns(returns)
         return [year[1] * 100.0 for year in year_returns]
 
+    def _calculate_returns_quantiles_dict(self, returns):
+        """
+        Creates a dictionary with quantiles for the
+        provided returns series.
+
+        Parameters
+        ----------
+        returns : `pd.Series` or `list[float]`
+            The Series/list of returns values.
+
+        Returns
+        -------
+        `dict{str: float}`
+            The quantiles of the provided returns series.
+        """
+        return {
+            'min': np.min(returns),
+            'lq': np.percentile(returns, 25),
+            'med': np.median(returns),
+            'uq': np.percentile(returns, 75),
+            'max': np.max(returns)
+        }
+
+    def _calculate_returns_quantiles(self, daily_returns):
+        """
+        Creates a dict-of-dicts with quantiles for the
+        daily, monthly and yearly returns series.
+
+        Parameters
+        ----------
+        daily_returns : `pd.Series`
+            The Series of daily returns values.
+
+        Returns
+        -------
+        `dict{str: dict{str: float}}`
+            The quantiles of the daily, monthly and yearly returns.
+        """
+        monthly_returns = [m[1] for m in self._calculate_monthly_aggregated_returns(daily_returns)]
+        yearly_returns = [y[1] for y in self._calculate_yearly_aggregated_returns(daily_returns)]
+        return {
+            'daily': self._calculate_returns_quantiles_dict(daily_returns),
+            'monthly': self._calculate_returns_quantiles_dict(monthly_returns),
+            'yearly': self._calculate_returns_quantiles_dict(yearly_returns)
+        }
+
+    def _calculate_returns_quantiles_hc(self, returns_quantiles):
+        """
+        Convert the returns quantiles dict-of-dicts into
+        a format suitable for Highcharts boxplots.
+
+        Parameters
+        ----------
+        `dict{str: dict{str: float}}`
+            The quantiles of the daily, monthly and yearly returns.
+
+        Returns
+        -------
+        `list[list[float]]`
+            The list-of-lists of return quantiles (in 0-100 percent terms).
+        """
+        percentiles = ['min', 'lq', 'med', 'uq', 'max']
+        return [
+            [returns_quantiles['daily'][stat] * 100.0 for stat in percentiles],
+            [returns_quantiles['monthly'][stat] * 100.0 for stat in percentiles],
+            [returns_quantiles['yearly'][stat] * 100.0 for stat in percentiles]
+        ]
+
     def _calculate_statistics(self, curve):
         """
         Creates a dictionary of various statistics associated with
@@ -254,6 +322,10 @@ class JSONStatistics(object):
         stats['monthly_agg_returns_hc'] = self._calculate_monthly_aggregated_returns_hc(curve['Returns'])
         stats['yearly_agg_returns'] = self._calculate_yearly_aggregated_returns(curve['Returns'])
         stats['yearly_agg_returns_hc'] = self._calculate_yearly_aggregated_returns_hc(curve['Returns'])
+
+        # Returns quantiles
+        stats['returns_quantiles'] = self._calculate_returns_quantiles(curve['Returns'])
+        stats['returns_quantiles_hc'] = self._calculate_returns_quantiles_hc(stats['returns_quantiles'])
 
         # Drawdown statistics
         stats['drawdowns'] = JSONStatistics._series_to_tuple_list(dd_s)
