@@ -74,6 +74,7 @@ class BacktestTradingSession(TradingSession):
         cash_buffer_percentage=0.05,
         fees=None,
         burn_in_dt=None,
+        data_handler=None,
         **kwargs
     ):
         self.start_dt = start_dt
@@ -91,7 +92,7 @@ class BacktestTradingSession(TradingSession):
 
         self.exchange = self._create_exchange()
         self.universe = self._create_asset_universe()
-        self.data_handler = self._create_data_handler()
+        self.data_handler = self._create_data_handler(data_handler)
         self.fee_model = self._create_broker_fee_model()
         self.broker = self._create_broker()
         self.sim_engine = self._create_simulation_engine()
@@ -165,7 +166,7 @@ class BacktestTradingSession(TradingSession):
         universe = StaticUniverse(self.assets)
         return universe
 
-    def _create_data_handler(self):
+    def _create_data_handler(self, data_handler):
         """
         Creates a DataHandler instance to load the asset pricing data
         used within the backtest.
@@ -173,11 +174,19 @@ class BacktestTradingSession(TradingSession):
         TODO: Currently defaults to CSV data sources of daily bar data in
         the YahooFinance format.
 
+        Parameters
+        ----------
+        `BacktestDataHandler` or None
+            The (potential) backtesting data handler instance.
+
         Returns
         -------
         `BacktestDataHandler`
             The backtesting data handler instance.
         """
+        if data_handler is not None:
+            return data_handler
+
         try:
             os.environ['QSTRADER_CSV_DATA_DIR']
         except KeyError:
