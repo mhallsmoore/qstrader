@@ -24,12 +24,17 @@ class CSVDailyBarDataSource(object):
     adjust_prices : `Boolean`, optional
         Whether to utilise corporate-action adjusted prices for both
         the open and closing prices. Defaults to True.
+    csv_symbols : `list`, optional
+        An optional list of CSV symbols to restrict the data source to.
+        The alternative is to convert all CSVs found within the
+        provided directory.
     """
 
-    def __init__(self, csv_dir, asset_type, adjust_prices=True):
+    def __init__(self, csv_dir, asset_type, adjust_prices=True, csv_symbols=None):
         self.csv_dir = csv_dir
         self.asset_type = asset_type
         self.adjust_prices = adjust_prices
+        self.csv_symbols = csv_symbols
 
         self.asset_bar_frames = self._load_csvs_into_dfs()
         self.asset_bid_ask_frames = self._convert_bars_into_bid_ask_dfs()
@@ -101,7 +106,12 @@ class CSVDailyBarDataSource(object):
             The asset-symbol keyed dictionary of Pandas DataFrames
             containing the timestamped price/volume data.
         """
-        csv_files = self._obtain_asset_csv_files()
+        if self.csv_symbols is not None:
+            # TODO/NOTE: This assumes existence of CSV symbols
+            # within the provided directory.
+            csv_files = ['%s.csv' % symbol for symbol in self.csv_symbols]
+        else:
+            csv_files = self._obtain_asset_csv_files()
 
         asset_frames = {}
         for csv_file in csv_files:
@@ -164,7 +174,8 @@ class CSVDailyBarDataSource(object):
         dp_df = seq_oc_df[['Date', 'Price']]
         dp_df['Bid'] = dp_df['Price']
         dp_df['Ask'] = dp_df['Price']
-        dp_df = dp_df.loc[:, ['Date', 'Bid', 'Ask']].set_index('Date')
+        dp_df = dp_df.loc[:, ['Date', 'Bid', 'Ask']].fillna(method='ffill').set_index('Date')
+
         return dp_df
 
     def _convert_bars_into_bid_ask_dfs(self):
@@ -179,6 +190,7 @@ class CSVDailyBarDataSource(object):
         """
         asset_bid_ask_frames = {}
         for asset_symbol, bar_df in self.asset_bar_frames.items():
+            print("Adjusting CSV file for symbol '%s'..." % asset_symbol)
             asset_bid_ask_frames[asset_symbol] = \
                 self._convert_bar_frame_into_bid_ask_df(bar_df)
         return asset_bid_ask_frames
