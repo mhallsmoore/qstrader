@@ -1,3 +1,4 @@
+import functools
 import os
 
 import numpy as np
@@ -106,6 +107,7 @@ class CSVDailyBarDataSource(object):
             The asset-symbol keyed dictionary of Pandas DataFrames
             containing the timestamped price/volume data.
         """
+        print("Loading CSV files into DataFrames...")
         if self.csv_symbols is not None:
             # TODO/NOTE: This assumes existence of CSV symbols
             # within the provided directory.
@@ -116,6 +118,7 @@ class CSVDailyBarDataSource(object):
         asset_frames = {}
         for csv_file in csv_files:
             asset_symbol = self._obtain_asset_symbol_from_filename(csv_file)
+            print("Loading CSV file for symbol '%s'..." % asset_symbol)
             csv_df = self._load_csv_into_df(csv_file)
             asset_frames[asset_symbol] = csv_df
         return asset_frames
@@ -139,13 +142,6 @@ class CSVDailyBarDataSource(object):
             The individually-timestamped open/closing prices, optionally
             adjusted for corporate actions.
         """
-        def _market_hours(price_row):
-            # TODO: Obtain these times from the SimulatedExchange
-            if price_row['Market'] == 'Open':
-                return price_row['Date'] + pd.Timedelta(hours=14, minutes=30)
-            else:
-                return price_row['Date'] + pd.Timedelta(hours=21, minutes=0)
-
         bar_df = bar_df.sort_index()
         if self.adjust_prices:
             if 'Adj Close' not in bar_df.columns:
@@ -168,14 +164,14 @@ class CSVDailyBarDataSource(object):
         # appropriately timestamped
         seq_oc_df = oc_df.T.unstack(level=0).reset_index()
         seq_oc_df.columns = ['Date', 'Market', 'Price']
-        seq_oc_df['Date'] = seq_oc_df.apply(_market_hours, axis=1)
+        seq_oc_df.loc[seq_oc_df['Market'] == 'Open', 'Date'] += pd.Timedelta(hours=14, minutes=30)
+        seq_oc_df.loc[seq_oc_df['Market'] == 'Close', 'Date'] += pd.Timedelta(hours=21, minutes=00)
 
         # TODO: Unable to distinguish between Bid/Ask, implement later
         dp_df = seq_oc_df[['Date', 'Price']]
         dp_df['Bid'] = dp_df['Price']
         dp_df['Ask'] = dp_df['Price']
-        dp_df = dp_df.loc[:, ['Date', 'Bid', 'Ask']].fillna(method='ffill').set_index('Date')
-
+        dp_df = dp_df.loc[:, ['Date', 'Bid', 'Ask']].fillna(method='ffill').set_index('Date').sort_index()
         return dp_df
 
     def _convert_bars_into_bid_ask_dfs(self):
@@ -188,6 +184,7 @@ class CSVDailyBarDataSource(object):
         `dict{pd.DataFrame}`
             The converted DataFrames.
         """
+        print("Adjusting pricing in CSV files...")
         asset_bid_ask_frames = {}
         for asset_symbol, bar_df in self.asset_bar_frames.items():
             print("Adjusting CSV file for symbol '%s'..." % asset_symbol)
@@ -195,6 +192,7 @@ class CSVDailyBarDataSource(object):
                 self._convert_bar_frame_into_bid_ask_df(bar_df)
         return asset_bid_ask_frames
 
+    @functools.lru_cache(maxsize=1024 * 1024)
     def get_bid(self, dt, asset):
         """
         Obtain the bid price of an asset at the provided timestamp.
@@ -218,6 +216,7 @@ class CSVDailyBarDataSource(object):
             return np.NaN
         return bid
 
+    @functools.lru_cache(maxsize=1024 * 1024)
     def get_ask(self, dt, asset):
         """
         Obtain the ask price of an asset at the provided timestamp.

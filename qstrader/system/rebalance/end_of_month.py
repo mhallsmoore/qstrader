@@ -19,9 +19,9 @@ class EndOfMonthRebalance(Rebalance):
     end_dt : `pd.Timestamp`
         The ending datetime of the rebalance range.
     pre_market : `Boolean`, optional
-        Whether to carry out the rebalance pre/post market on
-        the final day of the month. Defaults to False, i.e
-        post-market.
+        Whether to carry out the rebalance at market open/close on
+        the final day of the month. Defaults to False, i.e at
+        market close.
     """
 
     def __init__(
@@ -37,21 +37,20 @@ class EndOfMonthRebalance(Rebalance):
 
     def _set_market_time(self, pre_market):
         """
-        Determines whether to use midnight or one minute prior to
-        midnight based on whether pre/post market is specified as
-        the rebalance time.
+        Determines whether to use market open or market close
+        as the rebalance time.
 
         Parameters
         ----------
         pre_market : `Boolean`
-            Whether the rebalance is carried out pre/post market.
+            Whether the rebalance is carried out at market open/close.
 
         Returns
         -------
         `str`
             The time string used for Pandas timestamp construction.
         """
-        return "00:00:00" if pre_market else "23:59:00"
+        return "14:30:00" if pre_market else "21:00:00"
 
     def _generate_rebalances(self):
         """

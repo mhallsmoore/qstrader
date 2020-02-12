@@ -22,7 +22,7 @@ class WeeklyRebalance(Rebalance):
         The three-letter string representation of the weekday
         to rebalance on once per week.
     pre_market : `Boolean`, optional
-        Whether to utilise pre-market or post-market time.
+        Whether to carry out the rebalance at market open/close.
     """
 
     def __init__(
@@ -66,20 +66,21 @@ class WeeklyRebalance(Rebalance):
 
     def _set_market_time(self, pre_market):
         """
-        Sets the appropriate time for rebalancing during the day,
-        either pre-market or post-market.
+        Determines whether to use market open or market close
+        as the rebalance time.
 
         Parameters
         ----------
         pre_market : `Boolean`
-            Whether to utilise pre-market or post-market time.
+            Whether to use market open or market close
+            as the rebalance time.
 
         Returns
         -------
         `str`
             The string representation of the market time.
         """
-        return "00:00:00" if pre_market else "23:59:00"
+        return "14:30:00" if pre_market else "21:00:00"
 
     def _generate_rebalances(self):
         """

@@ -1,4 +1,3 @@
-import logging
 from math import floor
 import queue
 
@@ -73,12 +72,7 @@ class SimulatedBroker(Broker):
         self.portfolios = self._set_initial_portfolios()
         self.open_orders = self._set_initial_open_orders()
 
-        self.logger = logging.getLogger('SimulatedBroker')
-        self.logger.setLevel(logging.DEBUG)
-        self.logger.info(
-            '(%s) SimulatedBroker instance initialised' %
-            self.current_dt.strftime(settings.LOGGING["DATE_FORMAT"])
-        )
+        print('Initialising simulated broker "%s"...' % self.account_id)
 
     def _set_base_currency(self, base_currency):
         """
@@ -212,10 +206,9 @@ class SimulatedBroker(Broker):
                 "'%s' to the broker account." % amount
             )
         self.cash_balances[self.base_currency] += amount
-        self.logger.info(
-            '(%s) %0.2f subscribed to broker account "%s"' % (
-                self.current_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                amount, self.account_id
+        print(
+            '(%s) - subscription: %0.2f subscribed to broker account "%s"' % (
+                self.current_dt, amount, self.account_id
             )
         )
 
@@ -245,10 +238,9 @@ class SimulatedBroker(Broker):
                 )
             )
         self.cash_balances[self.base_currency] -= amount
-        self.logger.info(
-            '(%s) %0.2f withdrawn from broker account "%s"' % (
-                self.current_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                amount, self.account_id
+        print(
+            '(%s) - withdrawal: %0.2f withdrawn from broker account "%s"' % (
+                self.current_dt, amount, self.account_id
             )
         )
 
@@ -343,10 +335,9 @@ class SimulatedBroker(Broker):
             )
             self.portfolios[portfolio_id_str] = p
             self.open_orders[portfolio_id_str] = queue.Queue()
-            self.logger.info(
-                '(%s) Portfolio "%s" created at broker "%s"' % (
-                    self.current_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                    portfolio_id_str, self.account_id
+            print(
+                '(%s) - portfolio creation: Portfolio "%s" created at broker "%s"' % (
+                    self.current_dt, portfolio_id_str, self.account_id
                 )
             )
 
@@ -401,10 +392,9 @@ class SimulatedBroker(Broker):
             )
         self.portfolios[portfolio_id].subscribe_funds(self.current_dt, amount)
         self.cash_balances[self.base_currency] -= amount
-        self.logger.info(
-            '(%s) %0.2f subscribed to portfolio "%s"' % (
-                self.current_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                amount, portfolio_id
+        print(
+            '(%s) - subscription: %0.2f subscribed to portfolio "%s"' % (
+                self.current_dt, amount, portfolio_id
             )
         )
 
@@ -447,10 +437,9 @@ class SimulatedBroker(Broker):
             self.current_dt, amount
         )
         self.cash_balances[self.base_currency] += amount
-        self.logger.info(
-            '(%s) %0.2f withdrawn from portfolio "%s"' % (
-                self.current_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                amount, portfolio_id
+        print(
+            '(%s) - withdrawal: %0.2f withdrawn from portfolio "%s"' % (
+                self.current_dt, amount, portfolio_id
             )
         )
 
@@ -608,13 +597,11 @@ class SimulatedBroker(Broker):
             price, order.order_id, commission=total_commission
         )
         self.portfolios[portfolio_id].transact_asset(txn)
-        self.logger.info(
-            '(%s) Order executed for %s - Qty: %s, '
-            'Price: %0.2f, Consideration: %0.2f, '
-            'Commission: %0.2f, Total Cost: %0.2f' % (
-                self.current_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                order.asset, scaled_quantity,
-                price, consideration, total_commission,
+        print(
+            "(%s) - executed order: %s, qty: %s, price: %0.2f, "
+            "consideration: %0.2f, commission: %0.2f, total: %0.2f" % (
+                self.current_dt, order.asset, scaled_quantity, price,
+                consideration, total_commission,
                 consideration + total_commission
             )
         )
@@ -648,10 +635,9 @@ class SimulatedBroker(Broker):
                 )
             )
         self.open_orders[portfolio_id].put(order)
-        self.logger.info(
-            '(%s) Order submitted for %s - Qty: %s' % (
-                self.current_dt.strftime(settings.LOGGING["DATE_FORMAT"]),
-                order.asset, order.quantity
+        print(
+            "(%s) - submitted order: %s, qty: %s" % (
+                self.current_dt, order.asset, order.quantity
             )
         )
 

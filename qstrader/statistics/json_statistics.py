@@ -382,5 +382,6 @@ class JSONStatistics(object):
         """
         Outputs the statistics dictionary to a JSON file.
         """
+        print('Outputting JSON results to "%s"...' % self.output_filename)
         with open(self.output_filename, 'w') as outfile:
             json.dump(self.statistics, outfile)
