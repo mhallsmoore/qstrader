@@ -26,11 +26,15 @@ class DailyBusinessDaySimulationEngine(SimulationEngine):
     ----------
     starting_day : `pd.Timestamp`
         The starting day of the simulation.
-    ending_day  : `pd.Timestamp`
+    ending_day : `pd.Timestamp`
         The ending day of the simulation.
+    pre_market : `Boolean`, optional
+        Whether to include a pre-market event
+    post_market : `Boolean`, optional
+        Whether to include a post-market event
     """
 
-    def __init__(self, starting_day, ending_day):
+    def __init__(self, starting_day, ending_day, pre_market=True, post_market=True):
         if ending_day < starting_day:
             raise ValueError(
                 "Ending date time %s is earlier than starting date time %s. "
@@ -40,6 +44,8 @@ class DailyBusinessDaySimulationEngine(SimulationEngine):
 
         self.starting_day = starting_day
         self.ending_day = ending_day
+        self.pre_market = pre_market
+        self.post_market = post_market
         self.business_days = self._generate_business_days()
 
     def _generate_business_days(self):
@@ -72,25 +78,30 @@ class DailyBusinessDaySimulationEngine(SimulationEngine):
             month = bday.month
             day = bday.day
 
-            yield SimulationEvent(
-                pd.Timestamp(
-                    datetime.datetime(year, month, day), tz='UTC'
-                ), event_type="pre_market"
-            )
+            if self.pre_market:
+                yield SimulationEvent(
+                    pd.Timestamp(
+                        datetime.datetime(year, month, day), tz='UTC'
+                    ), event_type="pre_market"
+                )
+
             yield SimulationEvent(
                 pd.Timestamp(
                     datetime.datetime(year, month, day, 14, 30),
                     tz=pytz.utc
                 ), event_type="market_open"
             )
+
             yield SimulationEvent(
                 pd.Timestamp(
                     datetime.datetime(year, month, day, 21, 00),
                     tz=pytz.utc
                 ), event_type="market_close"
             )
-            yield SimulationEvent(
-                pd.Timestamp(
-                    datetime.datetime(year, month, day, 23, 59), tz='UTC'
-                ), event_type="post_market"
-            )
+
+            if self.post_market:
+                yield SimulationEvent(
+                    pd.Timestamp(
+                        datetime.datetime(year, month, day, 23, 59), tz='UTC'
+                    ), event_type="post_market"
+                )

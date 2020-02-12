@@ -264,7 +264,7 @@ class TearsheetStatistics(Statistics):
         """
         Plot the Tearsheet
         """
-        ""
+        print('Plotting the tearsheet...')
         rc = {
             'lines.linewidth': 1.0,
             'axes.facecolor': '0.995',

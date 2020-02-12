@@ -44,10 +44,14 @@ class BacktestDataHandler(object):
     def get_asset_latest_bid_ask_price(self, dt, asset_symbol):
         """
         """
-        return (
-            self.get_asset_latest_bid_price(dt, asset_symbol),
-            self.get_asset_latest_ask_price(dt, asset_symbol)
-        )
+        # TODO: For the moment this is sufficient for OHLCV
+        # data, which only usually provides mid prices
+        # This will need to be revisited when handling intraday
+        # bid/ask time series.
+        # It has been added as an optimisation mechanism for
+        # interday backtests.
+        bid = self.get_asset_latest_bid_price(dt, asset_symbol)
+        return (bid, bid)
 
     def get_asset_latest_mid_price(self, dt, asset_symbol):
         """
