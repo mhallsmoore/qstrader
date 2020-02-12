@@ -257,7 +257,7 @@ class BacktestTradingSession(TradingSession):
             The simulation engine generating simulation timestamps.
         """
         return DailyBusinessDaySimulationEngine(
-            self.start_dt, self.end_dt
+            self.start_dt, self.end_dt, pre_market=False, post_market=False
         )
 
     def _create_rebalance_event_times(self):
@@ -365,18 +365,25 @@ class BacktestTradingSession(TradingSession):
             alloc_df = alloc_df[self.burn_in_dt:]
         return alloc_df
 
-    def run(self, results=True):
+    def run(self, results=False):
         """
         Execute the simulation engine by iterating over all
         simulation events, rebalancing the quant trading
         system at the appropriate schedule.
+
+        Parameters
+        ----------
+        results : `Boolean`, optional
+            Whether to output the current portfolio holdings
         """
+        print("Beginning backtest simulation...")
+
         stats = {'target_allocations': []}
 
         for event in self.sim_engine:
             # Output the system event and timestamp
             dt = event.ts
-            print(event.ts, event.event_type)
+            print("(%s) - %s" % (event.ts, event.event_type))
 
             # Update the simulated broker
             self.broker.update(dt)
@@ -384,13 +391,13 @@ class BacktestTradingSession(TradingSession):
             # If we have hit a rebalance time then carry
             # out a full run of the quant trading system
             if self._is_rebalance_event(dt):
-                print(event.ts, "REBALANCE")
+                print("(%s) - trading logic and rebalance" % event.ts)
                 self.qts(dt, stats=stats)
 
             # Out of market hours we want a daily
             # performance update, but only if we
             # are past the 'burn in' period
-            if event.event_type == "post_market":
+            if event.event_type == "market_close":
                 if self.burn_in_dt is not None:
                     if dt >= self.burn_in_dt:
                         self._update_equity_curve(dt)
@@ -400,6 +407,8 @@ class BacktestTradingSession(TradingSession):
         self.target_allocations = stats['target_allocations']
 
         # At the end of the simulation output the
-        # holdings and plot the tearsheet
+        # portfolio holdings if desired
         if results:
             self.output_holdings()
+
+        print("Ending backtest simulation.")
