@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import os
 import sys
 
 import click
@@ -6,6 +7,10 @@ import pandas as pd
 import pytz
 
 from qstrader.alpha_model.fixed_signals import FixedSignalsAlphaModel
+from qstrader.asset.equity import Equity
+from qstrader.asset.universe.static import StaticUniverse
+from qstrader.data.backtest_data_handler import BacktestDataHandler
+from qstrader.data.daily_bar_csv import CSVDailyBarDataSource
 from qstrader.statistics.json_statistics import JSONStatistics
 from qstrader.statistics.tearsheet import TearsheetStatistics
 from qstrader.trading.backtest import BacktestTradingSession
@@ -50,6 +55,8 @@ def obtain_allocations(allocations):
 @click.option('--id', 'strat_id', help='Backtest strategy ID string')
 @click.option('--tearsheet', 'tearsheet', is_flag=True, default=False, help='Whether to display the (blocking) tearsheet plot')
 def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
+    csv_dir = os.environ.get('QSTRADER_CSV_DATA_DIR')
+
     start_dt = pd.Timestamp('%s 00:00:00' % start_date, tz=pytz.UTC)
 
     if end_date is None:
@@ -60,6 +67,16 @@ def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
         end_dt = pd.Timestamp('%s 23:59:00' % end_date, tz=pytz.UTC)
 
     alloc_dict = obtain_allocations(allocations)
+
+    # Assets and Data Handling
+    strategy_assets = list(alloc_dict.keys())
+    strategy_symbols = [symbol.replace('EQ:', '') for symbol in strategy_assets]
+    strategy_universe = StaticUniverse(strategy_assets)
+    strategy_data_source = CSVDailyBarDataSource(csv_dir, Equity, csv_symbols=strategy_symbols)
+
+    strategy_data_handler = BacktestDataHandler(
+        strategy_universe, data_sources=[strategy_data_source]
+    )
 
     strategy_assets = alloc_dict.keys()
     strategy_alpha_model = FixedSignalsAlphaModel(alloc_dict)
@@ -72,12 +89,21 @@ def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
         account_name=strat_title,
         portfolio_id='STATIC001',
         portfolio_name=strat_title,
-        cash_buffer_percentage=0.01
+        cash_buffer_percentage=0.01,
+        data_handler=strategy_data_handler
     )
     strategy_backtest.run()
 
     # Benchmark: 60/40 US Equities/Bonds
+    benchmark_symbols = ['SPY', 'AGG']
     benchmark_assets = ['EQ:SPY', 'EQ:AGG']
+    benchmark_universe = StaticUniverse(benchmark_assets)
+
+    benchmark_data_source = CSVDailyBarDataSource(csv_dir, Equity, csv_symbols=benchmark_symbols)
+    benchmark_data_handler = BacktestDataHandler(
+        benchmark_universe, data_sources=[benchmark_data_source]
+    )
+
     benchmark_signal_weights = {'EQ:SPY': 0.6, 'EQ:AGG': 0.4}
     benchmark_title = '60/40 US Equities/Bonds'
     benchmark_alpha_model = FixedSignalsAlphaModel(benchmark_signal_weights)
@@ -90,7 +116,8 @@ def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
         account_name='60/40 US Equities/Bonds',
         portfolio_id='6040EQBD',
         portfolio_name=benchmark_title,
-        cash_buffer_percentage=0.01
+        cash_buffer_percentage=0.01,
+        data_handler=benchmark_data_handler
     )
     benchmark_backtest.run()
 
