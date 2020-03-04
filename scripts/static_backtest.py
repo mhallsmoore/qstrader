@@ -83,7 +83,7 @@ def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
     strategy_backtest = BacktestTradingSession(
         start_dt,
         end_dt,
-        strategy_assets,
+        strategy_universe,
         strategy_alpha_model,
         rebalance='end_of_month',
         account_name=strat_title,
@@ -110,7 +110,7 @@ def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
     benchmark_backtest = BacktestTradingSession(
         start_dt,
         end_dt,
-        benchmark_assets,
+        benchmark_universe,
         benchmark_alpha_model,
         rebalance='end_of_month',
         account_name='60/40 US Equities/Bonds',
