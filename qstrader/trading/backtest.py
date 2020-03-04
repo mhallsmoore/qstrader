@@ -3,7 +3,6 @@ import os
 import pandas as pd
 
 from qstrader.asset.equity import Equity
-from qstrader.asset.universe.static import StaticUniverse
 from qstrader.broker.simulated_broker import SimulatedBroker
 from qstrader.broker.fee_model.zero_fee_model import ZeroFeeModel
 from qstrader.data.backtest_data_handler import BacktestDataHandler
@@ -36,8 +35,8 @@ class BacktestTradingSession(TradingSession):
         The starting datetime (UTC) of the backtest.
     end_dt : `pd.Timestamp`
         The ending datetime (UTC) of the backtest.
-    assets : `List[str]`
-        The Asset symbols to utilise for the backtest.
+    universe : `Universe`
+        The Asset Universe to utilise for the backtest.
     alpha_model : `AlphaModel`
         The signal/forecast alpha model for the quant trading strategy.
     initial_cash : `float`, optional
@@ -64,7 +63,7 @@ class BacktestTradingSession(TradingSession):
         self,
         start_dt,
         end_dt,
-        assets,
+        universe,
         alpha_model,
         initial_cash=1e6,
         rebalance='weekly',
@@ -79,7 +78,7 @@ class BacktestTradingSession(TradingSession):
     ):
         self.start_dt = start_dt
         self.end_dt = end_dt
-        self.assets = assets
+        self.universe = universe
         self.alpha_model = alpha_model
         self.initial_cash = initial_cash
         self.rebalance = rebalance
@@ -91,7 +90,6 @@ class BacktestTradingSession(TradingSession):
         self.burn_in_dt = burn_in_dt
 
         self.exchange = self._create_exchange()
-        self.universe = self._create_asset_universe()
         self.data_handler = self._create_data_handler(data_handler)
         self.fee_model = self._create_broker_fee_model()
         self.broker = self._create_broker()
@@ -141,30 +139,6 @@ class BacktestTradingSession(TradingSession):
             The simulated exchange instance.
         """
         return SimulatedExchange(self.start_dt)
-
-    def _create_asset_universe(self):
-        """
-        Check all asset symbols to ensure they are supported by QSTrader and
-        then create an asset Universe instance.
-
-        TODO: Currently this only supports StaticUniverse instances.
-
-        Returns
-        -------
-        `Universe`
-            The asset universe generated from the asset symbols.
-        """
-        # Check that all provided asset symbols are equities.
-        for asset in self.assets:
-            if not asset.startswith('EQ'):
-                raise NotImplementedError(
-                    'QSTrader currently only supports Equity assets and '
-                    'not provided asset "%s". Perhaps you need to prefix the '
-                    'asset symbol name with "EQ:" in your asset list?' % asset
-                )
-
-        universe = StaticUniverse(self.assets)
-        return universe
 
     def _create_data_handler(self, data_handler):
         """

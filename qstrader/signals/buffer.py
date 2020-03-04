@@ -1,5 +1,4 @@
 from collections import deque
-import itertools
 
 
 class AssetPriceBuffers(object):
@@ -19,7 +18,7 @@ class AssetPriceBuffers(object):
     def __init__(self, assets, lookbacks=[12]):
         self.assets = assets
         self.lookbacks = lookbacks
-        self.prices = self._create_prices_dict()
+        self.prices = self._create_all_assets_prices_buffer_dict()
 
     @staticmethod
     def _asset_lookback_key(asset, lookback):
@@ -41,10 +40,10 @@ class AssetPriceBuffers(object):
         """
         return '%s_%s' % (asset, lookback)
 
-    def _create_prices_dict(self):
+    def _create_single_asset_prices_buffer_dict(self, asset):
         """
         Creates a dictionary of asset-lookback pair
-        price buffers.
+        price buffers for a single asset.
 
         Returns
         -------
@@ -55,10 +54,23 @@ class AssetPriceBuffers(object):
             AssetPriceBuffers._asset_lookback_key(
                 asset, lookback
             ): deque(maxlen=lookback + 1)
-            for asset, lookback in itertools.product(
-                self.assets, self.lookbacks
-            )
+            for lookback in self.lookbacks
         }
+
+    def _create_all_assets_prices_buffer_dict(self):
+        """
+        Creates a dictionary of asset-lookback pair
+        price buffers for all assets.
+
+        Returns
+        -------
+        `dict{str: deque[float]}`
+            The price buffer dictionary.
+        """
+        prices = {}
+        for asset in self.assets:
+            prices.update(self._create_single_asset_prices_buffer_dict(asset))
+        return prices
 
     def append(self, asset, price):
         """
@@ -77,6 +89,14 @@ class AssetPriceBuffers(object):
                 'Unable to append non-positive price of "%0.2f" '
                 'to metrics buffer for Asset "%s".' % (price, asset)
             )
+
+        # The asset may have been added to the universe subsequent
+        # to the beginning of the backtest and as such needs a
+        # newly created pricing buffer
+        asset_lookback_key = AssetPriceBuffers._asset_lookback_key(asset, self.lookbacks[0])
+        if asset_lookback_key not in self.prices:
+            self.prices.update(self._create_single_asset_prices_buffer_dict(asset))
+
         for lookback in self.lookbacks:
             self.prices[
                 AssetPriceBuffers._asset_lookback_key(
