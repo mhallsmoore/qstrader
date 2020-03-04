@@ -81,7 +81,7 @@ class JSONStatistics(object):
                     datetime.datetime.combine(
                         k, datetime.datetime.min.time()
                     ).timestamp() * 1000.0
-                ), v
+                ), v if not np.isnan(v) else 0.0
             )
             for k, v in series.to_dict().items()
         ]
@@ -111,7 +111,7 @@ class JSONStatistics(object):
                         datetime.datetime.combine(
                             date_key, datetime.datetime.min.time()
                         ).timestamp() * 1000.0
-                    ), date_val
+                    ), date_val if not np.isnan(date_val) else 0.0
                 )
                 for date_key, date_val in v.items()
             ]
