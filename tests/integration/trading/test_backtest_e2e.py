@@ -4,6 +4,7 @@ import pandas as pd
 import pytz
 
 from qstrader.alpha_model.fixed_signals import FixedSignalsAlphaModel
+from qstrader.asset.universe.static import StaticUniverse
 from qstrader.trading.backtest import BacktestTradingSession
 
 
@@ -18,6 +19,7 @@ def test_backtest_sixty_forty_no_corp_actions(etf_filepath):
     os.environ['QSTRADER_CSV_DATA_DIR'] = etf_filepath
 
     assets = ['EQ:ABC', 'EQ:DEF']
+    universe = StaticUniverse(assets)
     signal_weights = {'EQ:ABC': 0.6, 'EQ:DEF': 0.4}
     alpha_model = FixedSignalsAlphaModel(signal_weights)
 
@@ -27,7 +29,7 @@ def test_backtest_sixty_forty_no_corp_actions(etf_filepath):
     backtest = BacktestTradingSession(
         start_dt,
         end_dt,
-        assets,
+        universe,
         alpha_model,
         portfolio_id='000001',
         rebalance='weekly',
