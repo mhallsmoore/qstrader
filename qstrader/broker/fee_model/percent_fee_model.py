@@ -1,16 +1,29 @@
 from qstrader.broker.fee_model.fee_model import FeeModel
 
 
-class ZeroFeeModel(FeeModel):
+class PercentFeeModel(FeeModel):
     """
-    A FeeModel subclass that produces no commission, fees
-    or taxes. This is the default fee model for simulated
-    brokerages within QSTrader.
+    A FeeModel subclass that produces a percentage cost
+    for tax and commission.
+
+    Parameters
+    ----------
+    commission_pct : `float`, optional
+        The percentage commission applied to the consideration.
+        0-100% is in the range [0.0, 1.0]. Hence, e.g. 0.1% is 0.001
+    tax_pct : `float`, optional
+        The percentage tax applied to the consideration.
+        0-100% is in the range [0.0, 1.0]. Hence, e.g. 0.1% is 0.001
     """
+
+    def __init__(self, commission_pct=0.0, tax_pct=0.0):
+        super().__init__()
+        self.commission_pct = commission_pct
+        self.tax_pct = tax_pct
 
     def _calc_commission(self, asset, quantity, consideration, broker=None):
         """
-        Returns zero commission.
+        Returns the percentage commission from the consideration.
 
         Parameters
         ----------
@@ -27,13 +40,13 @@ class ZeroFeeModel(FeeModel):
         Returns
         -------
         `float`
-            The zero-cost commission.
+            The percentage commission.
         """
-        return 0.0
+        return self.commission_pct * abs(consideration)
 
     def _calc_tax(self, asset, quantity, consideration, broker=None):
         """
-        Returns zero tax.
+        Returns the percentage tax from the consideration.
 
         Parameters
         ----------
@@ -50,9 +63,9 @@ class ZeroFeeModel(FeeModel):
         Returns
         -------
         `float`
-            The zero-cost tax.
+            The percentage tax.
         """
-        return 0.0
+        return self.tax_pct * abs(consideration)
 
     def calc_total_cost(self, asset, quantity, consideration, broker=None):
         """
@@ -74,7 +87,7 @@ class ZeroFeeModel(FeeModel):
         Returns
         -------
         `float`
-            The zero-cost total commission and tax.
+            The total commission and tax.
         """
         commission = self._calc_commission(asset, quantity, consideration, broker)
         tax = self._calc_tax(asset, quantity, consideration, broker)
