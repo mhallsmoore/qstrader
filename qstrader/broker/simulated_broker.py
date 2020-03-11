@@ -52,7 +52,7 @@ class SimulatedBroker(Broker):
         account_id=None,
         base_currency="USD",
         initial_funds=0.0,
-        fee_model=ZeroFeeModel,
+        fee_model=ZeroFeeModel(),
         slippage_model=None,
         market_impact_model=None
     ):
@@ -139,13 +139,13 @@ class SimulatedBroker(Broker):
         `FeeModel` (instance)
             The instantiated FeeModel class.
         """
-        if issubclass(fee_model, FeeModel):
-            return fee_model()
+        if issubclass(fee_model.__class__, FeeModel):
+            return fee_model
         else:
             raise TypeError(
                 "Provided fee model '%s' in SimulatedBroker is not a "
                 "FeeModel subclass, so could not create the "
-                "Broker entity." % fee_model
+                "Broker entity." % fee_model.__class__
             )
 
     def _set_cash_balances(self):

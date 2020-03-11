@@ -51,9 +51,8 @@ class BacktestTradingSession(TradingSession):
         The name of the portfolio being used for the backtest.
     cash_buffer_percentage : `float`, optional
         The percentage of the portfolio to retain in cash.
-    fees : `FeeModel` class (not instance), optional
-        The optional FeeModel class to use for transaction cost estimates.
-        TODO: FeeModels are currently not supported.
+    fee_model : `FeeModel` class instance, optional
+        The optional FeeModel derived subclass to use for transaction cost estimates.
     burn_in_dt : `pd.Timestamp`, optional
         The optional date provided to begin tracking strategy statistics,
         which is used for strategies requiring a period of data 'burn in'
@@ -71,7 +70,7 @@ class BacktestTradingSession(TradingSession):
         portfolio_id=DEFAULT_PORTFOLIO_ID,
         portfolio_name=DEFAULT_PORTFOLIO_NAME,
         cash_buffer_percentage=0.05,
-        fees=None,
+        fee_model=ZeroFeeModel(),
         burn_in_dt=None,
         data_handler=None,
         **kwargs
@@ -86,12 +85,11 @@ class BacktestTradingSession(TradingSession):
         self.portfolio_id = portfolio_id
         self.portfolio_name = portfolio_name
         self.cash_buffer_percentage = cash_buffer_percentage
-        self.fees = fees
+        self.fee_model = fee_model
         self.burn_in_dt = burn_in_dt
 
         self.exchange = self._create_exchange()
         self.data_handler = self._create_data_handler(data_handler)
-        self.fee_model = self._create_broker_fee_model()
         self.broker = self._create_broker()
         self.sim_engine = self._create_simulation_engine()
 
@@ -182,19 +180,6 @@ class BacktestTradingSession(TradingSession):
             self.universe, data_sources=[data_source]
         )
         return data_handler
-
-    def _create_broker_fee_model(self):
-        """
-        Create the broker fee model instance, if supported.
-
-        TODO: Only supporting ZeroFeeModel for the time being.
-
-        Returns
-        -------
-        `FeeModel`
-            The brokerage simulated fee model.
-        """
-        return ZeroFeeModel
 
     def _create_broker(self):
         """

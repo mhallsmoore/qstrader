@@ -97,7 +97,7 @@ def test_initial_settings_for_default_simulated_broker():
     sb2 = SimulatedBroker(
         start_dt, exchange, data_handler, account_id="ACCT1234",
         base_currency="GBP", initial_funds=1e6,
-        fee_model=ZeroFeeModel
+        fee_model=ZeroFeeModel()
     )
 
     assert sb2.start_dt == start_dt
@@ -196,7 +196,7 @@ def test_all_cases_of_set_broker_commission():
 
     # Broker commission is specified as a subclass
     # of FeeModel abstract base class
-    bc2 = ZeroFeeModel
+    bc2 = ZeroFeeModel()
     sb2 = SimulatedBroker(
         start_dt, exchange, data_handler, fee_model=bc2
     )

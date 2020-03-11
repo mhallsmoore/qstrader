@@ -76,6 +76,6 @@ class ZeroFeeModel(FeeModel):
         `float`
             The zero-cost total commission and tax.
         """
-        commission = self._calc_commission(asset, consideration, broker)
-        tax = self._calc_tax(asset, consideration, broker)
+        commission = self._calc_commission(asset, quantity, consideration, broker)
+        tax = self._calc_tax(asset, quantity, consideration, broker)
         return commission + tax

@@ -42,7 +42,7 @@ class PercentFeeModel(FeeModel):
         `float`
             The percentage commission.
         """
-        return self.commission_pct * consideration
+        return self.commission_pct * abs(consideration)
 
     def _calc_tax(self, asset, quantity, consideration, broker=None):
         """
@@ -65,7 +65,7 @@ class PercentFeeModel(FeeModel):
         `float`
             The percentage tax.
         """
-        return self.tax_pct * consideration
+        return self.tax_pct * abs(consideration)
 
     def calc_total_cost(self, asset, quantity, consideration, broker=None):
         """
@@ -89,6 +89,6 @@ class PercentFeeModel(FeeModel):
         `float`
             The total commission and tax.
         """
-        commission = self._calc_commission(asset, consideration, broker)
-        tax = self._calc_tax(asset, consideration, broker)
+        commission = self._calc_commission(asset, quantity, consideration, broker)
+        tax = self._calc_tax(asset, quantity, consideration, broker)
         return commission + tax
