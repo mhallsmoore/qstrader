@@ -1,17 +1,15 @@
 [![Build Status](https://travis-ci.org/mhallsmoore/qstrader.svg?branch=master)](https://travis-ci.org/mhallsmoore/qstrader)
 [![Coverage Status](https://coveralls.io/repos/github/mhallsmoore/qstrader/badge.svg?branch=master)](https://coveralls.io/github/mhallsmoore/qstrader?branch=master)
 
-# Development News (6th November 2017)
+# Development News (11th May 2020)
 
 We are pleased to announce that the QuantStart software development team are currently in the process of a complete redevelopment of QSTrader.
 
-The new version will be an end-to-end quantitative trading simulation and live trading engine, rather than the current version which is limited to event-driven backtesting.
+Significant progress has been made internally over the last few months. The new codebase is available on the ```development``` branch, which can be found [here](https://github.com/mhallsmoore/qstrader/tree/development).
 
-Significant progress has been made internally over the last couple of months. Some of this development has been made available on the ```develop``` branch, which can be found [here](https://github.com/mhallsmoore/qstrader/tree/develop).
+# Advanced Algorithmic Trading
 
-The code will remain MIT licensed and every public release will require 100% code coverage.
-
-If you wish to read more about the proposed developments please consult the [recent article](https://www.quantstart.com/articles/qstrader-a-major-update-on-our-progress) published on QuantStart.com.
+Users who have purchased the Advanced Algorithmic Trading ebook can find the specific installation instructions [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
 
 # QSTrader  
 
@@ -133,7 +131,7 @@ If you notice any bugs or other issues that you think may be due to the codebase
 
 # License Terms
 
-Copyright (c) 2015-2017 QuantStart.com, QuarkGluon Ltd
+Copyright (c) 2015-2020 QuantStart.com, QuarkGluon Ltd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
