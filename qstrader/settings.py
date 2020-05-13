@@ -43,7 +43,7 @@ def from_file(fname=DEFAULT_CONFIG_FILENAME, testing=False):
         return TEST
     try:
         with open(os.path.expanduser(fname)) as fd:
-            conf = yaml.load(fd)
+            conf = yaml.load(fd, Loader=yaml.FullLoader)
         conf = munchify(conf)
         return conf
     except IOError:
