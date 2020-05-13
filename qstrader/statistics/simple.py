@@ -112,8 +112,8 @@ class SimpleStatistics(AbstractStatistics):
         try:
             top_index = equity_series[:bottom_index].idxmax()
             pct = (
-                (equity_series.ix[top_index] - equity_series.ix[bottom_index]) /
-                equity_series.ix[top_index] * 100
+                (equity_series.iloc[top_index] - equity_series.iloc[bottom_index]) /
+                equity_series.iloc[top_index] * 100
             )
             return round(pct, 4)
         except ValueError:
