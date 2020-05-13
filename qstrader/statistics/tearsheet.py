@@ -634,7 +634,7 @@ class TearsheetStatistics(AbstractStatistics):
         self._plot_txt_time(stats, ax=ax_txt_time)
 
         # Plot the figure
-        plt.show(block=False)
+        plt.show()
 
         if filename is not None:
             fig.savefig(filename, dpi=150, bbox_inches='tight')

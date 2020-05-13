@@ -147,7 +147,7 @@ class TradingSession(object):
                     elif event.type == EventType.FILL:
                         self.portfolio_handler.on_fill(event)
                     else:
-                        raise NotImplemented("Unsupported event.type '%s'" % event.type)
+                        raise NotImplementedError("Unsupported event.type '%s'" % event.type)
 
     def start_trading(self, testing=False):
         """
