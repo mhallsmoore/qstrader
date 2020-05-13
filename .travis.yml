@@ -43,6 +43,10 @@ install:
   - pip install multipledispatch
   - pip install requests_cache
   - pip install pandas_datareader
+  - git clone https://github.com/ig-python/ig-markets-api-python-library.git
+  - cd ig-markets-api-python-library
+  - python setup.py install
+  - cd ..
   - conda list
   - python setup.py install
 
