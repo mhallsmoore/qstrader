@@ -1,12 +1,8 @@
 from __future__ import division
 from multipledispatch import dispatch
-from .compat import PY2
 import numpy as np
 
-if PY2:
-    int_t = (int, long, np.int64)
-else:
-    int_t = (int, np.int64)
+int_t = (int, np.int64)
 
 
 class PriceParser(object):
