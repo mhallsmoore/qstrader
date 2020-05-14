@@ -4,13 +4,31 @@
 
 # QSTrader
 
-QSTrader is an open-source highly modular schedule-driven backtesting platform for use predominantly in the cash equities markets. It is currently in an alpha state, but is being actively developed.
+QSTrader is a free Python-based open-source modular schedule-driven backtesting framework for long-only equities and ETF based systematic trading strategies.
 
-The software is provided under a permissive "MIT" license.
+QSTrader can be best described as a loosely-coupled collection of modules for carrying out end-to-end backtests with realistic trading mechanics. 
+
+The default modules provide useful functionality for certain types of systematic trading strategies and can be utilised without modification. However the intent of QSTrader is for the users to extend, inherit or fully replace each module in order to provide custom functionality for their own use case.
+
+The software is currently under active development (semantic version 0.x.x) and is provided under a permissive "MIT" license.
+
+# Advanced Algorithmic Trading
+
+Please note that QuantStart readers who have purchased the **Advanced Algorithmic Trading** ebook can find the specific installation instructions for the QSTrader version utilised throughout the book [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
+
+# Current Features
+
+* **Backtesting Engine** - QSTrader employs a schedule-based portfolio construction approach to systematic trading. Signal generation is decoupled from portfolio construction, risk management, execution and simulated brokerage accounting in a modular, object-oriented fashion.
+
+* **Performance Statistics** - QSTrader provides typical 'tearsheet' performance assessment of strategies. It also supports statistics export via JSON to allow external software to consume metrics from backtests.
+
+* **Free Open-Source Software** - QSTrader has been released under a permissive open-source MIT License. This allows full usage in both research and commercial applications, without restriction, but with no warranty of any kind whatsoever (see **License** below). QSTrader is completely free and costs nothing to download or use.
+
+* **Software Development** - QSTrader is written in the Python programming language for straightforward cross-platform support. QSTrader contains a suite of unit and integration tests for the majority of its modules. Tests are continually added for new features.
 
 # License Terms
 
-Copyright (c) 2015-2019 QuantStart.com, QuarkGluon Ltd
+Copyright (c) 2015-2020 QuantStart.com, QuarkGluon Ltd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
