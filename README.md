@@ -1,6 +1,7 @@
 ![GitHub](https://img.shields.io/github/license/mhallsmoore/qstrader)
 [![Build Status](https://travis-ci.org/mhallsmoore/qstrader.svg?branch=master)](https://travis-ci.org/mhallsmoore/qstrader)
 [![Coverage Status](https://coveralls.io/repos/github/mhallsmoore/qstrader/badge.svg?branch=development)](https://coveralls.io/github/mhallsmoore/qstrader?branch=master)
+[![Python Version](https://img.shields.io/pypi/pyversions/qstrader)](https://pypi.org/project/qstrader)
 
 # QSTrader
 
@@ -17,6 +18,16 @@ The software is currently under active development (semantic version 0.x.x) and 
 Please note that the previous version of QSTrader, which is utilised through the **Advanced Algorithmic Trading** ebook, can be found along with the appropriate installation instructions [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
 
 It has recently been updated to support Python 3.5, 3.6 and 3.7 with up to date package dependencies.
+
+# Installation
+
+Installation requires a Python3 environment. The simplest approach is to download a self-contained scientific Python distribution such as the [Anaconda Individual Edition](https://www.anaconda.com/products/individual#Downloads). Then you can install QSTrader via pip:
+
+```
+pip install qstrader
+```
+
+Any issues with installation should be reported to the development team as issues [here](https://github.com/mhallsmoore/qstrader/issues).
 
 # Current Features
 
