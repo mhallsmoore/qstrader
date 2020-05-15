@@ -1,6 +1,6 @@
 ![GitHub](https://img.shields.io/github/license/mhallsmoore/qstrader)
-[![Build Status](https://travis-ci.org/mhallsmoore/qstrader.svg?branch=development)](https://travis-ci.org/mhallsmoore/qstrader/branches)
-[![Coverage Status](https://coveralls.io/repos/github/mhallsmoore/qstrader/badge.svg?branch=development)](https://coveralls.io/github/mhallsmoore/qstrader?branch=development)
+[![Build Status](https://travis-ci.org/mhallsmoore/qstrader.svg?branch=master)](https://travis-ci.org/mhallsmoore/qstrader)
+[![Coverage Status](https://coveralls.io/repos/github/mhallsmoore/qstrader/badge.svg?branch=development)](https://coveralls.io/github/mhallsmoore/qstrader?branch=master)
 
 # QSTrader
 
@@ -12,9 +12,11 @@ The default modules provide useful functionality for certain types of systematic
 
 The software is currently under active development (semantic version 0.x.x) and is provided under a permissive "MIT" license.
 
-# Advanced Algorithmic Trading
+# Previous Version and Advanced Algorithmic Trading
 
-Please note that QuantStart readers who have purchased the **Advanced Algorithmic Trading** ebook can find the specific installation instructions for the QSTrader version utilised throughout the book [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
+Please note that the previous version of QSTrader, which is utilised through the **Advanced Algorithmic Trading** ebook, can be found along with the appropriate installation instructions [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
+
+It has recently been updated to support Python 3.5, 3.6 and 3.7 with up to date package dependencies.
 
 # Current Features
 
