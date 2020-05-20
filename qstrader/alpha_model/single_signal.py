@@ -43,4 +43,4 @@ class SingleSignalAlphaModel(AlphaModel):
             The Asset symbol keyed scalar-valued signals.
         """
         assets = self.universe.get_assets(dt)
-        return {asset.symbol: self.signal for asset in assets}
+        return {asset: self.signal for asset in assets}
