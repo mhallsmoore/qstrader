@@ -1,10 +1,11 @@
-![GitHub](https://img.shields.io/github/license/mhallsmoore/qstrader)
-[![Build Status](https://travis-ci.org/mhallsmoore/qstrader.svg?branch=master)](https://travis-ci.org/mhallsmoore/qstrader)
-[![Coverage Status](https://coveralls.io/repos/github/mhallsmoore/qstrader/badge.svg?branch=development)](https://coveralls.io/github/mhallsmoore/qstrader?branch=master)
-[![PyPI](https://img.shields.io/pypi/v/qstrader)](https://pypi.org/project/qstrader)
-[![Python Version](https://img.shields.io/pypi/pyversions/qstrader)](https://pypi.org/project/qstrader)
-
 # QSTrader
+
+| Development   | Details       |
+| ------------- | ------------- |
+| Test Status   | [![Build Status](https://img.shields.io/travis/mhallsmoore/qstrader?label=TravisCI&style=flat-square)](https://travis-ci.org/mhallsmoore/qstrader) [![Coverage Status](https://img.shields.io/coveralls/github/mhallsmoore/qstrader?style=flat-square&label=Coverage)](https://coveralls.io/github/mhallsmoore/qstrader?branch=master) |
+| Version Info  | [![PyPI](https://img.shields.io/pypi/v/qstrader?style=flat-square&label=PyPI&color=blue)](https://pypi.org/project/qstrader) [![PyPI Downloads](https://img.shields.io/pypi/dm/qstrader?style=flat-square&label=PyPI%20Downloads)](https://pypi.org/project/qstrader) |
+| Compatibility | [![Python Version](https://img.shields.io/pypi/pyversions/qstrader?style=flat-square&label=Python%20Versions)](https://pypi.org/project/qstrader) |
+| License       | ![GitHub](https://img.shields.io/github/license/mhallsmoore/qstrader?style=flat-square&label=License) |      
 
 QSTrader is a free Python-based open-source modular schedule-driven backtesting framework for long-only equities and ETF based systematic trading strategies.
 
@@ -12,7 +13,7 @@ QSTrader can be best described as a loosely-coupled collection of modules for ca
 
 The default modules provide useful functionality for certain types of systematic trading strategies and can be utilised without modification. However the intent of QSTrader is for the users to extend, inherit or fully replace each module in order to provide custom functionality for their own use case.
 
-The software is currently under active development (semantic version 0.x.x) and is provided under a permissive "MIT" license.
+The software is currently under active development and is provided under a permissive "MIT" license.
 
 # Previous Version and Advanced Algorithmic Trading
 
@@ -36,17 +37,9 @@ The QSTrader repository provides some simple example strategies at [/examples](h
 
 Within this quickstart section a classic 60/40 equities/bonds portfolio will be backtested with monthly rebalancing on the last day of the calendar month. 
 
-To get started download the [sixty_forty.py](https://github.com/mhallsmoore/qstrader/blob/master/examples/sixty_forty.py) and place into the directory of your choice.
+To get started download the [sixty_forty.py](https://github.com/mhallsmoore/qstrader/blob/master/examples/sixty_forty.py) file and place into the directory of your choice.
 
-The 60/40 script makes use of OHLC 'daily bar' data from Yahoo Finance. In particular it requires the [SPY](https://finance.yahoo.com/quote/SPY/history?p=SPY) and [AGG](https://finance.yahoo.com/quote/AGG/history?p=AGG) ETFs data. Download the full history for each and save as CSV files in the directory of your choice.
-
-In order to help QSTrader find your data files it is necessary to set an environment variable called ``QSTRADER_CSV_DATA_DIR``. As an example, on a Linux based system, if you have placed your data files underneath the ``/home/myusername/data`` directory then the following line will set the correct value:
-
-```
-export QSTRADER_CSV_DATA_DIR='/home/myusername/data'
-```
-
-Alternatively it is possible to add the above line to your environment configuration (such as within the ``.bashrc`` file) to ensure QSTrader can find data files with any new terminal session.
+The 60/40 script makes use of OHLC 'daily bar' data from Yahoo Finance. In particular it requires the [SPY](https://finance.yahoo.com/quote/SPY/history?p=SPY) and [AGG](https://finance.yahoo.com/quote/AGG/history?p=AGG) ETFs data. Download the full history for each and save as CSV files in same directory as ``sixty_forty.py``.
 
 Assuming that an appropriate Python environment exists and QSTrader has been installed via pip (see **Installation** above), make sure to activate the virtual environment, navigate to the directory with ``sixty_forty.py`` and type:
 
@@ -58,9 +51,9 @@ You will then see some console output as the backtest simulation engine runs thr
 
 ![Image of 60/40 Backtest](https://quantstartmedia.s3.amazonaws.com/images/qstrader_sixty_forty_backtest.png)
 
-You can examine the commented ``sixty_forty.py`` file to see the current QSTrader API.
+You can examine the commented ``sixty_forty.py`` file to see the current QSTrader backtesting API.
 
-If you have any questions about the installation or example usage then please feel free to email [support@quantstart.com](mailto:support@quantstart.com).
+If you have any questions about the installation or example usage then please feel free to email [support@quantstart.com](mailto:support@quantstart.com) or raise an issue [here](https://github.com/mhallsmoore/qstrader/issues).
 
 # Current Features
 

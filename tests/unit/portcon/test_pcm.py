@@ -16,7 +16,8 @@ SENTINEL_DT = pd.Timestamp('2019-01-01 15:00:00', tz=pytz.utc)
     [
         (
             'empty on both sides',
-            {}, [], []),
+            {}, [], []
+        ),
         (
             'partially intersecting set of assets',
             {
