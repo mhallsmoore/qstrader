@@ -260,6 +260,11 @@ class PortfolioConstructionModel(object):
         else:
             weights = self._create_zero_target_weights_vector(dt)
 
+        # If a risk model is present use it to potentially
+        # override the alpha model weights
+        if self.risk_model:
+            weights = self.risk_model(dt, weights)
+
         # Run the portfolio optimisation
         optimised_weights = self.optimiser(dt, initial_weights=weights)
 
@@ -290,8 +295,6 @@ class PortfolioConstructionModel(object):
         rebalance_orders = self._generate_rebalance_orders(
             dt, target_portfolio, current_portfolio
         )
-
-        # TODO: Implement risk model
         # TODO: Implement cost model
 
         return rebalance_orders

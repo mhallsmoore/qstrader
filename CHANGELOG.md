@@ -1,3 +1,11 @@
+# 0.1.2
+
+* Added RiskModel class hierarchy
+* Modified API for MomentumSignal and SMASignal to utilise inherited Signal object
+* Added SignalsCollection entity to update data for derived Signal classes
+* Removed unnecessary BufferAlphaModel
+* Added some unit tests to improve test coverage slightly
+
 # 0.1.1
 
 * Removed the need to specify a CSV data directory as an environment variable by adding a default of the current working directory of the executed script
