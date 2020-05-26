@@ -1,53 +1,25 @@
 import numpy as np
 
-from qstrader.signals.buffer import AssetPriceBuffers
+from qstrader.signals.signal import Signal
 
 
-class TrendSignal(object):
+class SMASignal(Signal):
     """
-    Indicator class to calculate lookback-period trend
-    (based on a simple moving average of last N periods)
-    for a set of prices.
+    Indicator class to calculate simple moving average
+    of last N periods for a set of prices.
 
     Parameters
     ----------
-    assets : `list[str]`
-        The list of assets to create price buffers for.
-    lookbacks : `list[int]`, optional
+    start_dt : `pd.Timestamp`
+        The starting datetime (UTC) of the signal.
+    universe : `Universe`
+        The universe of assets to calculate the signals for.
+    lookbacks : `list[int]`
         The number of lookback periods to store prices for.
     """
 
-    def __init__(self, assets, lookbacks=[12]):
-        self.assets = assets
-        self.lookbacks = lookbacks
-        self.buffers = self._create_asset_price_buffers()
-
-    def _create_asset_price_buffers(self):
-        """
-        Create an AssetPriceBuffers instance.
-
-        Returns
-        -------
-        `AssetPriceBuffers`
-            Stores the asset price buffers for the signal.
-        """
-        return AssetPriceBuffers(
-            self.assets, lookbacks=self.lookbacks
-        )
-
-    def append(self, asset, price):
-        """
-        Append a new price onto the price buffer for
-        the specific asset provided.
-
-        Parameters
-        ----------
-        asset : `str`
-            The asset symbol name.
-        price : `float`
-            The new price of the asset.
-        """
-        self.buffers.append(asset, price)
+    def __init__(self, start_dt, universe, lookbacks):
+        super().__init__(start_dt, universe, lookbacks)
 
     def _simple_moving_average(self, asset, lookback):
         """

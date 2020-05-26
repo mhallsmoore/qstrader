@@ -32,6 +32,10 @@ class QuantTradingSystem(object):
         The specific broker portfolio to send orders to.
     data_handler : `DataHandler`
         The data handler instance used for all market/fundamental data.
+    alpha_model : `AlphaModel`
+        The alpha model used within the portfolio construction.
+    risk_model : `AlphaModel`, optional
+        An optional risk model used within the portfolio construction.
     cash_buffer_percentage : `float`, optional
         The percentage of the portfolio to retain in cash.
     submit_orders : `Boolean`, optional
@@ -45,6 +49,7 @@ class QuantTradingSystem(object):
         broker_portfolio_id,
         data_handler,
         alpha_model,
+        risk_model=None,
         cash_buffer_percentage=0.05,
         submit_orders=False
     ):
@@ -53,6 +58,7 @@ class QuantTradingSystem(object):
         self.broker_portfolio_id = broker_portfolio_id
         self.data_handler = data_handler
         self.alpha_model = alpha_model
+        self.risk_model = risk_model
         self.cash_buffer_percentage = cash_buffer_percentage
         self.submit_orders = submit_orders
         self._initialise_models()
@@ -63,7 +69,6 @@ class QuantTradingSystem(object):
         trading strategy. This includes the portfolio
         construction and the execution.
 
-        TODO: Add RiskModel
         TODO: Add TransactionCostModel
         TODO: Ensure this is dynamically generated from config.
         """
@@ -84,6 +89,7 @@ class QuantTradingSystem(object):
             order_sizer,
             optimiser,
             alpha_model=self.alpha_model,
+            risk_model=self.risk_model,
             data_handler=self.data_handler
         )
 
