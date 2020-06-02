@@ -39,15 +39,7 @@ class SMASignal(Signal):
         `float`
             The SMA value ('trend') for the period.
         """
-        prices = self.buffers.prices['%s_%s' % (asset, lookback)]
-        if len(prices) < lookback:
-            raise ValueError(
-                'Number of price values (%s) is less than lookback '
-                'period (%s). Not calculating trend/SMA.' % (
-                    len(prices), lookback
-                )
-            )
-        return np.mean(prices)
+        return np.mean(self.buffers.prices['%s_%s' % (asset, lookback)])
 
     def __call__(self, asset, lookback):
         """

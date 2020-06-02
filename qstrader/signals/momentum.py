@@ -10,6 +10,10 @@ class MomentumSignal(Signal):
     (based on cumulative return of last N periods) for
     a set of prices.
 
+    If the number of available returns is less than the
+    lookback parameter the momentum is calculated on
+    this subset.
+
     Parameters
     ----------
     start_dt : `pd.Timestamp`
@@ -67,14 +71,10 @@ class MomentumSignal(Signal):
         )
         returns = series.pct_change().dropna().to_numpy()
 
-        if len(returns) < lookback:
-            raise ValueError(
-                'Number of returns values (%s) is less than lookback '
-                'period (%s). Not calculating cumulative return.' % (
-                    len(returns), lookback
-                )
-            )
-        return (np.cumprod(1.0 + np.array(returns)) - 1.0)[-1]
+        if len(returns) < 1:
+            return 0.0
+        else:
+            return (np.cumprod(1.0 + np.array(returns)) - 1.0)[-1]
 
     def __call__(self, asset, lookback):
         """

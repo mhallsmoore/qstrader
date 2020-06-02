@@ -69,7 +69,7 @@ class Signal(object):
         # TODO: Assume universe never decreases for now
         extra_assets = list(set(universe_assets) - set((self.assets)))
         for extra_asset in extra_assets:
-            self.buffers.add_asset(extra_asset)
+            self.assets.append(extra_asset)
 
     @abstractmethod
     def __call__(self, asset, lookback):

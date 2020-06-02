@@ -11,6 +11,7 @@ from qstrader.exchange.simulated_exchange import SimulatedExchange
 from qstrader.simulation.daily_bday import DailyBusinessDaySimulationEngine
 from qstrader.system.qts import QuantTradingSystem
 from qstrader.system.rebalance.buy_and_hold import BuyAndHoldRebalance
+from qstrader.system.rebalance.daily import DailyRebalance
 from qstrader.system.rebalance.end_of_month import EndOfMonthRebalance
 from qstrader.system.rebalance.weekly import WeeklyRebalance
 from qstrader.trading.trading_session import TradingSession
@@ -240,8 +241,8 @@ class BacktestTradingSession(TradingSession):
         if self.rebalance == 'buy_and_hold':
             rebalancer = BuyAndHoldRebalance(self.start_dt)
         elif self.rebalance == 'daily':
-            raise NotImplementedError(
-                'QSTrader does not yet support daily rebalancing.'
+            rebalancer = DailyRebalance(
+                self.start_dt, self.end_dt
             )
         elif self.rebalance == 'weekly':
             rebalancer = WeeklyRebalance(
