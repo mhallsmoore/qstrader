@@ -2,6 +2,7 @@
 
 * Fixed bug involving DynamicUniverse not adding assets to momentum and signal calculation if not present at start of backtest
 * Modified MomentumSignal and SMASignal to allow calculation if available prices less than lookbacks
+* Added daily rebalancing capability
 * Added some unit tests to improve test coverage slightly
 
 # 0.1.2
