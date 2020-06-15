@@ -1,5 +1,4 @@
 from collections import OrderedDict
-import inspect
 
 from qstrader.broker.portfolio.position import Position
 
@@ -56,16 +55,14 @@ class PositionHandler(object):
         """
         position = self._check_set_position(asset)
 
-        # Update each position attribute if
-        # the parameters aren't None
-        frame = inspect.currentframe()
-        varvals = inspect.getargvalues(frame)
-        for attr in (
-            'quantity', 'current_price',
-            'current_dt', 'book_cost_pu'
-        ):
-            if varvals.locals[attr] is not None:
-                setattr(position, attr, varvals.locals[attr])
+        if quantity is not None:
+            position.quantity = quantity
+        if current_price is not None:
+            position.current_price = current_price
+        if current_dt is not None:
+            position.current_dt = current_dt
+        if book_cost_pu is not None:
+            position.book_cost_pu = book_cost_pu
 
     def update_commission(self, asset, commission):
         """
