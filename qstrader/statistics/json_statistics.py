@@ -333,8 +333,10 @@ class JSONStatistics(object):
         stats['max_drawdown_duration'] = dd_dur
 
         # Performance
+        stats['mean_returns'] = np.mean(curve['Returns'])
+        stats['stdev_returns'] = np.std(curve['Returns'])
         stats['cagr'] = perf.create_cagr(curve['CumReturns'], self.periods)
-        stats['annualised_vol'] = curve['Returns'].std() * np.sqrt(self.periods)
+        stats['annualised_vol'] = np.std(curve['Returns']) * np.sqrt(self.periods)
         stats['sharpe'] = perf.create_sharpe_ratio(curve['Returns'], self.periods)
         stats['sortino'] = perf.create_sortino_ratio(curve['Returns'], self.periods)
 
