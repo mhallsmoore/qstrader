@@ -1,3 +1,10 @@
+# 0.1.4
+
+* Added ValueError with more verbose description for NaN pricing data when backtest start date too early
+* Removed usage of 'inspect' library for updating attributes of Position within PositionHandler
+* Added unit tests for Cash asset, StaticUniverse, DynamicUniverse and string colour utility function
+* Added two more statistics to the JSON statistics calculation
+
 # 0.1.3
 
 * Fixed bug involving DynamicUniverse not adding assets to momentum and signal calculation if not present at start of backtest
