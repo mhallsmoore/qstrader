@@ -158,7 +158,17 @@ class DollarWeightedCashBufferedOrderSizeGeneration(OrderSizeGeneration):
             after_cost_dollar_weight = pre_cost_dollar_weight - est_costs
             asset_price = self.data_handler.get_asset_latest_ask_price(
                 dt, asset
-            )  # Long only
+            )
+
+            if np.isnan(asset_price):
+                raise ValueError(
+                    'Asset price for "%s" at timestamp "%s" is Not-a-Number (NaN). '
+                    'This can occur if the chosen backtest start date is earlier '
+                    'than the first available price for a particular asset. Try '
+                    'modifying the backtest start date and re-running.' % (asset, dt)
+                )
+
+            # TODO: Long only for the time being.
             asset_quantity = int(
                 np.floor(after_cost_dollar_weight / asset_price)
             )
