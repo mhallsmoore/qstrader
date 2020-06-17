@@ -43,17 +43,17 @@ def test_backtest_sixty_forty_no_corp_actions(etf_filepath):
     portfolio_dict = portfolio.portfolio_to_dict()
     expected_dict = {
         'EQ:ABC': {
-            'book_cost': 592802.1002887912,
-            'gain': -31121.262035380933,
+            'unrealised_pnl': -31121.26203538094,
+            'realised_pnl': 0.0,
+            'total_pnl': -31121.26203538094,
             'market_value': 561680.8382534103,
-            'perc_gain': -5.249856911812527,
-            'quantity': 4674.0
+            'quantity': 4674
         },
         'EQ:DEF': {
-            'book_cost': 358155.9723126739,
-            'gain': 18047.83135940641,
+            'unrealised_pnl': 18047.831359406424,
+            'realised_pnl': 613.3956570402925,
+            'total_pnl': 18661.227016446715,
             'market_value': 376203.80367208034,
-            'perc_gain': 5.03909825735098,
             'quantity': 1431.0
         }
     }

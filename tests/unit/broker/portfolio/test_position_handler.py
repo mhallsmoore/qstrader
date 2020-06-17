@@ -1,38 +1,11 @@
 from collections import OrderedDict
 
+import numpy as np
 import pandas as pd
+import pytz
 
-from qstrader.asset.equity import Equity
 from qstrader.broker.portfolio.position_handler import PositionHandler
 from qstrader.broker.transaction.transaction import Transaction
-
-
-def test_check_set_position_new_asset():
-    """
-    Checks the _check_set_position method when
-    a new asset is added to the PositionHandler
-    and when it is checked subsequently.
-    """
-    # Create PositionHandler, Asset and OrderedDict
-    # positions list
-    ph = PositionHandler()
-    asset = Equity('Amazon, Inc.', 'AMZN')
-    od = OrderedDict()
-    assert ph.positions == od
-
-    # Check that the position is set for new asset
-    pos = ph._check_set_position(asset)
-    assert pos.asset == asset
-
-    # Check that the OrderedDict is correctly set
-    # for new asset
-    od[asset] = pos
-    assert ph.positions == od
-
-    # Check that it works for a current asset
-    pos = ph._check_set_position(asset)
-    assert pos.asset == asset
-    assert ph.positions == od
 
 
 def test_transact_position_new_position():
@@ -44,20 +17,26 @@ def test_transact_position_new_position():
     # Create the PositionHandler, Transaction and
     # carry out a transaction
     ph = PositionHandler()
-    asset = Equity('Amazon, Inc.', 'AMZN')
-    dt = pd.Timestamp('2015-05-06')
+    asset = 'EQ:AMZN'
+
     transaction = Transaction(
-        asset, quantity=100, dt=dt, price=960.0,
-        order_id=123, commission=26.83
+        asset,
+        quantity=100,
+        dt=pd.Timestamp('2015-05-06 15:00:00', tz=pytz.UTC),
+        price=960.0,
+        order_id=123,
+        commission=26.83
     )
     ph.transact_position(transaction)
 
     # Check that the position object is set correctly
     pos = ph.positions[asset]
-    assert pos.quantity == 100
-    assert pos.direction == 1.0
-    assert pos.book_cost_pu == 960.2683000000001
-    assert pos.book_cost == 96026.83
+
+    assert pos.buy_quantity == 100
+    assert pos.sell_quantity == 0
+    assert pos.net_quantity == 100
+    assert pos.direction == 1
+    assert pos.avg_price == 960.2683000000001
 
 
 def test_transact_position_current_position():
@@ -69,25 +48,38 @@ def test_transact_position_current_position():
     # Create the PositionHandler, Transaction and
     # carry out a transaction
     ph = PositionHandler()
-    asset = Equity('Amazon, Inc.', 'AMZN')
-    dt = pd.Timestamp('2015-05-06')
+    asset = 'EQ:AMZN'
+    dt = pd.Timestamp('2015-05-06 15:00:00', tz=pytz.UTC)
+    new_dt = pd.Timestamp('2015-05-06 16:00:00', tz=pytz.UTC)
+
     transaction_long = Transaction(
-        asset, quantity=100, dt=dt, price=960.0,
-        order_id=123, commission=26.83
-    )
-    transaction_long_again = Transaction(
-        asset, quantity=200, dt=dt, price=990.0,
-        order_id=234, commission=18.53
+        asset,
+        quantity=100,
+        dt=dt,
+        price=960.0,
+        order_id=123,
+        commission=26.83
     )
     ph.transact_position(transaction_long)
+
+    transaction_long_again = Transaction(
+        asset,
+        quantity=200,
+        dt=new_dt,
+        price=990.0,
+        order_id=234,
+        commission=18.53
+    )
     ph.transact_position(transaction_long_again)
 
     # Check that the position object is set correctly
     pos = ph.positions[asset]
-    assert pos.quantity == 300
-    assert pos.direction == 1.0
-    assert pos.book_cost_pu == 980.1512000000001
-    assert pos.book_cost == 294045.36000000004
+
+    assert pos.buy_quantity == 300
+    assert pos.sell_quantity == 0
+    assert pos.net_quantity == 300
+    assert pos.direction == 1
+    assert np.isclose(pos.avg_price, 980.1512)
 
 
 def test_transact_position_quantity_zero():
@@ -99,135 +91,83 @@ def test_transact_position_quantity_zero():
     # Create the PositionHandler, Transaction and
     # carry out a transaction
     ph = PositionHandler()
-    asset = Equity('Amazon, Inc.', 'AMZN')
-    dt = pd.Timestamp('2015-05-06')
+    asset = 'EQ:AMZN'
+    dt = pd.Timestamp('2015-05-06 15:00:00', tz=pytz.UTC)
+    new_dt = pd.Timestamp('2015-05-06 16:00:00', tz=pytz.UTC)
+
     transaction_long = Transaction(
-        asset, quantity=100, dt=dt, price=960.0,
+        asset,
+        quantity=100,
+        dt=dt,
+        price=960.0,
         order_id=123, commission=26.83
     )
+    ph.transact_position(transaction_long)
+
     transaction_close = Transaction(
-        asset, quantity=-100, dt=dt, price=980.0,
-        order_id=234, commission=18.53
+        asset,
+        quantity=-100,
+        dt=new_dt,
+        price=980.0,
+        order_id=234,
+        commission=18.53
     )
+    ph.transact_position(transaction_close)
 
     # Go long and then close, then check that the
     # positions OrderedDict is empty
-    ph.transact_position(transaction_long)
-    ph.transact_position(transaction_close)
-    od = OrderedDict()
-    assert ph.positions == od
+    assert ph.positions == OrderedDict()
 
 
 def test_total_values_for_no_transactions():
     """
-    Tests 'total_book_cost', 'total_market_value',
-    'total_gain' and 'total_perc_gain' for the case
+    Tests 'total_market_value', 'total_unrealised_pnl',
+    'total_realised_pnl' and 'total_pnl' for the case
     of no transactions being carried out.
     """
     ph = PositionHandler()
-    assert ph.total_book_cost() == 0.0
     assert ph.total_market_value() == 0.0
-    assert ph.total_unrealised_gain() == 0.0
-    assert ph.total_unrealised_percentage_gain() == 0.0
+    assert ph.total_unrealised_pnl() == 0.0
+    assert ph.total_realised_pnl() == 0.0
+    assert ph.total_pnl() == 0.0
 
 
 def test_total_values_for_two_separate_transactions():
     """
-    Tests 'total_book_cost', 'total_market_value',
-    'total_gain' and 'total_perc_gain' for single
+    Tests 'total_market_value', 'total_unrealised_pnl',
+    'total_realised_pnl' and 'total_pnl' for single
     transactions in two separate assets.
     """
     ph = PositionHandler()
 
     # Asset 1
-    asset1 = Equity('Amazon, Inc.', 'AMZN')
-    dt1 = pd.Timestamp('2015-05-06')
+    asset1 = 'EQ:AMZN'
+    dt1 = pd.Timestamp('2015-05-06 15:00:00', tz=pytz.UTC)
     trans_pos_1 = Transaction(
-        asset1.symbol, quantity=75, dt=dt1, price=483.45,
-        order_id=1, commission=15.97
-    )
-    ph.transact_position(trans_pos_1)
-
-    # Asset 2
-    asset2 = Equity('Microsoft, Inc.', 'MSFT')
-    dt2 = pd.Timestamp('2015-05-07')
-    trans_pos_2 = Transaction(
-        asset2.symbol, quantity=250, dt=dt2, price=142.58,
-        order_id=2, commission=8.35
-    )
-    ph.transact_position(trans_pos_2)
-
-    # Check all total values
-    assert ph.total_book_cost() == 71928.07
-    assert ph.total_market_value() == 71903.75
-    assert ph.total_unrealised_gain() == -24.31999999999971
-    assert ph.total_unrealised_percentage_gain() == -0.03381155646190282
-
-
-def test_update_commission():
-    """
-    Tests the 'update_commission' method to ensure
-    commission is correctly set on the Position entities.
-    """
-    ph = PositionHandler()
-
-    # Asset 1
-    asset1 = Equity('Amazon, Inc.', 'AMZN')
-    dt1 = pd.Timestamp('2015-05-06')
-    trans_pos_1 = Transaction(
-        asset1.symbol, quantity=75, dt=dt1, price=483.45,
-        order_id=1, commission=0.0
-    )
-    ph.transact_position(trans_pos_1)
-    ph.update_commission(asset1.symbol, 15.97)
-
-    # Asset 2
-    asset2 = Equity('Microsoft, Inc.', 'MSFT')
-    dt2 = pd.Timestamp('2015-05-07')
-    trans_pos_2 = Transaction(
-        asset2.symbol, quantity=250, dt=dt2, price=142.58,
-        order_id=2, commission=0.0
-    )
-    ph.transact_position(trans_pos_2)
-    ph.update_commission(asset2.symbol, 8.35)
-
-    # Check all total values
-    assert ph.total_book_cost() == 71928.07
-    assert ph.total_market_value() == 71903.75
-    assert ph.total_unrealised_gain() == -24.31999999999971
-    assert ph.total_unrealised_percentage_gain() == -0.03381155646190282
-
-
-def test_update_position_for_non_none_values():
-    """
-    Tests the 'update_position' method for non-None
-    values when updating a Position entity.
-    """
-    ph = PositionHandler()
-
-    # Asset 1
-    asset1 = Equity('Amazon, Inc.', 'AMZN')
-    dt1 = pd.Timestamp('2015-05-06')
-    trans_pos_1 = Transaction(
-        asset1, quantity=75, dt=dt1, price=483.45,
-        order_id=1, commission=13.76
-    )
-    ph.transact_position(trans_pos_1)
-
-    # Update values manually
-    quantity = 100
-    current_price = 504.32
-    current_dt = pd.Timestamp('2015-05-07')
-    book_cost_pu = 23.65
-    ph.update_position(
         asset1,
-        quantity=quantity,
-        current_price=current_price,
-        current_dt=current_dt,
-        book_cost_pu=book_cost_pu
+        quantity=75,
+        dt=dt1,
+        price=483.45,
+        order_id=1,
+        commission=15.97
     )
+    ph.transact_position(trans_pos_1)
 
-    assert ph.positions[asset1].quantity == quantity
-    assert ph.positions[asset1].current_price == current_price
-    assert ph.positions[asset1].current_dt == current_dt
-    assert ph.positions[asset1].book_cost_pu == book_cost_pu
+    # Asset 2
+    asset2 = 'EQ:MSFT'
+    dt2 = pd.Timestamp('2015-05-07 15:00:00', tz=pytz.UTC)
+    trans_pos_2 = Transaction(
+        asset2,
+        quantity=250,
+        dt=dt2,
+        price=142.58,
+        order_id=2,
+        commission=8.35
+    )
+    ph.transact_position(trans_pos_2)
+
+    # Check all total values
+    assert ph.total_market_value() == 71903.75
+    assert np.isclose(ph.total_unrealised_pnl(), -24.31999999999971)
+    assert ph.total_realised_pnl() == 0.0
+    assert np.isclose(ph.total_pnl(), -24.31999999999971)

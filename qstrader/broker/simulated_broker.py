@@ -266,9 +266,9 @@ class SimulatedBroker(Broker):
             )
         return self.cash_balances[currency]
 
-    def get_account_non_cash_equity(self):
+    def get_account_total_market_value(self):
         """
-        Retrieve the total non-cash equity of the account, across
+        Retrieve the total market value of the account, across
         each portfolio.
 
         Returns
@@ -279,7 +279,7 @@ class SimulatedBroker(Broker):
         tmv_dict = {}
         master_tmv = 0.0
         for portfolio in self.portfolios.values():
-            pmv = self.get_portfolio_non_cash_equity(
+            pmv = self.get_portfolio_market_value(
                 portfolio.portfolio_id
             )
             tmv_dict[portfolio.portfolio_id] = pmv
@@ -423,14 +423,14 @@ class SimulatedBroker(Broker):
                 "withdraw funds from a non-existent "
                 "portfolio. " % portfolio_id
             )
-        if amount > self.portfolios[portfolio_id].total_cash:
+        if amount > self.portfolios[portfolio_id].cash:
             raise ValueError(
                 "Not enough cash in portfolio '%s' to withdraw "
                 "into brokerage master account. Withdrawal "
                 "amount %0.2f exceeds current portfolio cash "
                 "balance of %0.2f." % (
                     portfolio_id, amount,
-                    self.portfolios[portfolio_id].total_cash
+                    self.portfolios[portfolio_id].cash
                 )
             )
         self.portfolios[portfolio_id].withdraw_funds(
@@ -464,11 +464,11 @@ class SimulatedBroker(Broker):
                 "retrieve cash balance for non-existent "
                 "portfolio." % portfolio_id
             )
-        return self.portfolios[portfolio_id].total_cash
+        return self.portfolios[portfolio_id].cash
 
-    def get_portfolio_non_cash_equity(self, portfolio_id):
+    def get_portfolio_total_market_value(self, portfolio_id):
         """
-        Returns the current total non-cash equity of a Portfolio
+        Returns the current total market value of a Portfolio
         with ID 'portfolio_id'.
 
         Parameters
@@ -479,15 +479,15 @@ class SimulatedBroker(Broker):
         Returns
         -------
         `float`
-            The non-cash equity of the portfolio.
+            The total market value of the portfolio.
         """
         if portfolio_id not in self.portfolios.keys():
             raise KeyError(
                 "Portfolio with ID '%s' does not exist. "
-                "Cannot return non-cash equity for a "
+                "Cannot return total market value for a "
                 "non-existent portfolio." % portfolio_id
             )
-        return self.portfolios[portfolio_id].total_non_cash_equity
+        return self.portfolios[portfolio_id].total_market_value
 
     def get_portfolio_total_equity(self, portfolio_id):
         """
@@ -516,8 +516,7 @@ class SimulatedBroker(Broker):
         """
         Return a particular portfolio with ID 'portolio_id' as
         a dictionary with Asset symbol strings as keys, with various
-        attributes as sub-dictionaries. This includes 'quantity',
-        'book_cost', 'market_value', 'gain' and 'perc_gain'.
+        attributes as sub-dictionaries.
 
         Parameters
         ----------
@@ -580,7 +579,7 @@ class SimulatedBroker(Broker):
         # Check that sufficient cash exists to carry out the
         # order, else scale it down
         est_total_cost = consideration + total_commission
-        total_cash = self.portfolios[portfolio_id].total_cash
+        total_cash = self.portfolios[portfolio_id].cash
 
         scaled_quantity = order.quantity
         if est_total_cost > total_cash:
@@ -655,13 +654,12 @@ class SimulatedBroker(Broker):
         # Update portfolio asset values
         for portfolio in self.portfolios:
             for asset in self.portfolios[portfolio].pos_handler.positions:
-                if not asset.startswith('CASH'):
-                    mid_price = self.data_handler.get_asset_latest_mid_price(
-                        dt, asset
-                    )
-                    self.portfolios[portfolio].update_market_value_of_asset(
-                        asset, mid_price, self.current_dt
-                    )
+                mid_price = self.data_handler.get_asset_latest_mid_price(
+                    dt, asset
+                )
+                self.portfolios[portfolio].update_market_value_of_asset(
+                    asset, mid_price, self.current_dt
+                )
 
         # Try to execute orders
         if self.exchange.is_open_at_datetime(self.current_dt):

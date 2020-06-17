@@ -16,140 +16,54 @@ class PositionHandler(object):
         """
         self.positions = OrderedDict()
 
-    def _check_set_position(self, asset):
-        """
-        Checks if a position exists in the positions list
-        and if not creates a new key, and Position instance
-        for this particular asset.
-        """
-        if asset in self.positions:
-            position = self.positions[asset]
-        else:
-            position = Position(asset)
-            self.positions[asset] = position
-        return position
-
     def transact_position(self, transaction):
         """
         Execute the transaction and update the appropriate
         position for the transaction's asset accordingly.
         """
-        position = self._check_set_position(transaction.asset)
-        position.update(transaction)
+        asset = transaction.asset
+        if asset in self.positions:
+            self.positions[asset].transact(transaction)
+        else:
+            position = Position.open_from_transaction(transaction)
+            self.positions[asset] = position
 
         # If the position has zero quantity remove it
-        if position.quantity == 0.0:
-            del self.positions[transaction.asset]
-
-    def update_position(
-        self,
-        asset,
-        quantity=None,
-        current_price=None,
-        current_dt=None,
-        book_cost_pu=None
-    ):
-        """
-        Update the attributes of a particular Position
-        via its Asset.
-        """
-        position = self._check_set_position(asset)
-
-        if quantity is not None:
-            position.quantity = quantity
-        if current_price is not None:
-            position.current_price = current_price
-        if current_dt is not None:
-            position.current_dt = current_dt
-        if book_cost_pu is not None:
-            position.book_cost_pu = book_cost_pu
-
-    def update_commission(self, asset, commission):
-        """
-        Adjust the book cost per unit of the Position
-        instance for this particular Asset.
-        """
-        if asset in self.positions:
-            self.positions[asset].update_book_cost_for_commission(
-                asset, commission
-            )
-
-    def total_non_cash_book_cost(self):
-        """
-        Calculate the sum of all the Positions' book costs
-        excluding cash.
-        """
-        return sum(
-            pos.book_cost
-            for asset, pos in self.positions.items()
-        )
-
-    def total_book_cost(self):
-        """
-        Calculate the sum of all the Positions' book cost
-        including cash.
-        """
-        return sum(
-            pos.book_cost if not asset.startswith('CASH') else pos.market_value
-            for asset, pos in self.positions.items()
-        )
-
-    def total_non_cash_market_value(self):
-        """
-        Calculate the sum of all the positions' market values
-        excluding cash.
-        """
-        return sum(
-            0.0 if asset.startswith('CASH') else pos.market_value
-            for asset, pos in self.positions.items()
-        )
+        if self.positions[asset].net_quantity == 0:
+            del self.positions[asset]
 
     def total_market_value(self):
         """
-        Calculate the sum of all the positions' market values
-        including cash.
+        Calculate the sum of all the positions' market values.
         """
         return sum(
             pos.market_value
             for asset, pos in self.positions.items()
         )
 
-    def total_non_cash_unrealised_gain(self):
+    def total_unrealised_pnl(self):
         """
-        Calculate the sum of all the positions'
-        unrealised gains excluding cash.
+        Calculate the sum of all the positions' unrealised P&Ls.
         """
         return sum(
-            pos.unrealised_gain
+            pos.unrealised_pnl
             for asset, pos in self.positions.items()
         )
 
-    def total_unrealised_gain(self):
+    def total_realised_pnl(self):
         """
-        Calculate the sum of all the positions'
-        unrealised gains including cash.
+        Calculate the sum of all the positions' realised P&Ls.
         """
         return sum(
-            0.0 if asset.startswith('CASH') else pos.unrealised_gain
+            pos.realised_pnl
             for asset, pos in self.positions.items()
         )
 
-    def total_non_cash_unrealised_percentage_gain(self):
+    def total_pnl(self):
         """
-        Calculate the total unrealised percentage gain
-        on the positions excluding cash.
+        Calculate the sum of all the positions' P&Ls.
         """
-        tbc = self.total_non_cash_book_cost()
-        if tbc == 0.0:
-            return 0.0
-        return (self.total_non_cash_market_value() - tbc) / tbc * 100.0
-
-    def total_unrealised_percentage_gain(self):
-        """
-        Calculate the total unrealised percentage gain
-        on the positions including cash.
-        """
-        tbc = self.total_book_cost()
-        if tbc == 0.0:
-            return 0.0
-        return (self.total_market_value() - tbc) / tbc * 100.0
+        return sum(
+            pos.total_pnl
+            for asset, pos in self.positions.items()
+        )
