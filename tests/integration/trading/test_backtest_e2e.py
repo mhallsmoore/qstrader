@@ -34,6 +34,7 @@ def test_backtest_sixty_forty_no_corp_actions(etf_filepath):
         portfolio_id='000001',
         rebalance='weekly',
         rebalance_weekday='WED',
+        long_only=True,
         cash_buffer_percentage=0.05
     )
     backtest.run(results=False)
