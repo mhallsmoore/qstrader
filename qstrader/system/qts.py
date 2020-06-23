@@ -11,7 +11,7 @@ from qstrader.portcon.optimiser.fixed_weight import (
     FixedWeightPortfolioOptimiser
 )
 from qstrader.portcon.order_sizer.dollar_weighted import (
-    DollarWeightedCashBufferedOrderSizeGeneration
+    DollarWeightedCashBufferedOrderSizer
 )
 
 
@@ -73,7 +73,7 @@ class QuantTradingSystem(object):
         TODO: Ensure this is dynamically generated from config.
         """
         # Portfolio Construction
-        order_sizer = DollarWeightedCashBufferedOrderSizeGeneration(
+        order_sizer = DollarWeightedCashBufferedOrderSizer(
             self.broker,
             self.broker_portfolio_id,
             self.data_handler,

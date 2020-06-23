@@ -3,15 +3,12 @@ import numpy as np
 from qstrader.portcon.order_sizer.order_sizer import OrderSizer
 
 
-class DollarWeightedCashBufferedOrderSizer(OrderSizer):
+class LongShortLeveragedOrderSizer(OrderSizer):
     """
     Creates a target portfolio of quantities for each Asset
     using its provided weight and total equity available in the
-    Broker portfolio.
-
-    Includes an optional cash buffer due to the non-fractional amount
-    of share/unit sizes. The cash buffer defaults to 5% of the total
-    equity, but can be modified.
+    Broker portfolio, leveraging up if necessary via the supplied
+    gross leverage.
 
     Parameters
     ----------
@@ -21,10 +18,8 @@ class DollarWeightedCashBufferedOrderSizer(OrderSizer):
         The specific portfolio at the Broker to obtain equity from.
     data_handler : `DataHandler`
         To obtain latest asset prices from.
-    cash_buffer_percentage : `float`, optional
-        The percentage of the portfolio equity to retain in
-        cash to avoid generating Orders that exceed account
-        equity (assuming no margin available).
+    gross_leverage : `float`, optional
+        The amount of percentage leverage to use when sizing orders.
     """
 
     def __init__(
@@ -32,41 +27,39 @@ class DollarWeightedCashBufferedOrderSizer(OrderSizer):
         broker,
         broker_portfolio_id,
         data_handler,
-        cash_buffer_percentage=0.05
+        gross_leverage=1.0
     ):
         self.broker = broker
         self.broker_portfolio_id = broker_portfolio_id
         self.data_handler = data_handler
-        self.cash_buffer_percentage = self._check_set_cash_buffer(
-            cash_buffer_percentage
+        self.gross_leverage = self._check_set_gross_leverage(
+            gross_leverage
         )
 
-    def _check_set_cash_buffer(self, cash_buffer_percentage):
+    def _check_set_gross_leverage(self, gross_leverage):
         """
-        Checks and sets the cash buffer percentage value.
+        Checks and sets the gross leverage percentage value.
 
         Parameters
         ----------
-        cash_buffer_percentage : `float`
-            The percentage of the portfolio equity to retain in
-            cash to avoid generating Orders that exceed account
-            equity (assuming no margin available).
+        gross_leverage : `float`
+            The amount of percentage leverage to use when sizing orders.
+            This assumes no restriction on margin.
 
         Returns
         -------
         `float`
-            The cash buffer percentage value.
+            The gross leverage percentage value.
         """
         if (
-            cash_buffer_percentage < 0.0 or cash_buffer_percentage > 1.0
+            gross_leverage <= 0.0
         ):
             raise ValueError(
-                'Cash buffer percentage "%s" provided to dollar-weighted '
-                'execution algorithm is negative or '
-                'exceeds 100%.' % cash_buffer_percentage
+                'Gross leverage "%s" provided to long-short levered '
+                'order sizer is non positive.' % gross_leverage
             )
         else:
-            return cash_buffer_percentage
+            return gross_leverage
 
     def _obtain_broker_portfolio_total_equity(self):
         """
@@ -81,8 +74,9 @@ class DollarWeightedCashBufferedOrderSizer(OrderSizer):
 
     def _normalise_weights(self, weights):
         """
-        Rescale provided weight values to ensure
-        weight vector sums to unity.
+        Rescale provided weight values to ensure the
+        weights are scaled to gross exposure divided by
+        gross leverage.
 
         Parameters
         ----------
@@ -92,29 +86,25 @@ class DollarWeightedCashBufferedOrderSizer(OrderSizer):
         Returns
         -------
         `dict{Asset: float}`
-            The unit sum weight vector.
+            The scaled weight vector.
         """
-        if any([weight < 0.0 for weight in weights.values()]):
-            raise ValueError(
-                'Dollar-weighted cash-buffered order sizing does not support '
-                'negative weights. All positions must be long-only.'
-            )
-
-        weight_sum = sum(weight for weight in weights.values())
+        gross_exposure = sum(np.abs(weight) for weight in weights.values())
 
         # If the weights are very close or equal to zero then rescaling
         # is not possible, so simply return weights unscaled
-        if np.isclose(weight_sum, 0.0):
+        if np.isclose(gross_exposure, 0.0):
             return weights
 
+        gross_ratio = self.gross_leverage / gross_exposure
+
         return {
-            asset: (weight / weight_sum)
+            asset: (weight * gross_ratio)
             for asset, weight in weights.items()
         }
 
     def __call__(self, dt, weights):
         """
-        Creates a dollar-weighted cash-buffered target portfolio from the
+        Creates a long short leveraged target portfolio from the
         provided target weights at a particular timestamp.
 
         Parameters
@@ -127,12 +117,9 @@ class DollarWeightedCashBufferedOrderSizer(OrderSizer):
         Returns
         -------
         `dict{Asset: dict}`
-            The cash-buffered target portfolio dictionary with quantities.
+            The long short target portfolio dictionary with quantities.
         """
         total_equity = self._obtain_broker_portfolio_total_equity()
-        cash_buffered_total_equity = total_equity * (
-            1.0 - self.cash_buffer_percentage
-        )
 
         # Pre-cost dollar weight
         N = len(weights)
@@ -141,12 +128,12 @@ class DollarWeightedCashBufferedOrderSizer(OrderSizer):
             # or is fully liquidated
             return {}
 
-        # Ensure weight vector sums to unity
+        # Scale weights to take into account gross exposure and leverage
         normalised_weights = self._normalise_weights(weights)
 
         target_portfolio = {}
         for asset, weight in sorted(normalised_weights.items()):
-            pre_cost_dollar_weight = cash_buffered_total_equity * weight
+            pre_cost_dollar_weight = total_equity * weight
 
             # Estimate broker fees for this asset
             est_quantity = 0  # TODO: Needs to be added for IB
@@ -168,9 +155,15 @@ class DollarWeightedCashBufferedOrderSizer(OrderSizer):
                     'modifying the backtest start date and re-running.' % (asset, dt)
                 )
 
-            # TODO: Long only for the time being.
+            # Truncate the after cost dollar weight
+            # to nearest integer
+            truncated_after_cost_dollar_weight = (
+                np.floor(after_cost_dollar_weight)
+                if after_cost_dollar_weight >= 0.0
+                else np.ceil(after_cost_dollar_weight)
+            )
             asset_quantity = int(
-                np.floor(after_cost_dollar_weight / asset_price)
+                truncated_after_cost_dollar_weight / asset_price
             )
 
             # Add to the target portfolio
