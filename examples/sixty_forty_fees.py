@@ -43,6 +43,7 @@ if __name__ == "__main__":
         strategy_universe,
         strategy_alpha_model,
         rebalance='end_of_month',
+        long_only=True,
         cash_buffer_percentage=0.01,
         data_handler=data_handler,
         fee_model=fee_model
@@ -56,6 +57,7 @@ if __name__ == "__main__":
         strategy_universe,
         strategy_alpha_model,
         rebalance='end_of_month',
+        long_only=True,
         cash_buffer_percentage=0.01,
         data_handler=data_handler,
         fee_model=ZeroFeeModel()
