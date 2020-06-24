@@ -6,7 +6,7 @@ import pytz
 
 
 from qstrader.portcon.order_sizer.dollar_weighted import (
-    DollarWeightedCashBufferedOrderSizeGeneration
+    DollarWeightedCashBufferedOrderSizer
 )
 
 
@@ -32,14 +32,14 @@ def test_check_set_cash_buffer(cash_buffer_perc, expected):
 
     if expected is None:
         with pytest.raises(ValueError):
-            osg = DollarWeightedCashBufferedOrderSizeGeneration(
+            order_sizer = DollarWeightedCashBufferedOrderSizer(
                 broker, broker_portfolio_id, data_handler, cash_buffer_perc
             )
     else:
-        osg = DollarWeightedCashBufferedOrderSizeGeneration(
+        order_sizer = DollarWeightedCashBufferedOrderSizer(
             broker, broker_portfolio_id, data_handler, cash_buffer_perc
         )
-        assert osg.cash_buffer_percentage == cash_buffer_perc
+        assert order_sizer.cash_buffer_percentage == cash_buffer_perc
 
 
 @pytest.mark.parametrize(
@@ -81,14 +81,14 @@ def test_normalise_weights(weights, expected):
     data_handler = Mock()
     cash_buffer_perc = 0.05
 
-    osg = DollarWeightedCashBufferedOrderSizeGeneration(
+    order_sizer = DollarWeightedCashBufferedOrderSizer(
         broker, broker_portfolio_id, data_handler, cash_buffer_perc
     )
     if expected is None:
         with pytest.raises(ValueError):
-            result = osg._normalise_weights(weights)
+            result = order_sizer._normalise_weights(weights)
     else:
-        result = osg._normalise_weights(weights)
+        result = order_sizer._normalise_weights(weights)
         assert result == pytest.approx(expected)
 
 
@@ -138,9 +138,9 @@ def test_call(total_equity, cash_buffer_perc, weights, asset_prices, expected):
     data_handler = Mock()
     data_handler.get_asset_latest_ask_price.side_effect = lambda self, x: asset_prices[x]
 
-    osg = DollarWeightedCashBufferedOrderSizeGeneration(
+    order_sizer = DollarWeightedCashBufferedOrderSizer(
         broker, broker_portfolio_id, data_handler, cash_buffer_perc
     )
 
-    result = osg(dt, weights)
+    result = order_sizer(dt, weights)
     assert result == expected

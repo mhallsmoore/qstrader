@@ -37,6 +37,7 @@ if __name__ == "__main__":
         strategy_universe,
         strategy_alpha_model,
         rebalance='buy_and_hold',
+        long_only=True,
         cash_buffer_percentage=0.01,
         data_handler=data_handler
     )

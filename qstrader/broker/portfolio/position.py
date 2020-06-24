@@ -1,141 +1,367 @@
+from math import floor
+
 import numpy as np
 
 
 class Position(object):
     """
-    A class that keeps track of the position in an Asset
-    as registered at a particular Broker, in a Portfolio.
+    Handles the accounting of entering a new position in an
+    Asset along with subsequent modifications via additional
+    trades.
 
-    Includes the quantity of the position, the current trade
-    price and the position book cost (VWAP per unit).
+    The approach taken here separates the long and short side
+    for accounting purposes. It also includes an unrealised and
+    realised running profit & loss of the position.
 
     Parameters
     ----------
     asset : `str`
-        The asset symbol string of the position
-    quantity : `int`, optional
-        Whole number quantity of units in the position
-    book_cost_pu : `float`, optional
-        Volume weighted average price per unit of
-        the asset (book cost per unit)
-    current_price : `float`, optional
-        The most recently known trade price of the asset
-        on an Exchange, as known to the Position
-    current_dt : datetime, optional
-        The most recently known trade date of the asset
-        on the exchange, as known to the Position
+        The Asset symbol string.
+    current_price : `float`
+        The initial price of the Position.
+    current_dt : `pd.Timestamp`
+        The time at which the Position was created.
+    buy_quantity : `int`
+        The amount of the asset bought.
+    sell_quantity : `int`
+        The amount of the asset sold.
+    avg_bought : `float`
+        The initial price paid for buying assets.
+    avg_sold : `float`
+        The initial price paid for selling assets.
+    buy_commission : `float`
+        The commission spent on buying assets for this position.
+    sell_commission : `float`
+        The commission spent on selling assets for this position.
     """
 
     def __init__(
         self,
         asset,
-        quantity=0.0,
-        book_cost_pu=0.0,
-        current_price=0.0,
-        current_dt=None
+        current_price,
+        current_dt,
+        buy_quantity,
+        sell_quantity,
+        avg_bought,
+        avg_sold,
+        buy_commission,
+        sell_commission
     ):
         self.asset = asset
-        self.quantity = quantity
-        self.direction = np.copysign(1, self.quantity)
-        self.book_cost_pu = book_cost_pu
         self.current_price = current_price
         self.current_dt = current_dt
-        self.book_cost = self.book_cost_pu * self.quantity
+        self.buy_quantity = buy_quantity
+        self.sell_quantity = sell_quantity
+        self.avg_bought = avg_bought
+        self.avg_sold = avg_sold
+        self.buy_commission = buy_commission
+        self.sell_commission = sell_commission
 
-    def __repr__(self):
+    @classmethod
+    def open_from_transaction(cls, transaction):
         """
-        Provides a representation of the Position object to allow
-        full recreation of the object.
+        Constructs a new Position instance from the provided
+        Transaction.
+
+        Parameters
+        ----------
+        transaction : `Transaction`
+            The transaction with which to open the Position.
 
         Returns
         -------
-        `str`
-            The string representation of the Position.
+        `Position`
+            The instantiated position.
         """
-        return "%s(asset=%s, quantity=%s, book_cost_pu=%s, " \
-            "current_price=%s)" % (
-                self.__class__.__name__, self.asset, self.quantity,
-                self.book_cost_pu, self.current_price
-            )
+        asset = transaction.asset
+        current_price = transaction.price
+        current_dt = transaction.dt
+
+        if transaction.quantity > 0:
+            buy_quantity = transaction.quantity
+            sell_quantity = 0
+            avg_bought = current_price
+            avg_sold = 0.0
+            buy_commission = transaction.commission
+            sell_commission = 0.0
+        else:
+            buy_quantity = 0
+            sell_quantity = -1.0 * transaction.quantity
+            avg_bought = 0.0
+            avg_sold = current_price
+            buy_commission = 0.0
+            sell_commission = transaction.commission
+
+        return cls(
+            asset,
+            current_price,
+            current_dt,
+            buy_quantity,
+            sell_quantity,
+            avg_bought,
+            avg_sold,
+            buy_commission,
+            sell_commission
+        )
+
+    def _check_set_dt(self, dt):
+        """
+        Checks that the provided timestamp is valid and if so sets
+        the new current time of the Position.
+
+        Parameters
+        ----------
+        dt : `pd.Timestamp`
+            The timestamp to be checked and potentially used as
+            the new current time.
+        """
+        if dt is not None:
+            if (dt < self.current_dt):
+                raise ValueError(
+                    'Supplied update time of "%s" is earlier than '
+                    'the current time of "%s".' % (dt, self.current_dt)
+                )
+            else:
+                self.current_dt = dt
+
+    @property
+    def direction(self):
+        """
+        Returns an integer value representing the direction.
+
+        Returns
+        -------
+        `int`
+            1 - Long, 0 - No direction, -1 - Short.
+        """
+        if self.net_quantity == 0:
+            return 0
+        else:
+            return np.copysign(1, self.net_quantity)
 
     @property
     def market_value(self):
         """
-        Return the market value of the position based on the
-        current trade price provided.
+        Return the market value (respecting the direction) of the
+        Position based on the current price available to the Position.
 
         Returns
         -------
         `float`
             The current market value of the Position.
         """
-        return self.current_price * self.quantity
+        return self.current_price * self.net_quantity
 
     @property
-    def unrealised_gain(self):
+    def avg_price(self):
         """
-        Calculate the unrealised absolute gain in currency
-        of the position based solely on the market value.
+        The average price paid for all assets on the long or short side.
 
         Returns
         -------
         `float`
-            The unrealised gain of the Position.
+            The average price on either the long or short side.
         """
-        return self.market_value - self.book_cost
-
-    @property
-    def unrealised_percentage_gain(self):
-        """
-        Calculate the unrealised percentage gain of the
-        position based solely on the market value.
-
-        Returns
-        -------
-        `float`
-            The unrealised percentage gain of the Position.
-        """
-        if self.book_cost == 0.0:
+        if self.net_quantity == 0:
             return 0.0
-        return (self.direction * self.unrealised_gain / self.book_cost) * 100.0
+        elif self.net_quantity > 0:
+            return (self.avg_bought * self.buy_quantity + self.buy_commission) / self.buy_quantity
+        else:
+            return (self.avg_sold * self.sell_quantity - self.sell_commission) / self.sell_quantity
 
-    def update_book_cost_for_commission(self, asset, commission):
+    @property
+    def net_quantity(self):
         """
-        Handles the adjustment to the position book cost due to
-        trading commissions.
+        The difference in the quantity of assets bought and sold to date.
+
+        Returns
+        -------
+        `int`
+            The net quantity of assets.
+        """
+        return self.buy_quantity - self.sell_quantity
+
+    @property
+    def total_bought(self):
+        """
+        Calculates the total average cost of assets bought.
+
+        Returns
+        -------
+        `float`
+            The total average cost of assets bought.
+        """
+        return self.avg_bought * self.buy_quantity
+
+    @property
+    def total_sold(self):
+        """
+        Calculates the total average cost of assets sold.
+
+        Returns
+        -------
+        `float`
+            The total average cost of assets solds.
+        """
+        return self.avg_sold * self.sell_quantity
+
+    @property
+    def net_total(self):
+        """
+        Calculates the net total average cost of assets
+        bought and sold.
+
+        Returns
+        -------
+        `float`
+            The net total average cost of assets bought
+            and sold.
+        """
+        return self.total_sold - self.total_bought
+
+    @property
+    def commission(self):
+        """
+        Calculates the total commission from assets bought and sold.
+
+        Returns
+        -------
+        `float`
+            The total commission from assets bought and sold.
+        """
+        return self.buy_commission + self.sell_commission
+
+    @property
+    def net_incl_commission(self):
+        """
+        Calculates the net total average cost of assets bought
+        and sold including the commission.
+
+        Returns
+        -------
+        `float`
+            The net total average cost of assets bought and
+            sold including the commission.
+        """
+        return self.net_total - self.commission
+
+    @property
+    def realised_pnl(self):
+        """
+        Calculates the profit & loss (P&L) that has been 'realised' via
+        two opposing asset transactions in the Position to date.
+
+        Returns
+        -------
+        `float`
+            The calculated realised P&L.
+        """
+        if self.direction == 1:
+            if self.sell_quantity == 0:
+                return 0.0
+            else:
+                return (
+                    ((self.avg_sold - self.avg_bought) * self.sell_quantity) -
+                    ((self.sell_quantity / self.buy_quantity) * self.buy_commission) -
+                    self.sell_commission
+                )
+        elif self.direction == -1:
+            if self.buy_quantity == 0:
+                return 0.0
+            else:
+                return (
+                    ((self.avg_sold - self.avg_bought) * self.buy_quantity) -
+                    ((self.buy_quantity / self.sell_quantity) * self.sell_commission) -
+                    self.buy_commission
+                )
+        else:
+            return self.net_incl_commission
+
+    @property
+    def unrealised_pnl(self):
+        """
+        Calculates the profit & loss (P&L) that has yet to be 'realised'
+        in the remaining non-zero quantity of assets, due to the current
+        market price.
+
+        Returns
+        -------
+        `float`
+            The calculated unrealised P&L.
+        """
+        return (self.current_price - self.avg_price) * self.net_quantity
+
+    @property
+    def total_pnl(self):
+        """
+        Calculates the sum of the unrealised and realised profit & loss (P&L).
+
+        Returns
+        -------
+        `float`
+            The sum of the unrealised and realised P&L.
+        """
+        return self.realised_pnl + self.unrealised_pnl
+
+    def update_current_price(self, market_price, dt=None):
+        """
+        Updates the Position's awareness of the current market price
+        of the Asset, with an optional timestamp.
 
         Parameters
         ----------
-        asset : `str`
-            The asset symbol string.
-        commission : `float`
-            The commission to be applied to the book cost.
+        market_price : `float`
+            The current market price.
+        dt : `pd.Timestamp`, optional
+            The optional timestamp of the current market price.
         """
-        if self.asset != asset:
+        self._check_set_dt(dt)
+
+        if market_price <= 0.0:
             raise ValueError(
-                'Failed to adjust book cost for Position on asset '
-                '%s due to attempt being made to adjust asset %s.' % {
-                    self.asset, asset
-                }
+                'Market price "%s" of asset "%s" must be positive to '
+                'update the position.' % (market_price, self.asset)
             )
+        else:
+            self.current_price = market_price
 
-        # If there's no commission, then there's nothing to do
-        if commission is None or commission == 0.0:
-            return None
+    def _transact_buy(self, quantity, price, commission):
+        """
+        Handle the accounting for creating a new long leg for the
+        Position.
 
-        # If the quantity is zero (position is no longer held)
-        # then the book cost is also zero, so does not need adjusting
-        if self.quantity == 0.0:
-            return None
+        Parameters
+        ----------
+        quantity : `int`
+            The additional quantity of assets to purchase.
+        price : `float`
+            The price at which this leg was purchased.
+        commission : `float`
+            The commission paid to the broker for the purchase.
+        """
+        self.avg_bought = ((self.avg_bought * self.buy_quantity) + (quantity * price)) / (self.buy_quantity + quantity)
+        self.buy_quantity += quantity
+        self.buy_commission += commission
 
-        # For simplicity the commission costs are 'shared'
-        # across all units in a position
-        position_cost = self.book_cost_pu * self.quantity
-        final_cost = position_cost + commission
-        self.book_cost_pu = final_cost / self.quantity
-        self.book_cost = self.book_cost_pu * self.quantity
+    def _transact_sell(self, quantity, price, commission):
+        """
+        Handle the accounting for creating a new short leg for the
+        Position.
 
-    def update(self, transaction):
+        Parameters
+        ----------
+        quantity : `int`
+            The additional quantity of assets to sell.
+        price : `float`
+            The price at which this leg was sold.
+        commission : `float`
+            The commission paid to the broker for the sale.
+        """
+        self.avg_sold = ((self.avg_sold * self.sell_quantity) + (quantity * price)) / (self.sell_quantity + quantity)
+        self.sell_quantity += quantity
+        self.sell_commission += commission
+
+    def transact(self, transaction):
         """
         Calculates the adjustments to the Position that occur
         once new units in an Asset are bought and sold.
@@ -153,51 +379,25 @@ class Position(object):
                 )
             )
 
-        # Sum the position and transaction quantities then
-        # adjust book cost depending upon transaction direction
-        total_quantity = self.quantity + transaction.quantity
-        if total_quantity == 0.0:
-            self.book_cost_pu = 0.0
-            self.book_cost = 0.0
+        # Nothing to do if the transaction has no quantity
+        if int(floor(transaction.quantity)) == 0:
+            return
+
+        # Depending upon the direction of the transaction
+        # ensure the correct calculation is called
+        if transaction.quantity > 0:
+            self._transact_buy(
+                transaction.quantity,
+                transaction.price,
+                transaction.commission
+            )
         else:
-            if self.direction == transaction.direction:
-                # Increasing a long or short position
-                position_cost = self.book_cost_pu * self.quantity
-                transaction_cost = transaction.quantity * transaction.price
-                total_cost = position_cost + transaction_cost
-                self.book_cost_pu = total_cost / total_quantity
-            else:
-                # Closing a position out or covering a short position
-                if abs(transaction.quantity) > abs(self.quantity):
-                    # Transaction quantity exceeds position quantity
-                    # so a long position is closed and short position
-                    # is open, or a short position has been covered
-                    # and we've now gone long
-                    self.book_cost_pu = transaction.price
-                # else:
-                #    # TODO: Implement this branch
-                #    raise NotImplementedError(
-                #        'Opposing direction with transaction less '
-                #        'than position quantity '
-                #        'is not yet implemented.'
-                #    )
+            self._transact_sell(
+                -1.0 * transaction.quantity,
+                transaction.price,
+                transaction.commission
+            )
 
         # Update the current trade information
-        if (
-            self.current_dt is None or transaction.dt > self.current_dt
-        ):
-            self.current_price = transaction.price
-            self.current_dt = transaction.dt
-
-        # Update to the new quantity of units
-        self.quantity = total_quantity
-
-        # Handle the commission cost to adjust book cost
-        # per unit and total book cost
-        self.update_book_cost_for_commission(
-            self.asset, transaction.commission
-        )
-
-        # Adjust the total book cost and position direction
-        self.book_cost = self.book_cost_pu * self.quantity
-        self.direction = np.copysign(1, self.quantity)
+        self.update_current_price(transaction.price, transaction.dt)
+        self.current_dt = transaction.dt

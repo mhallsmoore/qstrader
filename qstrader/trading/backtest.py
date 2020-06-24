@@ -54,8 +54,9 @@ class BacktestTradingSession(TradingSession):
         The ID of the portfolio being used for the backtest.
     portfolio_name : `str`, optional
         The name of the portfolio being used for the backtest.
-    cash_buffer_percentage : `float`, optional
-        The percentage of the portfolio to retain in cash.
+    long_only : `Boolean`, optional
+        Whether to invoke the long only order sizer or allow
+        long/short leveraged portfolios. Defaults to long/short leveraged.
     fee_model : `FeeModel` class instance, optional
         The optional FeeModel derived subclass to use for transaction cost estimates.
     burn_in_dt : `pd.Timestamp`, optional
@@ -76,7 +77,7 @@ class BacktestTradingSession(TradingSession):
         account_name=DEFAULT_ACCOUNT_NAME,
         portfolio_id=DEFAULT_PORTFOLIO_ID,
         portfolio_name=DEFAULT_PORTFOLIO_NAME,
-        cash_buffer_percentage=0.05,
+        long_only=False,
         fee_model=ZeroFeeModel(),
         burn_in_dt=None,
         data_handler=None,
@@ -93,7 +94,7 @@ class BacktestTradingSession(TradingSession):
         self.account_name = account_name
         self.portfolio_id = portfolio_id
         self.portfolio_name = portfolio_name
-        self.cash_buffer_percentage = cash_buffer_percentage
+        self.long_only = long_only
         self.fee_model = fee_model
         self.burn_in_dt = burn_in_dt
 
@@ -114,7 +115,7 @@ class BacktestTradingSession(TradingSession):
                 )
         self.rebalance_schedule = self._create_rebalance_event_times()
 
-        self.qts = self._create_quant_trading_system()
+        self.qts = self._create_quant_trading_system(**kwargs)
         self.equity_curve = []
         self.target_allocations = []
 
@@ -256,7 +257,7 @@ class BacktestTradingSession(TradingSession):
             )
         return rebalancer.rebalances
 
-    def _create_quant_trading_system(self):
+    def _create_quant_trading_system(self, **kwargs):
         """
         Creates the quantitative trading system with the provided
         alpha model.
@@ -269,16 +270,45 @@ class BacktestTradingSession(TradingSession):
         `QuantTradingSystem`
             The quantitative trading system.
         """
-        qts = QuantTradingSystem(
-            self.universe,
-            self.broker,
-            self.portfolio_id,
-            self.data_handler,
-            self.alpha_model,
-            self.risk_model,
-            self.cash_buffer_percentage,
-            submit_orders=True
-        )
+        if self.long_only:
+            if 'cash_buffer_percentage' not in kwargs:
+                raise ValueError(
+                    'Long only portfolio specified for Quant Trading System '
+                    'but no cash buffer percentage supplied.'
+                )
+            cash_buffer_percentage = kwargs['cash_buffer_percentage']
+
+            qts = QuantTradingSystem(
+                self.universe,
+                self.broker,
+                self.portfolio_id,
+                self.data_handler,
+                self.alpha_model,
+                self.risk_model,
+                long_only=self.long_only,
+                cash_buffer_percentage=cash_buffer_percentage,
+                submit_orders=True
+            )
+        else:
+            if 'gross_leverage' not in kwargs:
+                raise ValueError(
+                    'Long/short leveraged portfolio specified for Quant '
+                    'Trading System but no gross leverage percentage supplied.'
+                )
+            gross_leverage = kwargs['gross_leverage']
+
+            qts = QuantTradingSystem(
+                self.universe,
+                self.broker,
+                self.portfolio_id,
+                self.data_handler,
+                self.alpha_model,
+                self.risk_model,
+                long_only=self.long_only,
+                gross_leverage=gross_leverage,
+                submit_orders=True
+            )
+
         return qts
 
     def _update_equity_curve(self, dt):

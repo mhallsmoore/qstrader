@@ -1,513 +1,742 @@
+import numpy as np
 import pandas as pd
 import pytest
+import pytz
 
-from qstrader.asset.equity import Equity
 from qstrader.broker.portfolio.position import Position
 from qstrader.broker.transaction.transaction import Transaction
 
 
-def test_position_representation():
+def test_basic_long_equities_position():
     """
-    Tests that the Position representation
-    correctly recreates the object.
+    Tests that the properties on the Position
+    are calculated for a simple long equities position.
     """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=153,
-        book_cost_pu=950.0,
-        current_price=950.0
+    # Initial long details
+    asset = 'EQ:MSFT'
+    quantity = 100
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 193.74
+    order_id = 123
+    commission = 1.0
+
+    # Create the initial transaction and position
+    transaction = Transaction(
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    exp_repr = (
-        "Position(asset=Equity(name='Apple, Inc.', symbol='AAPL', tax_exempt=True), "
-        "quantity=153, book_cost_pu=950.0, current_price=950.0)"
-    )
-    assert repr(position) == exp_repr
+    position = Position.open_from_transaction(transaction)
+
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
+
+    # Update the market price
+    new_market_price = 192.80
+    new_dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    position.update_current_price(new_market_price, new_dt)
+
+    assert position.current_price == new_market_price
+    assert position.current_dt == new_dt
+
+    assert position.buy_quantity == 100
+    assert position.sell_quantity == 0
+    assert position.avg_bought == 193.74
+    assert position.avg_sold == 0.0
+    assert position.commission == 1.0
+
+    assert position.direction == 1
+    assert position.market_value == 19280.0
+    assert position.avg_price == 193.75
+    assert position.net_quantity == 100
+    assert position.total_bought == 19374.0
+    assert position.total_sold == 0.0
+    assert position.net_total == -19374.0
+    assert position.net_incl_commission == -19375.0
+    assert np.isclose(position.unrealised_pnl, -95.0)
+    assert np.isclose(position.realised_pnl, 0.0)
 
 
 def test_position_long_twice():
     """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial long
-    position with an additional long transaction
-    in the same asset.
+    Tests that the properties on the Position
+    are calculated for two consective long trades
+    with differing quantities and market prices.
     """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset,
-        quantity=100,
-        book_cost_pu=950.0,
-        current_price=950.0
-    )
+    # Initial long details
+    asset = 'EQ:MSFT'
+    quantity = 100
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 193.74
+    order_id = 123
+    commission = 1.0
 
-    dt = pd.Timestamp('2015-05-06')
-    transaction = Transaction(
+    # Create the initial transaction and position
+    first_transaction = Transaction(
         asset,
-        quantity=100,
+        quantity=quantity,
         dt=dt,
-        price=960.0,
-        order_id=123,
-        commission=None
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    position.update(transaction)
+    position = Position.open_from_transaction(first_transaction)
 
-    assert position.quantity == 200
-    assert position.book_cost_pu == 955.0
-    assert position.direction == 1.0
-    assert position.current_price == 960.0
-    assert position.market_value == 192000.0
-    assert position.unrealised_gain == 1000.0
-    assert position.unrealised_percentage_gain == 0.5235602094240838
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
+
+    # Second long
+    second_quantity = 60
+    second_dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    second_price = 193.79
+    second_order_id = 234
+    second_commission = 1.0
+    second_transaction = Transaction(
+        asset,
+        quantity=second_quantity,
+        dt=second_dt,
+        price=second_price,
+        order_id=second_order_id,
+        commission=second_commission
+    )
+    position.transact(second_transaction)
+
+    assert position.current_price == second_price
+    assert position.current_dt == second_dt
+
+    assert position.buy_quantity == 160
+    assert position.sell_quantity == 0
+    assert np.isclose(position.avg_bought, 193.75875)
+    assert position.avg_sold == 0.0
+    assert position.commission == 2.0
+
+    assert position.direction == 1
+    assert np.isclose(position.market_value, 31006.40)
+    assert position.avg_price == 193.77125
+    assert position.net_quantity == 160
+    assert position.total_bought == 31001.40
+    assert position.total_sold == 0.0
+    assert position.net_total == -31001.40
+    assert position.net_incl_commission == -31003.40
+    assert np.isclose(position.unrealised_pnl, 3.0)
+    assert np.isclose(position.realised_pnl, 0.0)
 
 
 def test_position_long_close():
     """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial long
-    position with an additional short transaction
-    in the same asset, where the short closes
-    the position.
+    Tests that the properties on the Position
+    are calculated for a long opening trade and
+    subsequent closing trade.
     """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
+    # Initial long details
+    asset = 'EQ:AMZN'
+    quantity = 100
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 2615.27
+    order_id = 123
+    commission = 1.0
+
+    # Create the initial transaction and position
+    first_transaction = Transaction(
         asset,
-        quantity=100,
-        book_cost_pu=950.0,
-        current_price=950.0
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
+    position = Position.open_from_transaction(first_transaction)
 
-    dt = pd.Timestamp('2015-05-06')
-    transaction = Transaction(
-        asset, quantity=-100, dt=dt, price=960.0,
-        order_id=123, commission=None
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
+
+    # Closing trade
+    second_quantity = -100
+    second_dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    second_price = 2622.0
+    second_order_id = 234
+    second_commission = 6.81
+    second_transaction = Transaction(
+        asset,
+        quantity=second_quantity,
+        dt=second_dt,
+        price=second_price,
+        order_id=second_order_id,
+        commission=second_commission
     )
-    position.update(transaction)
+    position.transact(second_transaction)
 
-    assert position.quantity == 0
-    assert position.book_cost_pu == 0.0
-    assert position.direction == 1.0
-    assert position.current_price == 960.0
+    assert position.current_price == second_price
+    assert position.current_dt == second_dt
+
+    assert position.buy_quantity == 100
+    assert position.sell_quantity == 100
+    assert position.avg_bought == 2615.27
+    assert position.avg_sold == 2622.0
+    assert position.commission == 7.81
+
+    assert position.direction == 0
     assert position.market_value == 0.0
-    assert position.unrealised_gain == 0.0
-    assert position.unrealised_percentage_gain == 0.0
+    assert position.avg_price == 0.0
+    assert position.net_quantity == 0
+    assert position.total_bought == 261527.0
+    assert position.total_sold == 262200.0
+    assert position.net_total == 673.0
+    assert position.net_incl_commission == 665.19
+    assert position.unrealised_pnl == 0.0
+    assert position.realised_pnl == 665.19
 
 
-def test_position_long_short_positive_gain():
+def test_position_long_and_short():
     """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial long
-    position with an additional short transaction
-    in the same asset, where the short does not
-    completely eliminate the position and the
-    result is a gain.
+    Tests that the properties on the Position
+    are calculated for a long trade followed by
+    a partial closing short trade with differing
+    market prices.
     """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
+    # Initial long details
+    asset = 'EQ:SPY'
+    quantity = 100
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 307.05
+    order_id = 123
+    commission = 1.0
+
+    # Create the initial transaction and position
+    first_transaction = Transaction(
         asset,
-        quantity=100,
-        book_cost_pu=950.0,
-        current_price=950.0
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
+    position = Position.open_from_transaction(first_transaction)
 
-    dt = pd.Timestamp('2015-05-06')
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
+
+    # Short details and transaction
+    second_quantity = -60
+    second_dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    second_price = 314.91
+    second_order_id = 234
+    second_commission = 1.42
+    second_transaction = Transaction(
+        asset,
+        quantity=second_quantity,
+        dt=second_dt,
+        price=second_price,
+        order_id=second_order_id,
+        commission=second_commission
+    )
+    position.transact(second_transaction)
+
+    assert position.current_price == second_price
+    assert position.current_dt == second_dt
+
+    assert position.buy_quantity == 100
+    assert position.sell_quantity == 60
+    assert position.avg_bought == 307.05
+    assert position.avg_sold == 314.91
+    assert position.commission == 2.42
+
+    assert position.direction == 1
+    assert np.isclose(position.market_value, 12596.40)
+    assert position.avg_price == 307.06
+    assert position.net_quantity == 40
+    assert position.total_bought == 30705.0
+    assert np.isclose(position.total_sold, 18894.60)
+    assert np.isclose(position.net_total, -11810.40)
+    assert np.isclose(position.net_incl_commission, -11812.82)
+    assert np.isclose(position.unrealised_pnl, 314.0)
+    assert np.isclose(position.realised_pnl, 469.58)
+
+
+def test_position_long_short_long_short_ending_long():
+    """
+    Tests that the properties on the Position
+    are calculated for four trades consisting
+    of a long, short, long and short, net long
+    after all trades with varying quantities
+    and market prices.
+    """
+    # First trade (first long)
+    asset = 'EQ:SPY'
+    quantity = 453
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 312.96
+    order_id = 100
+    commission = 1.95
+
+    # Create the initial transaction and position
+    first_transaction = Transaction(
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
+    )
+    position = Position.open_from_transaction(first_transaction)
+
+    # Second trade (first short)
+    quantity = -397
+    dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    price = 315.599924
+    order_id = 101
+    commission = 4.8
     transaction = Transaction(
         asset,
-        quantity=-50,
+        quantity=quantity,
         dt=dt,
-        price=960.0,
-        order_id=123,
-        commission=None
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    position.update(transaction)
+    position.transact(transaction)
 
-    assert position.quantity == 50
-    assert position.book_cost_pu == 950.0
-    assert position.direction == 1.0
-    assert position.current_price == 960.0
-    assert position.market_value == 48000.0
-    assert position.unrealised_gain == 500.0
-    assert position.unrealised_percentage_gain == 1.0526315789473684
+    # Third trade (second long)
+    quantity = 624
+    dt = pd.Timestamp('2020-06-16 17:00:00', tz=pytz.UTC)
+    price = 312.96
+    order_id = 102
+    commission = 2.68
+    transaction = Transaction(
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
+    )
+    position.transact(transaction)
+
+    # Fourth trade (second short), now net long
+    quantity = -519
+    dt = pd.Timestamp('2020-06-16 18:00:00', tz=pytz.UTC)
+    price = 315.78
+    order_id = 103
+    commission = 6.28
+    transaction = Transaction(
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
+    )
+    position.transact(transaction)
+
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
+
+    assert position.buy_quantity == 1077
+    assert position.sell_quantity == 916
+    assert position.avg_bought == 312.96
+    assert position.avg_sold == 315.70195396069863
+    assert position.commission == 15.71
+
+    assert position.direction == 1
+    assert np.isclose(position.market_value, 50840.58)
+    assert position.avg_price == 312.96429897864436
+    assert position.net_quantity == 161
+    assert position.total_bought == 337057.92
+    assert np.isclose(position.total_sold, 289182.99)
+    assert np.isclose(position.net_total, -47874.93)
+    assert np.isclose(position.net_incl_commission, -47890.64)
+    assert np.isclose(position.unrealised_pnl, 453.327864438)
+    assert np.isclose(position.realised_pnl, 2496.61)
 
 
-def test_position_long_short_negative_gain():
+def test_basic_short_equities_position():
     """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial long
-    position with an additional short transaction
-    in the same asset, where the short does not
-    completely eliminate the position and the
-    result is a loss.
+    Tests that the properties on the Position
+    are calculated for a simple short equities position.
     """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset,
-        quantity=100,
-        book_cost_pu=960.0,
-        current_price=950.0
-    )
+    # Initial short details
+    asset = 'EQ:TLT'
+    quantity = -100
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 162.39
+    order_id = 123
+    commission = 1.37
 
-    dt = pd.Timestamp('2015-05-06')
+    # Create the initial transaction and position
     transaction = Transaction(
         asset,
-        quantity=-50,
+        quantity=quantity,
         dt=dt,
-        price=950.0,
-        order_id=123,
-        commission=None
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    position.update(transaction)
+    position = Position.open_from_transaction(transaction)
 
-    assert position.quantity == 50
-    assert position.book_cost_pu == 960.0
-    assert position.direction == 1.0
-    assert position.current_price == 950.0
-    assert position.market_value == 47500.0
-    assert position.unrealised_gain == -500.0
-    assert position.unrealised_percentage_gain == -1.0416666666666665
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
 
+    # Update the market price
+    new_market_price = 159.43
+    new_dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    position.update_current_price(new_market_price, new_dt)
 
-def test_position_three_longs_one_short_one_long():
-    """
-    Tests that the quantity and book cost are
-    correctly calculated for three long transactions,
-    followed by a partial closing position, followed
-    by a new long position, all in the same asset.
+    assert position.current_price == new_market_price
+    assert position.current_dt == new_dt
 
-    Buy 100 qty at £1.00 -> £100
-    Buy 100 qty at £2.00 -> £200
-    Buy 200 qty at £3.00 -> £600
-    Total qty after 3 longs is 400, with book cost £900 (£2.25 p/u)
+    assert position.buy_quantity == 0
+    assert position.sell_quantity == 100
+    assert position.avg_bought == 0.0
+    assert position.avg_sold == 162.39
+    assert position.commission == 1.37
 
-    Sell 100 qty -> Book cost now £675 (25% holdings reduced),
-    still at £2.25 p/u
-    Buy 100 at £4.00 -> 400
-    Final qty is 400, but book cost is now £1,075 (£2.6875 p/u).
-    """
-    asset = Equity('Apple, Inc.', 'AAPL')
+    assert position.direction == -1
+    assert position.market_value == -15943.0
+    assert position.avg_price == 162.3763
+    assert position.net_quantity == -100
+    assert position.total_bought == 0.0
 
-    # Initial long
-    position = Position(
-        asset,
-        quantity=100,
-        book_cost_pu=1.0,
-        current_price=1.0
-    )
-
-    # Second long
-    dt = pd.Timestamp('2015-05-06')
-    transaction = Transaction(
-        asset,
-        quantity=100,
-        dt=dt,
-        price=2.0,
-        order_id=123,
-        commission=None
-    )
-    position.update(transaction)
-    assert position.quantity == 200
-    assert position.book_cost_pu == 1.5
-
-    # Third long
-    dt = pd.Timestamp('2015-05-07')
-    transaction = Transaction(
-        asset,
-        quantity=200,
-        dt=dt,
-        price=3.0,
-        order_id=123,
-        commission=None
-    )
-    position.update(transaction)
-    assert position.quantity == 400
-    assert position.book_cost_pu == 2.25
-
-    # First short
-    dt = pd.Timestamp('2015-05-08')
-    transaction = Transaction(
-        asset,
-        quantity=-100,
-        dt=dt,
-        price=3.5,
-        order_id=123,
-        commission=None
-    )
-    position.update(transaction)
-    assert position.quantity == 300
-    assert position.book_cost_pu == 2.25
-
-    # Final long
-    dt = pd.Timestamp('2015-05-09')
-    transaction = Transaction(
-        asset,
-        quantity=100,
-        dt=dt,
-        price=4.0,
-        order_id=123,
-        commission=None
-    )
-    position.update(transaction)
-
-    assert position.quantity == 400
-    assert position.book_cost_pu == 2.6875
-    assert position.direction == 1.0
-    assert position.current_price == 4.0
-    assert position.market_value == 1600.0
-    assert position.unrealised_gain == 525.0
-    assert position.unrealised_percentage_gain == 48.837209302325576
+    # np.isclose used for floating point precision
+    assert np.isclose(position.total_sold, 16239.0)
+    assert np.isclose(position.net_total, 16239.0)
+    assert np.isclose(position.net_incl_commission, 16237.63)
+    assert np.isclose(position.unrealised_pnl, 294.63)
+    assert np.isclose(position.realised_pnl, 0.0)
 
 
 def test_position_short_twice():
     """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial short
-    position with an additional short transaction
-    in the same asset.
+    Tests that the properties on the Position
+    are calculated for two consective short trades
+    with differing quantities and market prices.
     """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset,
-        quantity=-100,
-        book_cost_pu=950.0,
-        current_price=950.0
-    )
+    # Initial short details
+    asset = 'EQ:MSFT'
+    quantity = -100
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 194.55
+    order_id = 123
+    commission = 1.44
 
-    dt = pd.Timestamp('2015-05-06')
-    transaction = Transaction(
+    # Create the initial transaction and position
+    first_transaction = Transaction(
         asset,
-        quantity=-100,
+        quantity=quantity,
         dt=dt,
-        price=960.0,
-        order_id=123,
-        commission=None
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    position.update(transaction)
+    position = Position.open_from_transaction(first_transaction)
 
-    assert position.quantity == -200
-    assert position.book_cost_pu == 955.0
-    assert position.direction == -1.0
-    assert position.current_price == 960.0
-    assert position.market_value == -192000.0
-    assert position.unrealised_gain == -1000.0
-    assert position.unrealised_percentage_gain == -0.5235602094240838
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
+
+    # Second short
+    second_quantity = -60
+    second_dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    second_price = 194.76
+    second_order_id = 234
+    second_commission = 1.27
+    second_transaction = Transaction(
+        asset,
+        quantity=second_quantity,
+        dt=second_dt,
+        price=second_price,
+        order_id=second_order_id,
+        commission=second_commission
+    )
+    position.transact(second_transaction)
+
+    assert position.current_price == second_price
+    assert position.current_dt == second_dt
+
+    assert position.buy_quantity == 0
+    assert position.sell_quantity == 160
+    assert position.avg_bought == 0.0
+    assert position.avg_sold == 194.62875
+    assert position.commission == 2.71
+
+    assert position.direction == -1
+    assert np.isclose(position.market_value, -31161.6)
+    assert np.isclose(position.avg_price, 194.6118125)
+    assert position.net_quantity == -160
+    assert position.total_bought == 0.0
+    assert position.total_sold == 31140.60
+    assert position.net_total == 31140.6
+    assert position.net_incl_commission == 31137.89
+    assert np.isclose(position.unrealised_pnl, -23.71)
+    assert np.isclose(position.realised_pnl, 0.0)
 
 
 def test_position_short_close():
     """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial short
-    position with an additional long transaction
-    in the same asset, where the long closes
-    the position.
+    Tests that the properties on the Position
+    are calculated for a short opening trade and
+    subsequent closing trade.
     """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=-100, book_cost_pu=950.0,
-        current_price=950.0
+    # Initial short details
+    asset = 'EQ:TSLA'
+    quantity = -100
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 982.13
+    order_id = 123
+    commission = 3.18
+
+    # Create the initial transaction and position
+    first_transaction = Transaction(
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    dt = pd.Timestamp('2015-05-06')
-    transaction = Transaction(
-        asset, quantity=100, dt=dt, price=960.0,
-        order_id=123, commission=None
+    position = Position.open_from_transaction(first_transaction)
+
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
+
+    # Closing trade
+    second_quantity = 100
+    second_dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    second_price = 982.13
+    second_order_id = 234
+    second_commission = 1.0
+    second_transaction = Transaction(
+        asset,
+        quantity=second_quantity,
+        dt=second_dt,
+        price=second_price,
+        order_id=second_order_id,
+        commission=second_commission
     )
-    position.update(transaction)
-    assert position.quantity == 0
-    assert position.book_cost_pu == 0.0
-    assert position.direction == 1.0
-    assert position.current_price == 960.0
+    position.transact(second_transaction)
+
+    assert position.current_price == second_price
+    assert position.current_dt == second_dt
+
+    assert position.buy_quantity == 100
+    assert position.sell_quantity == 100
+    assert position.avg_bought == 982.13
+    assert position.avg_sold == 982.13
+    assert position.commission == 4.18
+
+    assert position.direction == 0
     assert position.market_value == 0.0
-    assert position.unrealised_gain == 0.0
-    assert position.unrealised_percentage_gain == 0.0
+    assert position.avg_price == 0.0
+    assert position.net_quantity == 0
+    assert position.total_bought == 98213.0
+    assert position.total_sold == 98213.0
+    assert position.net_total == 0.0
+    assert position.net_incl_commission == -4.18
+    assert position.unrealised_pnl == 0.0
+    assert position.realised_pnl == -4.18
 
 
-def test_position_short_long_insufficient_cover():
+def test_position_short_and_long():
     """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial short
-    position with an additional long transaction
-    in the same asset, where the long does not
-    completely eliminate the position.
+    Tests that the properties on the Position
+    are calculated for a short trade followed by
+    a partial closing long trade with differing
+    market prices.
     """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=-100, book_cost_pu=950.0,
-        current_price=950.0
-    )
-    dt = pd.Timestamp('2015-05-06')
+    # Initial short details
+    asset = 'EQ:TLT'
+    quantity = -100
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 162.39
+    order_id = 123
+    commission = 1.37
+
+    # Create the initial transaction and position
     transaction = Transaction(
-        asset, quantity=50, dt=dt, price=960.0,
-        order_id=123, commission=None
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    position.update(transaction)
+    position = Position.open_from_transaction(transaction)
 
-    assert position.quantity == -50
-    assert position.book_cost_pu == 950.0
-    assert position.direction == -1.0
-    assert position.current_price == 960.0
-    assert position.market_value == -48000.0
-    assert position.unrealised_gain == -500.0
-    assert position.unrealised_percentage_gain == -1.0526315789473684
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
 
-
-def test_position_short_long_excess_cover():
-    """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial short
-    position with an additional long transaction
-    in the same asset, where the long position
-    is in excess of the short position.
-    """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=-100, book_cost_pu=700.0,
-        current_price=700.0
+    # Long details and transaction
+    second_quantity = 60
+    second_dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    second_price = 159.99
+    second_order_id = 234
+    second_commission = 1.0
+    second_transaction = Transaction(
+        asset,
+        quantity=second_quantity,
+        dt=second_dt,
+        price=second_price,
+        order_id=second_order_id,
+        commission=second_commission
     )
-    dt = pd.Timestamp('2015-05-06')
+    position.transact(second_transaction)
+
+    assert position.current_price == second_price
+    assert position.current_dt == second_dt
+
+    assert position.buy_quantity == 60
+    assert position.sell_quantity == 100
+    assert np.isclose(position.avg_bought, 159.99)
+    assert position.avg_sold == 162.39
+    assert position.commission == 2.37
+
+    assert position.direction == -1
+    assert np.isclose(position.market_value, -6399.6)
+    assert position.avg_price == 162.3763
+    assert position.net_quantity == -40
+    assert np.isclose(position.total_bought, 9599.40)
+    assert np.isclose(position.total_sold, 16239.0)
+    assert np.isclose(position.net_total, 6639.60)
+    assert np.isclose(position.net_incl_commission, 6637.23)
+    assert np.isclose(position.unrealised_pnl, 95.452)
+    assert np.isclose(position.realised_pnl, 142.1779999999)
+
+
+def test_position_short_long_short_long_ending_short():
+    """
+    Tests that the properties on the Position
+    are calculated for four trades consisting
+    of a short, long, short and long ending net
+    short after all trades with varying quantities
+    and market prices.
+    """
+    # First trade (first short)
+    asset = 'EQ:AGG'
+    quantity = -762
+    dt = pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC)
+    price = 117.74
+    order_id = 100
+    commission = 5.35
     transaction = Transaction(
-        asset, quantity=175, dt=dt, price=873.0,
-        order_id=123, commission=None
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    position.update(transaction)
+    position = Position.open_from_transaction(transaction)
 
-    assert position.quantity == 75
-    assert position.book_cost_pu == 873.0
-    assert position.direction == 1.0
-    assert position.current_price == 873.0
-    assert position.market_value == 65475.0
-    assert position.unrealised_gain == 0.0
-    assert position.unrealised_percentage_gain == 0.0
-
-
-def test_position_short_goes_to_half():
-    """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial short
-    position, where the share value goes to zero.
-    This should be a percentage gain of 100%.
-    """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=-100, book_cost_pu=50.0,
-        current_price=50.0
+    # Second trade (first long)
+    quantity = 477
+    dt = pd.Timestamp('2020-06-16 16:00:00', tz=pytz.UTC)
+    price = 117.875597
+    order_id = 101
+    commission = 2.31
+    transaction = Transaction(
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    dt = pd.Timestamp('2015-05-06')
-    position.current_price = 25.0
-    position.current_trade_date = dt
+    position.transact(transaction)
 
-    assert position.quantity == -100
-    assert position.book_cost_pu == 50.0
-    assert position.direction == -1.0
-    assert position.current_price == 25.0
-    assert position.market_value == -2500.0
-    assert position.unrealised_gain == 2500.0
-    assert position.unrealised_percentage_gain == 50.0
-
-
-def test_position_short_goes_to_zero():
-    """
-    Tests that the quantity and book cost are
-    correctly calculated for an initial short
-    position, where the share value goes to zero.
-    This should be a percentage gain of 100%.
-    """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=-100, book_cost_pu=50.0,
-        current_price=50.0
+    # Third trade (second short)
+    quantity = -595
+    dt = pd.Timestamp('2020-06-16 17:00:00', tz=pytz.UTC)
+    price = 117.74
+    order_id = 102
+    commission = 4.18
+    transaction = Transaction(
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
     )
-    dt = pd.Timestamp('2015-05-06')
-    position.current_price = 0.0
-    position.current_trade_date = dt
+    position.transact(transaction)
 
-    assert position.quantity == -100
-    assert position.book_cost_pu == 50.0
-    assert position.direction == -1.0
-    assert position.current_price == 0.0
-    assert position.market_value == 0.0
-    assert position.unrealised_gain == 5000.0
-    assert position.unrealised_percentage_gain == 100.0
+    # Fourth trade (second long), now net short
+    quantity = 427
+    dt = pd.Timestamp('2020-06-16 18:00:00', tz=pytz.UTC)
+    price = 117.793115
+    order_id = 103
+    commission = 2.06
+    transaction = Transaction(
+        asset,
+        quantity=quantity,
+        dt=dt,
+        price=price,
+        order_id=order_id,
+        commission=commission
+    )
+    position.transact(transaction)
+
+    assert position.asset == asset
+    assert position.current_price == price
+    assert position.current_dt == dt
+
+    assert position.buy_quantity == 904
+    assert position.sell_quantity == 1357
+    assert position.avg_bought == 117.83663702876107
+    assert position.avg_sold == 117.74
+    assert np.isclose(position.commission, 13.90)
+
+    assert position.direction == -1
+    assert np.isclose(position.market_value, -53360.281095)
+    assert position.avg_price == 117.73297715549005
+    assert position.net_quantity == -453
+    assert position.total_bought == 106524.31987400001
+    assert np.isclose(position.total_sold, 159773.18)
+    assert np.isclose(position.net_total, 53248.86)
+    assert np.isclose(position.net_incl_commission, 53234.95)
+    assert np.isclose(position.unrealised_pnl, -27.242443563)
+    assert np.isclose(position.realised_pnl, -98.0785254)
 
 
-def test_update_for_incorrect_asset():
+def test_transact_for_incorrect_asset():
     """
-    Tests that the 'update' method, when provided
-    with a transaction with an asset that does not
+    Tests that the 'transact' method, when provided
+    with a Transaction with an Asset that does not
     match the position's asset, raises an Exception.
     """
-    asset1 = Equity('Apple, Inc.', 'AAPL')
-    asset2 = Equity('Amazon, Inc.', 'AMZN')
+    asset1 = 'EQ:AAPL'
+    asset2 = 'EQ:AMZN'
 
     position = Position(
-        asset1, quantity=100, book_cost_pu=950.0,
-        current_price=950.0
+        asset1,
+        current_price=950.0,
+        current_dt=pd.Timestamp('2020-06-16 15:00:00', tz=pytz.UTC),
+        buy_quantity=100,
+        sell_quantity=0,
+        avg_bought=950.0,
+        avg_sold=0.0,
+        buy_commission=1.0,
+        sell_commission=0.0
     )
-    dt = pd.Timestamp('2015-05-06')
+
+    new_dt = pd.Timestamp('2020-06-16 16:00:00')
     transaction = Transaction(
-        asset2, quantity=50, dt=dt, price=960.0,
-        order_id=123, commission=None
+        asset2,
+        quantity=50,
+        dt=new_dt,
+        price=960.0,
+        order_id=123,
+        commission=1.0
     )
 
     with pytest.raises(Exception):
         position.update(transaction)
-
-
-def test_update_book_cost_for_commission_for_incorrect_asset():
-    """
-    Tests that the 'update_book_cost_for_commission'
-    method, when provided with a transaction with an
-    asset that does not match the position's asset,
-    raises an Exception.
-    """
-    asset1 = Equity('Apple, Inc.', 'AAPL')
-    asset2 = Equity('Amazon, Inc.', 'AMZN')
-
-    position = Position(
-        asset1, quantity=100, book_cost_pu=950.0,
-        current_price=950.0
-    )
-
-    with pytest.raises(Exception):
-        position.update_book_cost_for_commission(asset2, 23.00)
-
-
-def test_update_book_cost_for_commission_for_no_commission():
-    """
-    Tests that 'update_book_cost_for_commission' returns None
-    when zero or None commission is provided.
-    """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=100, book_cost_pu=950.0,
-        current_price=950.0
-    )
-
-    assert position.update_book_cost_for_commission(asset, 0.0) is None
-    assert position.update_book_cost_for_commission(asset, None) is None
-
-
-def test_update_book_cost_for_commission_zero_position():
-    """
-    Tests that 'update_book_cost_for_commission' returns None
-    when some positive commission is provided, given that the
-    Position itself has zero quantity.
-    """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=0, book_cost_pu=0.0, current_price=0.0
-    )
-    assert position.update_book_cost_for_commission(asset, 15.0) is None
-
-
-def test_update_book_cost_for_commission_some_commission():
-    """
-    Tests that 'update_book_cost_for_commission' calculates
-    book cost correctly for the position when a positive
-    commission is supplied.
-    """
-    asset = Equity('Apple, Inc.', 'AAPL')
-    position = Position(
-        asset, quantity=100, book_cost_pu=50.0,
-        current_price=50.0
-    )
-    position.update_book_cost_for_commission(asset, 15.0)
-
-    assert position.book_cost_pu == 50.15
-    assert position.book_cost == 5015.0

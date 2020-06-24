@@ -11,7 +11,10 @@ from qstrader.portcon.optimiser.fixed_weight import (
     FixedWeightPortfolioOptimiser
 )
 from qstrader.portcon.order_sizer.dollar_weighted import (
-    DollarWeightedCashBufferedOrderSizeGeneration
+    DollarWeightedCashBufferedOrderSizer
+)
+from qstrader.portcon.order_sizer.long_short import (
+    LongShortLeveragedOrderSizer
 )
 
 
@@ -36,8 +39,9 @@ class QuantTradingSystem(object):
         The alpha model used within the portfolio construction.
     risk_model : `AlphaModel`, optional
         An optional risk model used within the portfolio construction.
-    cash_buffer_percentage : `float`, optional
-        The percentage of the portfolio to retain in cash.
+    long_only : `Boolean`, optional
+        Whether to invoke the long only order sizer or allow
+        long/short leveraged portfolios. Defaults to long/short leveraged.
     submit_orders : `Boolean`, optional
         Whether to actually submit generated orders. Defaults to no submission.
     """
@@ -49,9 +53,11 @@ class QuantTradingSystem(object):
         broker_portfolio_id,
         data_handler,
         alpha_model,
+        *args,
         risk_model=None,
-        cash_buffer_percentage=0.05,
-        submit_orders=False
+        long_only=False,
+        submit_orders=False,
+        **kwargs
     ):
         self.universe = universe
         self.broker = broker
@@ -59,11 +65,53 @@ class QuantTradingSystem(object):
         self.data_handler = data_handler
         self.alpha_model = alpha_model
         self.risk_model = risk_model
-        self.cash_buffer_percentage = cash_buffer_percentage
+        self.long_only = long_only
         self.submit_orders = submit_orders
-        self._initialise_models()
+        self._initialise_models(**kwargs)
 
-    def _initialise_models(self):
+    def _create_order_sizer(self, **kwargs):
+        """
+        Depending upon whether the quant trading system has been
+        set to be long only, determine the appropriate order sizing
+        mechanism.
+
+        Returns
+        -------
+        `OrderSizer`
+            The order sizing mechanism for the portfolio construction.
+        """
+        if self.long_only:
+            if 'cash_buffer_percentage' not in kwargs:
+                raise ValueError(
+                    'Long only portfolio specified for Quant Trading System '
+                    'but no cash buffer percentage supplied.'
+                )
+            cash_buffer_percentage = kwargs['cash_buffer_percentage']
+
+            order_sizer = DollarWeightedCashBufferedOrderSizer(
+                self.broker,
+                self.broker_portfolio_id,
+                self.data_handler,
+                cash_buffer_percentage=cash_buffer_percentage
+            )
+        else:
+            if 'gross_leverage' not in kwargs:
+                raise ValueError(
+                    'Long/short leveraged portfolio specified for Quant '
+                    'Trading System but no gross leverage percentage supplied.'
+                )
+            gross_leverage = kwargs['gross_leverage']
+
+            order_sizer = LongShortLeveragedOrderSizer(
+                self.broker,
+                self.broker_portfolio_id,
+                self.data_handler,
+                gross_leverage=gross_leverage
+            )
+
+        return order_sizer
+
+    def _initialise_models(self, **kwargs):
         """
         Initialise the various models for the quantitative
         trading strategy. This includes the portfolio
@@ -72,16 +120,15 @@ class QuantTradingSystem(object):
         TODO: Add TransactionCostModel
         TODO: Ensure this is dynamically generated from config.
         """
-        # Portfolio Construction
-        order_sizer = DollarWeightedCashBufferedOrderSizeGeneration(
-            self.broker,
-            self.broker_portfolio_id,
-            self.data_handler,
-            cash_buffer_percentage=self.cash_buffer_percentage
-        )
+        # Determine the appropriate order sizing mechanism
+        order_sizer = self._create_order_sizer(**kwargs)
+
+        # TODO: Allow optimiser to be generated from config
         optimiser = FixedWeightPortfolioOptimiser(
             data_handler=self.data_handler
         )
+
+        # Generate the portfolio construction
         self.portfolio_construction_model = PortfolioConstructionModel(
             self.broker,
             self.broker_portfolio_id,

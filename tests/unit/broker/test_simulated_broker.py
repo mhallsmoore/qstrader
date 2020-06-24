@@ -476,7 +476,7 @@ def test_subscribe_funds_to_portfolio():
     # If everything else worked, check balances are correct
     sb.subscribe_funds_to_portfolio("1234", 100000.00)
     assert sb.cash_balances[sb.base_currency] == 65303.23000000001
-    assert sb.portfolios["1234"].total_cash == 100000.00
+    assert sb.portfolios["1234"].cash == 100000.00
 
 
 def test_withdraw_funds_from_portfolio():
@@ -513,7 +513,7 @@ def test_withdraw_funds_from_portfolio():
     # If everything else worked, check balances are correct
     sb.withdraw_funds_from_portfolio("1234", 50000.00)
     assert sb.cash_balances[sb.base_currency] == 115303.23000000001
-    assert sb.portfolios["1234"].total_cash == 50000.00
+    assert sb.portfolios["1234"].cash == 50000.00
 
 
 def test_get_portfolio_cash_balance():
@@ -541,9 +541,9 @@ def test_get_portfolio_cash_balance():
     assert sb.get_portfolio_cash_balance("1234") == 100000.0
 
 
-def test_get_portfolio_non_cash_equity():
+def test_get_portfolio_total_market_value():
     """
-    Tests get_portfolio_non_cash_equity method for:
+    Tests get_portfolio_total_market_value method for:
     * Raising ValueError if portfolio_id not in keys
     * Correctly obtaining the market value after cash transfers
     """
@@ -555,7 +555,7 @@ def test_get_portfolio_non_cash_equity():
 
     # Raising KeyError if portfolio_id not in keys
     with pytest.raises(KeyError):
-        sb.get_portfolio_non_cash_equity("5678")
+        sb.get_portfolio_total_market_value("5678")
 
     # Create fund transfers and portfolio
     sb.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
@@ -583,9 +583,9 @@ def test_submit_order():
     data_handler = DataHandlerMock()
 
     sb = SimulatedBroker(start_dt, exchange, data_handler)
-    asset = AssetMock("Royal Dutch Shell Class B", "EQ:RDSB")
+    asset = 'EQ:RDSB'
     quantity = 100
-    order = OrderMock(asset.symbol, quantity)
+    order = OrderMock(asset, quantity)
     with pytest.raises(KeyError):
         sb.submit_order("1234", order)
 
@@ -594,7 +594,7 @@ def test_submit_order():
     sbnp = SimulatedBroker(start_dt, exchange_exception, data_handler)
     sbnp.create_portfolio(portfolio_id=1234, name="My Portfolio #1")
     quantity = 100
-    order = OrderMock(asset.symbol, quantity)
+    order = OrderMock(asset, quantity)
     with pytest.raises(ValueError):
         sbnp._execute_order(start_dt, "1234", order)
 
@@ -610,19 +610,17 @@ def test_submit_order():
     sbwp.subscribe_funds_to_account(175000.0)
     sbwp.subscribe_funds_to_portfolio("1234", 100000.00)
     quantity = 1000
-    order = OrderMock(asset.symbol, quantity)
+    order = OrderMock(asset, quantity)
     sbwp.submit_order("1234", order)
     sbwp.update(start_dt)
 
     port = sbwp.portfolios["1234"]
-    assert port.total_cash == 46530.0
-    assert port.total_non_cash_equity == 53470.0
+    assert port.cash == 46530.0
+    assert port.total_market_value == 53470.0
     assert port.total_equity == 100000.0
-    assert port.pos_handler.positions[asset.symbol].book_cost == 53470.0
-    assert port.pos_handler.positions[asset.symbol].unrealised_gain == 0.0
-    assert port.pos_handler.positions[asset.symbol].market_value == 53470.0
-    assert port.pos_handler.positions[asset.symbol].unrealised_percentage_gain == 0.0
-    assert port.pos_handler.positions[asset.symbol].quantity == 1000
+    assert port.pos_handler.positions[asset].unrealised_pnl == 0.0
+    assert port.pos_handler.positions[asset].market_value == 53470.0
+    assert port.pos_handler.positions[asset].net_quantity == 1000
 
     # Negative direction
     exchange_price = ExchangeMockPrice()
@@ -631,19 +629,17 @@ def test_submit_order():
     sbwp.subscribe_funds_to_account(175000.0)
     sbwp.subscribe_funds_to_portfolio("1234", 100000.00)
     quantity = -1000
-    order = OrderMock(asset.symbol, quantity)
+    order = OrderMock(asset, quantity)
     sbwp.submit_order("1234", order)
     sbwp.update(start_dt)
 
     port = sbwp.portfolios["1234"]
-    assert port.total_cash == 153450.0
-    assert port.total_non_cash_equity == -53450.0
+    assert port.cash == 153450.0
+    assert port.total_market_value == -53450.0
     assert port.total_equity == 100000.0
-    assert port.pos_handler.positions[asset.symbol].book_cost == -53450.0
-    assert port.pos_handler.positions[asset.symbol].unrealised_gain == 0.0
-    assert port.pos_handler.positions[asset.symbol].market_value == -53450.0
-    assert port.pos_handler.positions[asset.symbol].unrealised_percentage_gain == 0.0
-    assert port.pos_handler.positions[asset.symbol].quantity == -1000
+    assert port.pos_handler.positions[asset].unrealised_pnl == 0.0
+    assert port.pos_handler.positions[asset].market_value == -53450.0
+    assert port.pos_handler.positions[asset].net_quantity == -1000
 
 
 def test_update_sets_correct_time():

@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class OrderSizeGeneration(object):
+class OrderSizer(object):
     """
     Creates a target portfolio of quantities for each Asset
     using its provided weight and total equity available in the Broker portfolio.

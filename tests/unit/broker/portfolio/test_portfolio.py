@@ -2,7 +2,6 @@ import pandas as pd
 import pytz
 import pytest
 
-from qstrader.asset.equity import Equity
 from qstrader.broker.portfolio.portfolio import Portfolio
 from qstrader.broker.portfolio.portfolio_event import PortfolioEvent
 from qstrader.broker.transaction.transaction import Transaction
@@ -23,8 +22,8 @@ def test_initial_settings_for_default_portfolio():
     assert port1.starting_cash == 0.0
     assert port1.portfolio_id is None
     assert port1.name is None
-    assert port1.total_non_cash_equity == 0.0
-    assert port1.total_cash == 0.0
+    assert port1.total_market_value == 0.0
+    assert port1.cash == 0.0
     assert port1.total_equity == 0.0
 
     # Test a Portfolio with keyword arguments
@@ -39,8 +38,8 @@ def test_initial_settings_for_default_portfolio():
     assert port2.portfolio_id == 12345
     assert port2.name == "My Second Test Portfolio"
     assert port2.total_equity == 1234567.56
-    assert port2.total_non_cash_equity == 0.0
-    assert port2.total_cash == 1234567.56
+    assert port2.total_market_value == 0.0
+    assert port2.cash == 1234567.56
 
 
 def test_portfolio_currency_settings():
@@ -88,8 +87,8 @@ def test_subscribe_funds_behaviour():
     # amount, generates correct event and modifies time
     port.subscribe_funds(later_dt, pos_cash)
 
-    assert port.total_cash == 3000.0
-    assert port.total_non_cash_equity == 0.0
+    assert port.cash == 3000.0
+    assert port.total_market_value == 0.0
     assert port.total_equity == 3000.0
 
     pe1 = PortfolioEvent(
@@ -148,8 +147,8 @@ def test_withdraw_funds_behaviour():
         description="SUBSCRIPTION", debit=0.0,
         credit=1000.0, balance=1000.0
     )
-    assert port_cor.total_cash == 1000.0
-    assert port_cor.total_non_cash_equity == 0.0
+    assert port_cor.cash == 1000.0
+    assert port_cor.total_market_value == 0.0
     assert port_cor.total_equity == 1000.0
     assert port_cor.history == [pe_sub]
     assert port_cor.current_dt == later_dt
@@ -161,8 +160,8 @@ def test_withdraw_funds_behaviour():
         description="WITHDRAWAL", debit=468.0,
         credit=0.0, balance=532.0
     )
-    assert port_cor.total_cash == 532.0
-    assert port_cor.total_non_cash_equity == 0.0
+    assert port_cor.cash == 532.0
+    assert port_cor.total_market_value == 0.0
     assert port_cor.total_equity == 532.0
     assert port_cor.history == [pe_sub, pe_wdr]
     assert port_cor.current_dt == even_later_dt
@@ -182,11 +181,11 @@ def test_transact_asset_behaviour():
     later_dt = pd.Timestamp('2017-10-06 08:00:00', tz=pytz.UTC)
     even_later_dt = pd.Timestamp('2017-10-07 08:00:00', tz=pytz.UTC)
     port = Portfolio(start_dt)
-    asset = Equity("Acme Inc.", "EQ:AAA", tax_exempt=False)
+    asset = 'EQ:AAA'
 
     # Test transact_asset raises for incorrect time
     tn_early = Transaction(
-        asset=asset.symbol,
+        asset=asset,
         quantity=100,
         dt=earlier_dt,
         price=567.0,
@@ -200,8 +199,8 @@ def test_transact_asset_behaviour():
     # cost exceeding total cash
     port.subscribe_funds(later_dt, 1000.0)
 
-    assert port.total_cash == 1000.0
-    assert port.total_non_cash_equity == 0.0
+    assert port.cash == 1000.0
+    assert port.total_market_value == 0.0
     assert port.total_equity == 1000.0
 
     pe_sub1 = PortfolioEvent(
@@ -210,7 +209,7 @@ def test_transact_asset_behaviour():
         credit=1000.0, balance=1000.0
     )
     tn_large = Transaction(
-        asset=asset.symbol,
+        asset=asset,
         quantity=100,
         dt=later_dt,
         price=567.0,
@@ -225,8 +224,8 @@ def test_transact_asset_behaviour():
     # portfolio event and correct time update
     port.subscribe_funds(even_later_dt, 99000.0)
 
-    assert port.total_cash == 100000.0
-    assert port.total_non_cash_equity == 0.0
+    assert port.cash == 100000.0
+    assert port.total_market_value == 0.0
     assert port.total_equity == 100000.0
 
     pe_sub2 = PortfolioEvent(
@@ -235,7 +234,7 @@ def test_transact_asset_behaviour():
         credit=99000.0, balance=100000.0
     )
     tn_even_later = Transaction(
-        asset=asset.symbol,
+        asset=asset,
         quantity=100,
         dt=even_later_dt,
         price=567.0,
@@ -244,8 +243,8 @@ def test_transact_asset_behaviour():
     )
     port.transact_asset(tn_even_later)
 
-    assert port.total_cash == 43284.22
-    assert port.total_non_cash_equity == 56700.00
+    assert port.cash == 43284.22
+    assert port.total_market_value == 56700.00
     assert port.total_equity == 99984.22
 
     description = "LONG 100 EQ:AAA 567.00 07/10/2017"
@@ -278,38 +277,37 @@ def test_portfolio_to_dict_for_two_holdings():
     asset1_dt = pd.Timestamp('2017-10-06 08:00:00', tz=pytz.UTC)
     asset2_dt = pd.Timestamp('2017-10-07 08:00:00', tz=pytz.UTC)
     update_dt = pd.Timestamp('2017-10-08 08:00:00', tz=pytz.UTC)
-    asset1 = Equity("AAA Inc.", "EQ:AAA", tax_exempt=False)
-    asset2 = Equity("BBB Inc.", "EQ:BBB", tax_exempt=False)
+    asset1 = 'EQ:AAA'
+    asset2 = 'EQ:BBB'
 
     port = Portfolio(start_dt, portfolio_id='1234')
     port.subscribe_funds(start_dt, 100000.0)
     tn_asset1 = Transaction(
-        asset=asset1.symbol, quantity=100, dt=asset1_dt,
+        asset=asset1, quantity=100, dt=asset1_dt,
         price=567.0, order_id=1, commission=15.78
     )
     port.transact_asset(tn_asset1)
 
     tn_asset2 = Transaction(
-        asset=asset2.symbol, quantity=100, dt=asset2_dt,
+        asset=asset2, quantity=100, dt=asset2_dt,
         price=123.0, order_id=2, commission=7.64
     )
     port.transact_asset(tn_asset2)
-
-    port.update_market_value_of_asset(asset2.symbol, 134.0, update_dt)
+    port.update_market_value_of_asset(asset2, 134.0, update_dt)
     test_holdings = {
-        asset1.symbol: {
+        asset1: {
             "quantity": 100,
-            "book_cost": 56715.78,
             "market_value": 56700.0,
-            "gain": -15.78,
-            "perc_gain": -0.027822944513854874
+            "unrealised_pnl": -15.78,
+            "realised_pnl": 0.0,
+            "total_pnl": -15.78
         },
-        asset2.symbol: {
+        asset2: {
             "quantity": 100,
-            "book_cost": 12307.64,
             "market_value": 13400.0,
-            "gain": 1092.3600000000006,
-            "perc_gain": 8.8754627207165679
+            "unrealised_pnl": 1092.3600000000006,
+            "realised_pnl": 0.0,
+            "total_pnl": 1092.3600000000006
         }
     }
     port_holdings = port.portfolio_to_dict()
@@ -317,7 +315,7 @@ def test_portfolio_to_dict_for_two_holdings():
     # This is needed because we're not using Decimal
     # datatypes and have to compare slightly differing
     # floating point representations
-    for asset in (asset1.symbol, asset2.symbol):
+    for asset in (asset1, asset2):
         for key, val in test_holdings[asset].items():
             assert port_holdings[asset][key] == pytest.approx(
                 test_holdings[asset][key]
@@ -331,7 +329,7 @@ def test_update_market_value_of_asset_not_in_list():
     start_dt = pd.Timestamp('2017-10-05 08:00:00', tz=pytz.UTC)
     later_dt = pd.Timestamp('2017-10-06 08:00:00', tz=pytz.UTC)
     port = Portfolio(start_dt)
-    asset = Equity("Acme Inc.", "AAA", tax_exempt=False)
+    asset = 'EQ:AAA'
     update = port.update_market_value_of_asset(
         asset, 54.34, later_dt
     )
@@ -347,10 +345,10 @@ def test_update_market_value_of_asset_negative_price():
     later_dt = pd.Timestamp('2017-10-06 08:00:00', tz=pytz.UTC)
     port = Portfolio(start_dt)
 
-    asset = Equity("Acme Inc.", "AAA", tax_exempt=False)
+    asset = 'EQ:AAA'
     port.subscribe_funds(later_dt, 100000.0)
     tn_asset = Transaction(
-        asset=asset.symbol,
+        asset=asset,
         quantity=100,
         dt=later_dt,
         price=567.0,
@@ -360,7 +358,7 @@ def test_update_market_value_of_asset_negative_price():
     port.transact_asset(tn_asset)
     with pytest.raises(ValueError):
         port.update_market_value_of_asset(
-            asset.symbol, -54.34, later_dt
+            asset, -54.34, later_dt
         )
 
 
@@ -374,10 +372,10 @@ def test_update_market_value_of_asset_earlier_date():
     later_dt = pd.Timestamp('2017-10-06 08:00:00', tz=pytz.UTC)
     port = Portfolio(start_dt, portfolio_id='1234')
 
-    asset = Equity("Acme Inc.", "EQ:AAA", tax_exempt=False)
+    asset = 'EQ:AAA'
     port.subscribe_funds(later_dt, 100000.0)
     tn_asset = Transaction(
-        asset=asset.symbol,
+        asset=asset,
         quantity=100,
         dt=later_dt,
         price=567.0,
@@ -387,7 +385,7 @@ def test_update_market_value_of_asset_earlier_date():
     port.transact_asset(tn_asset)
     with pytest.raises(ValueError):
         port.update_market_value_of_asset(
-            asset.symbol, 50.23, earlier_dt
+            asset, 50.23, earlier_dt
         )
 
 

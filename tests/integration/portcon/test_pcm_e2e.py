@@ -13,7 +13,7 @@ from qstrader.portcon.optimiser.fixed_weight import (
     FixedWeightPortfolioOptimiser
 )
 from qstrader.portcon.order_sizer.dollar_weighted import (
-    DollarWeightedCashBufferedOrderSizeGeneration
+    DollarWeightedCashBufferedOrderSizer
 )
 
 
@@ -54,7 +54,7 @@ def test_pcm_fixed_weight_optimiser_fixed_alpha_weights_call_end_to_end(
     broker.create_portfolio(port_id, 'Portfolio')
     broker.subscribe_funds_to_portfolio(port_id, initial_funds)
 
-    order_sizer = DollarWeightedCashBufferedOrderSizeGeneration(
+    order_sizer = DollarWeightedCashBufferedOrderSizer(
         broker, port_id, data_handler, cash_buffer_perc
     )
     optimiser = FixedWeightPortfolioOptimiser(data_handler)

@@ -29,7 +29,7 @@ class Transaction(object):
         dt,
         price,
         order_id,
-        commission=None
+        commission=0.0
     ):
         self.asset = asset
         self.quantity = quantity
@@ -55,3 +55,32 @@ class Transaction(object):
                 self.quantity, self.dt,
                 self.price, self.order_id
             )
+
+    @property
+    def cost_without_commission(self):
+        """
+        Calculate the cost of the transaction without including
+        any commission costs.
+
+        Returns
+        -------
+        `float`
+            The transaction cost without commission.
+        """
+        return self.quantity * self.price
+
+    @property
+    def cost_with_commission(self):
+        """
+        Calculate the cost of the transaction including
+        any commission costs.
+
+        Returns
+        -------
+        `float`
+            The transaction cost with commission.
+        """
+        if self.commission == 0.0:
+            return self.cost_without_commission
+        else:
+            return self.cost_without_commission + self.commission

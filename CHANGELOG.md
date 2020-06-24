@@ -1,3 +1,10 @@
+# 0.2.0
+
+* Significant overhaul of Position, PositionHandler, Portfolio, Transaction and SimulatedBroker classes to correctly account for short selling of assets
+* Addition of LongShortLeveragedOrderSizer to allow long/short leveraged portfolios
+* Added a new long/short leveraged portfolio example backtest
+* Added some unit and integration tests to improve test coverage slightly
+
 # 0.1.4
 
 * Added ValueError with more verbose description for NaN pricing data when backtest start date too early

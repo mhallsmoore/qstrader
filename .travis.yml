@@ -15,7 +15,7 @@ install:
 
 script:
   - pytest --cov=qstrader/
-  - flake8 --ignore E501,F501 tests qstrader
+  - flake8 --ignore E501,F501,W504 tests qstrader
 
 after_success:
   - coveralls
