@@ -1,3 +1,8 @@
+# 0.2.1
+
+* Added VolatilitySignal class to calculate rolling annualised volatility of returns for an asset
+* Removed errors for orders that exceed cash account balance in SimulatedBroker and Portfolio. Replaced with console warnings.
+
 # 0.2.0
 
 * Significant overhaul of Position, PositionHandler, Portfolio, Transaction and SimulatedBroker classes to correctly account for short selling of assets
