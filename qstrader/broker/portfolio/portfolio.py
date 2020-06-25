@@ -217,10 +217,11 @@ class Portfolio(object):
         txn_total_cost = txn_share_cost + txn.commission
 
         if txn_total_cost > self.cash:
-            raise ValueError(
-                'Not enough cash in the portfolio to '
+            print(
+                'WARNING: Not enough cash in the portfolio to '
                 'carry out transaction. Transaction cost of %s '
-                'exceeds remaining cash of %s.' % (
+                'exceeds remaining cash of %s. Transaction '
+                'will proceed with a negative cash balance.' % (
                     txn_total_cost, self.cash
                 )
             )

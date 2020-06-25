@@ -170,8 +170,6 @@ def test_withdraw_funds_behaviour():
 def test_transact_asset_behaviour():
     """
     Test transact_asset raises for incorrect time
-    Test transact_asset raises for transaction total
-    cost exceeding total cash
     Test correct total_cash and total_securities_value
     for correct transaction (commission etc), correct
     portfolio event and correct time update
@@ -208,16 +206,6 @@ def test_transact_asset_behaviour():
         description="SUBSCRIPTION", debit=0.0,
         credit=1000.0, balance=1000.0
     )
-    tn_large = Transaction(
-        asset=asset,
-        quantity=100,
-        dt=later_dt,
-        price=567.0,
-        order_id=1,
-        commission=15.78
-    )
-    with pytest.raises(ValueError):
-        port.transact_asset(tn_large)
 
     # Test correct total_cash and total_securities_value
     # for correct transaction (commission etc), correct
