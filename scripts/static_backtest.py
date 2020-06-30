@@ -89,6 +89,7 @@ def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
         account_name=strat_title,
         portfolio_id='STATIC001',
         portfolio_name=strat_title,
+        long_only=True,
         cash_buffer_percentage=0.01,
         data_handler=strategy_data_handler
     )
@@ -116,6 +117,7 @@ def cli(start_date, end_date, allocations, strat_title, strat_id, tearsheet):
         account_name='60/40 US Equities/Bonds',
         portfolio_id='6040EQBD',
         portfolio_name=benchmark_title,
+        long_only=True,
         cash_buffer_percentage=0.01,
         data_handler=benchmark_data_handler
     )

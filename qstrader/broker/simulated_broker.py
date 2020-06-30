@@ -1,4 +1,3 @@
-from math import floor
 import queue
 
 import numpy as np
@@ -585,10 +584,9 @@ class SimulatedBroker(Broker):
         if est_total_cost > total_cash:
             print(
                 "WARNING: Estimated transaction size of %0.2f exceeds "
-                "available cash of %0.2f. Reducing quantity to allow "
-                "transaction to succeed." % (est_total_cost, total_cash)
+                "available cash of %0.2f. Transaction will still occur "
+                "with a negative cash balance." % (est_total_cost, total_cash)
             )
-            scaled_quantity = int(floor(total_cash / price))
 
         # Create a transaction entity and update the portfolio
         txn = Transaction(
