@@ -15,7 +15,7 @@ from qstrader.system.rebalance.daily import DailyRebalance
 from qstrader.system.rebalance.end_of_month import EndOfMonthRebalance
 from qstrader.system.rebalance.weekly import WeeklyRebalance
 from qstrader.trading.trading_session import TradingSession
-
+from qstrader import settings
 
 DEFAULT_ACCOUNT_NAME = 'Backtest Simulated Broker Account'
 DEFAULT_PORTFOLIO_ID = '000001'
@@ -172,13 +172,14 @@ class BacktestTradingSession(TradingSession):
         try:
             os.environ['QSTRADER_CSV_DATA_DIR']
         except KeyError:
-            print(
-                "The QSTRADER_CSV_DATA_DIR environment variable has not been set. "
-                "This means that QSTrader will fall back to finding data within the "
-                "current directory where the backtest has been executed. However "
-                "it is strongly recommended that a QSTRADER_CSV_DATA_DIR environment "
-                "variable is set for future backtests."
-            )
+            if settings.PRINT_EVENTS:
+                print(
+                    "The QSTRADER_CSV_DATA_DIR environment variable has not been set. "
+                    "This means that QSTrader will fall back to finding data within the "
+                    "current directory where the backtest has been executed. However "
+                    "it is strongly recommended that a QSTRADER_CSV_DATA_DIR environment "
+                    "variable is set for future backtests."
+                )
             csv_dir = '.'
         else:
             csv_dir = os.environ.get('QSTRADER_CSV_DATA_DIR')
@@ -375,14 +376,16 @@ class BacktestTradingSession(TradingSession):
         results : `Boolean`, optional
             Whether to output the current portfolio holdings
         """
-        print("Beginning backtest simulation...")
+        if settings.PRINT_EVENTS:
+            print("Beginning backtest simulation...")
 
         stats = {'target_allocations': []}
 
         for event in self.sim_engine:
             # Output the system event and timestamp
             dt = event.ts
-            print("(%s) - %s" % (event.ts, event.event_type))
+            if settings.PRINT_EVENTS:
+                print("(%s) - %s" % (event.ts, event.event_type))
 
             # Update the simulated broker
             self.broker.update(dt)
@@ -394,7 +397,8 @@ class BacktestTradingSession(TradingSession):
             # If we have hit a rebalance time then carry
             # out a full run of the quant trading system
             if self._is_rebalance_event(dt):
-                print("(%s) - trading logic and rebalance" % event.ts)
+                if settings.PRINT_EVENTS:
+                    print("(%s) - trading logic and rebalance" % event.ts)
                 self.qts(dt, stats=stats)
 
             # Out of market hours we want a daily
@@ -414,4 +418,5 @@ class BacktestTradingSession(TradingSession):
         if results:
             self.output_holdings()
 
-        print("Ending backtest simulation.")
+        if settings.PRINT_EVENTS:
+            print("Ending backtest simulation.")
