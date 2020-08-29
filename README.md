@@ -1,127 +1,73 @@
-[![Build Status](https://travis-ci.org/mhallsmoore/qstrader.svg?branch=master)](https://travis-ci.org/mhallsmoore/qstrader)
-[![Coverage Status](https://coveralls.io/repos/github/mhallsmoore/qstrader/badge.svg?branch=master)](https://coveralls.io/github/mhallsmoore/qstrader?branch=master)
+# QSTrader
 
-# QSTrader  
+| Development   | Details       |
+| ------------- | ------------- |
+| Test Status   | [![Build Status](https://img.shields.io/travis/mhallsmoore/qstrader?label=TravisCI&style=flat-square)](https://travis-ci.org/mhallsmoore/qstrader) [![Coverage Status](https://img.shields.io/coveralls/github/mhallsmoore/qstrader?style=flat-square&label=Coverage)](https://coveralls.io/github/mhallsmoore/qstrader?branch=master) |
+| Version Info  | [![PyPI](https://img.shields.io/pypi/v/qstrader?style=flat-square&label=PyPI&color=blue)](https://pypi.org/project/qstrader) [![PyPI Downloads](https://img.shields.io/pypi/dm/qstrader?style=flat-square&label=PyPI%20Downloads)](https://pypi.org/project/qstrader) |
+| Compatibility | [![Python Version](https://img.shields.io/pypi/pyversions/qstrader?style=flat-square&label=Python%20Versions)](https://pypi.org/project/qstrader) |
+| License       | ![GitHub](https://img.shields.io/github/license/mhallsmoore/qstrader?style=flat-square&label=License) |      
 
-QSTrader is an open-source event-driven backtesting platform for use in the equities markets, currently in an alpha state.
+QSTrader is a free Python-based open-source modular schedule-driven backtesting framework for long-short equities and ETF based systematic trading strategies.
 
-It has been created as part of the Advanced Trading Infrastructure article series on QuantStart.com to provide the systematic trading community with a robust trading engine that allows straightforward equities strategy implementation and testing.
+QSTrader can be best described as a loosely-coupled collection of modules for carrying out end-to-end backtests with realistic trading mechanics. 
 
-The software is provided under a permissive "MIT" license (see below).
+The default modules provide useful functionality for certain types of systematic trading strategies and can be utilised without modification. However the intent of QSTrader is for the users to extend, inherit or fully replace each module in order to provide custom functionality for their own use case.
+
+The software is currently under active development and is provided under a permissive "MIT" license.
+
+# Previous Version and Advanced Algorithmic Trading
+
+Please note that the previous version of QSTrader, which is utilised through the **Advanced Algorithmic Trading** ebook, can be found along with the appropriate installation instructions [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
+
+It has recently been updated to support Python 3.5, 3.6 and 3.7 with up to date package dependencies.
+
+# Installation
+
+Installation requires a Python3 environment. The simplest approach is to download a self-contained scientific Python distribution such as the [Anaconda Individual Edition](https://www.anaconda.com/products/individual#Downloads). Then you can install QSTrader via pip:
+
+```
+pip install qstrader
+```
+
+Any issues with installation should be reported to the development team as issues [here](https://github.com/mhallsmoore/qstrader/issues).
+
+# Quickstart
+
+The QSTrader repository provides some simple example strategies at [/examples](https://github.com/mhallsmoore/qstrader/tree/master/examples).
+
+Within this quickstart section a classic 60/40 equities/bonds portfolio will be backtested with monthly rebalancing on the last day of the calendar month. 
+
+To get started download the [sixty_forty.py](https://github.com/mhallsmoore/qstrader/blob/master/examples/sixty_forty.py) file and place into the directory of your choice.
+
+The 60/40 script makes use of OHLC 'daily bar' data from Yahoo Finance. In particular it requires the [SPY](https://finance.yahoo.com/quote/SPY/history?p=SPY) and [AGG](https://finance.yahoo.com/quote/AGG/history?p=AGG) ETFs data. Download the full history for each and save as CSV files in same directory as ``sixty_forty.py``.
+
+Assuming that an appropriate Python environment exists and QSTrader has been installed via pip (see **Installation** above), make sure to activate the virtual environment, navigate to the directory with ``sixty_forty.py`` and type:
+
+```
+python sixty_forty.py
+```
+
+You will then see some console output as the backtest simulation engine runs through each day and carries out the rebalancing logic once per month. Once the backtest is complete a tearsheet will appear:
+
+![Image of 60/40 Backtest](https://quantstartmedia.s3.amazonaws.com/images/qstrader_sixty_forty_backtest.png)
+
+You can examine the commented ``sixty_forty.py`` file to see the current QSTrader backtesting API.
+
+If you have any questions about the installation or example usage then please feel free to email [support@quantstart.com](mailto:support@quantstart.com) or raise an issue [here](https://github.com/mhallsmoore/qstrader/issues).
 
 # Current Features
 
-* **Open-Source** - QSTrader has been released under an extremely permissive open-source MIT License, which allows full usage in both research and commercial applications, without restriction, but with no warranty of any kind whatsoever. Thus you can use it at home to carry out retail trading or within a quant fund as a basis for your research and/or order management system.
+* **Backtesting Engine** - QSTrader employs a schedule-based portfolio construction approach to systematic trading. Signal generation is decoupled from portfolio construction, risk management, execution and simulated brokerage accounting in a modular, object-oriented fashion.
 
-* **Free** - QSTrader is completely free and costs nothing to download or use.
+* **Performance Statistics** - QSTrader provides typical 'tearsheet' performance assessment of strategies. It also supports statistics export via JSON to allow external software to consume metrics from backtests.
 
-* **Collaboration** - As QSTrader is open-source many developers collaborate to improve the software. New features are added frequently. Any bugs are quickly determined and fixed.
+* **Free Open-Source Software** - QSTrader has been released under a permissive open-source MIT License. This allows full usage in both research and commercial applications, without restriction, but with no warranty of any kind whatsoever (see **License** below). QSTrader is completely free and costs nothing to download or use.
 
-* **Software Development** - QSTrader is written in the Python programming language for straightforward cross-platform support. QSTrader contains a suite of unit tests for the majority of its calculation code and tests are constantly added for new features.
-
-* **Event-Driven Architecture** - QSTrader is completely event-driven, which leads to straightforward transitioning of strategies from a research phase to a live trading implementation.
-
-* **Backtesting** - QSTrader supports both intraday tick-resolution (top of order book bid/ask) datasets as well as OHLCV "bar" resolution data on various time scales.
-
-* **Private Components** - QSTrader allows you to include a repository of your own private strategies or components. Simply checkout your own repository within the root of QSTrader and rename the directory to `private_files`. This will ensure the QSTrader repository can be easily kept up to date without interfering with your private repository.
-
-* **Performance Metrics** - QSTrader supports both portfolio-level and trade-level performance measurement. It provides a comprehensive "tearsheet" (see below) with associated strategy statistics.
-
-# Planned Features
-
-* **Transaction Costs** - Commissions are currently supported using Interactive Brokers standard fees for North American equities. Slippage and market impact are planned, but are not currently supported.
-
-* **Trading** - QSTrader will support live intraday trading using the Interactive Brokers native Python API, initially for North American equities.
-
-# Installation and Example Usage
-
-QSTrader is in an early alpha state at the moment. It should only be used for exploratory backtesting research. The installation procedure is a little more involved than a standard Python package as it has not yet been added to the Python package repository.
-
-Ubuntu Linux is the recommended platform on which to install QSTrader, but it will also work on Windows or Mac OSX under the Anaconda distribution (https://www.continuum.io/downloads).
-
-For those that wish to create their own Python virtual environment the following steps are necessary to run both a basic Buy And Hold strategy as well as a slightly more complex Moving Average Crossover trend-following strategy.
-
-An example virtual environment directory ```~/venv/qstraderp3``` has been used here. If you wish to change this directory then rename it in the following steps.
-
-The following steps will create a virtual environment directory with Python 3 and then activate the environment:
-
-```
-mkdir -p ~/venv/qstraderp3
-cd ~/venv/qstraderp3
-virtualenv --no-site-packages -p python3 .
-source ~/venv/qstraderp3/bin/activate
-```
-
-At this point it is necessary to use pip to install QSTrader as a library and then manually install the requirements. The following steps will take some time (5-10 minutes) as QSTrader relies on NumPy, SciPy, Pandas, Matplotlib as well as many other libraries and hence they will all need to compile:
-
-```
-pip install git+https://github.com/mhallsmoore/qstrader.git
-pip install -r https://raw.githubusercontent.com/mhallsmoore/qstrader/master/requirements.txt
-```
-
-Now that the library itself and requirements have been installed it is necessary to create the default directories for the data and output. In addition it is possible to download the necessary data and example code to run a simple backtest of a Buy And Hold strategy on the S&P500 total return index:
-
-```
-mkdir -p ~/qstrader/examples ~/data ~/out
-cd ~/data
-wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/data/SPY.csv
-cd ~/qstrader/examples
-wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/examples/buy_and_hold_backtest.py 
-```
-
-Finally, we can run the backtest itself: 
-
-```
-python buy_and_hold_backtest.py
-```
-
-Once complete you will see a full "tearsheet" of results including:
-
-* Equity curve
-* Drawdown curve
-* Monthly returns heatmap
-* Yearly returns distribution
-* Portfolio-level statistics
-* Trade-level statistics
-
-The tearsheet will look similar to:
-
-![alt tag](https://s3.amazonaws.com/quantstart/media/images/qstrader-buy-and-hold-tearsheet.png)
-
-You can explore the ```buy_and_hold_backtest.py``` file to examine the API of QSTrader. You will see that it is relatively straightforward to set up a simple strategy and execute it.
-
-For slightly more complex buy and sell rules it is possible to consider a Moving Average Crossover strategy. 
-
-The following strategy creates two Simple Moving Averages with respective lookback periods of 100 and 300 days. When the 100-period SMA exceeds the 300-period SMA 100 shares of AAPL are longed. When the 300-period SMA exceeds the 100-period SMA the position is closed out. To obtain the data for this strategy and execute it run the following code:
-
-```
-cd ~/data
-wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/data/AAPL.csv
-cd ~/qstrader/examples
-wget https://raw.githubusercontent.com/mhallsmoore/qstrader/master/examples/moving_average_cross_backtest.py 
-```
-
-The backtest can be executed with the following command:
-
-```
-python moving_average_cross_backtest.py
-```
-
-Once complete a full tearsheet will be presented, this time with a benchmark:
-
-![alt tag](https://s3.amazonaws.com/quantstart/media/images/qstrader-moving-average-cross-tearsheet.png)
-
-Other example strategies can be found in the ```examples``` directory. Each example is self-contained in a ```****_backtest.py``` file, which can be used as templates for your own strategies.
-
-The project is constantly being developed, so unfortunately it is likely that the current API will experience backwards incompatibility until a mature beta version has been produced.
-
-If you have any questions about the installation then please feel free to email support@quantstart.com.
-
-If you notice any bugs or other issues that you think may be due to the codebase specifically, feel free to open a Github issue here: https://github.com/mhallsmoore/qstrader/issues
+* **Software Development** - QSTrader is written in the Python programming language for straightforward cross-platform support. QSTrader contains a suite of unit and integration tests for the majority of its modules. Tests are continually added for new features.
 
 # License Terms
 
-Copyright (c) 2015-2017 Michael Halls-Moore
+Copyright (c) 2015-2020 QuantStart.com, QuarkGluon Ltd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

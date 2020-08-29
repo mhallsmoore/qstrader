@@ -3,6 +3,7 @@
 .DS_Store
 __pycache__
 out
+cover
 
 # Packages
 *.egg
@@ -30,6 +31,9 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# PyTest
+.cache
 
 # Textmate (a Mac editor) meta files
 ._*
