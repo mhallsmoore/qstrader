@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import pytz
+from qstrader import settings
 
 
 class CSVDailyBarDataSource(object):
@@ -107,7 +108,8 @@ class CSVDailyBarDataSource(object):
             The asset-symbol keyed dictionary of Pandas DataFrames
             containing the timestamped price/volume data.
         """
-        print("Loading CSV files into DataFrames...")
+        if settings.PRINT_EVENTS:
+            print("Loading CSV files into DataFrames...")
         if self.csv_symbols is not None:
             # TODO/NOTE: This assumes existence of CSV symbols
             # within the provided directory.
@@ -118,7 +120,8 @@ class CSVDailyBarDataSource(object):
         asset_frames = {}
         for csv_file in csv_files:
             asset_symbol = self._obtain_asset_symbol_from_filename(csv_file)
-            print("Loading CSV file for symbol '%s'..." % asset_symbol)
+            if settings.PRINT_EVENTS:
+                print("Loading CSV file for symbol '%s'..." % asset_symbol)
             csv_df = self._load_csv_into_df(csv_file)
             asset_frames[asset_symbol] = csv_df
         return asset_frames
@@ -184,10 +187,12 @@ class CSVDailyBarDataSource(object):
         `dict{pd.DataFrame}`
             The converted DataFrames.
         """
-        print("Adjusting pricing in CSV files...")
+        if settings.PRINT_EVENTS:
+            print("Adjusting pricing in CSV files...")
         asset_bid_ask_frames = {}
         for asset_symbol, bar_df in self.asset_bar_frames.items():
-            print("Adjusting CSV file for symbol '%s'..." % asset_symbol)
+            if settings.PRINT_EVENTS:
+                print("Adjusting CSV file for symbol '%s'..." % asset_symbol)
             asset_bid_ask_frames[asset_symbol] = \
                 self._convert_bar_frame_into_bid_ask_df(bar_df)
         return asset_bid_ask_frames

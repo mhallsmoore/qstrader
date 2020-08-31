@@ -217,14 +217,15 @@ class Portfolio(object):
         txn_total_cost = txn_share_cost + txn.commission
 
         if txn_total_cost > self.cash:
-            print(
-                'WARNING: Not enough cash in the portfolio to '
-                'carry out transaction. Transaction cost of %s '
-                'exceeds remaining cash of %s. Transaction '
-                'will proceed with a negative cash balance.' % (
-                    txn_total_cost, self.cash
+            if settings.PRINT_EVENTS:
+                print(
+                    'WARNING: Not enough cash in the portfolio to '
+                    'carry out transaction. Transaction cost of %s '
+                    'exceeds remaining cash of %s. Transaction '
+                    'will proceed with a negative cash balance.' % (
+                        txn_total_cost, self.cash
+                    )
                 )
-            )
 
         self.pos_handler.transact_position(txn)
 

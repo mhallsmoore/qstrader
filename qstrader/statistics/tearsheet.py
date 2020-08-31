@@ -8,6 +8,7 @@ import seaborn as sns
 
 import qstrader.statistics.performance as perf
 from qstrader.statistics.statistics import Statistics
+from qstrader import settings
 
 
 class TearsheetStatistics(Statistics):
@@ -264,7 +265,8 @@ class TearsheetStatistics(Statistics):
         """
         Plot the Tearsheet
         """
-        print('Plotting the tearsheet...')
+        if settings.PRINT_EVENTS:
+            print('Plotting the tearsheet...')
         rc = {
             'lines.linewidth': 1.0,
             'axes.facecolor': '0.995',

@@ -71,7 +71,8 @@ class SimulatedBroker(Broker):
         self.portfolios = self._set_initial_portfolios()
         self.open_orders = self._set_initial_open_orders()
 
-        print('Initialising simulated broker "%s"...' % self.account_id)
+        if settings.PRINT_EVENTS:
+            print('Initialising simulated broker "%s"...' % self.account_id)
 
     def _set_base_currency(self, base_currency):
         """
@@ -205,11 +206,12 @@ class SimulatedBroker(Broker):
                 "'%s' to the broker account." % amount
             )
         self.cash_balances[self.base_currency] += amount
-        print(
-            '(%s) - subscription: %0.2f subscribed to broker account "%s"' % (
-                self.current_dt, amount, self.account_id
+        if settings.PRINT_EVENTS:
+            print(
+                '(%s) - subscription: %0.2f subscribed to broker account "%s"' % (
+                    self.current_dt, amount, self.account_id
+                )
             )
-        )
 
     def withdraw_funds_from_account(self, amount):
         """
@@ -237,11 +239,12 @@ class SimulatedBroker(Broker):
                 )
             )
         self.cash_balances[self.base_currency] -= amount
-        print(
-            '(%s) - withdrawal: %0.2f withdrawn from broker account "%s"' % (
-                self.current_dt, amount, self.account_id
+        if settings.PRINT_EVENTS:
+            print(
+                '(%s) - withdrawal: %0.2f withdrawn from broker account "%s"' % (
+                    self.current_dt, amount, self.account_id
+                )
             )
-        )
 
     def get_account_cash_balance(self, currency=None):
         """
@@ -334,11 +337,12 @@ class SimulatedBroker(Broker):
             )
             self.portfolios[portfolio_id_str] = p
             self.open_orders[portfolio_id_str] = queue.Queue()
-            print(
-                '(%s) - portfolio creation: Portfolio "%s" created at broker "%s"' % (
-                    self.current_dt, portfolio_id_str, self.account_id
+            if settings.PRINT_EVENTS:
+                print(
+                    '(%s) - portfolio creation: Portfolio "%s" created at broker "%s"' % (
+                        self.current_dt, portfolio_id_str, self.account_id
+                    )
                 )
-            )
 
     def list_all_portfolios(self):
         """
@@ -391,11 +395,12 @@ class SimulatedBroker(Broker):
             )
         self.portfolios[portfolio_id].subscribe_funds(self.current_dt, amount)
         self.cash_balances[self.base_currency] -= amount
-        print(
-            '(%s) - subscription: %0.2f subscribed to portfolio "%s"' % (
-                self.current_dt, amount, portfolio_id
+        if settings.PRINT_EVENTS:
+            print(
+                '(%s) - subscription: %0.2f subscribed to portfolio "%s"' % (
+                    self.current_dt, amount, portfolio_id
+                )
             )
-        )
 
     def withdraw_funds_from_portfolio(self, portfolio_id, amount):
         """
@@ -436,11 +441,12 @@ class SimulatedBroker(Broker):
             self.current_dt, amount
         )
         self.cash_balances[self.base_currency] += amount
-        print(
-            '(%s) - withdrawal: %0.2f withdrawn from portfolio "%s"' % (
-                self.current_dt, amount, portfolio_id
+        if settings.PRINT_EVENTS:
+            print(
+                '(%s) - withdrawal: %0.2f withdrawn from portfolio "%s"' % (
+                    self.current_dt, amount, portfolio_id
+                )
             )
-        )
 
     def get_portfolio_cash_balance(self, portfolio_id):
         """
@@ -582,11 +588,12 @@ class SimulatedBroker(Broker):
 
         scaled_quantity = order.quantity
         if est_total_cost > total_cash:
-            print(
-                "WARNING: Estimated transaction size of %0.2f exceeds "
-                "available cash of %0.2f. Transaction will still occur "
-                "with a negative cash balance." % (est_total_cost, total_cash)
-            )
+            if settings.PRINT_EVENTS:
+                print(
+                    "WARNING: Estimated transaction size of %0.2f exceeds "
+                    "available cash of %0.2f. Transaction will still occur "
+                    "with a negative cash balance." % (est_total_cost, total_cash)
+                )
 
         # Create a transaction entity and update the portfolio
         txn = Transaction(
@@ -594,14 +601,15 @@ class SimulatedBroker(Broker):
             price, order.order_id, commission=total_commission
         )
         self.portfolios[portfolio_id].transact_asset(txn)
-        print(
-            "(%s) - executed order: %s, qty: %s, price: %0.2f, "
-            "consideration: %0.2f, commission: %0.2f, total: %0.2f" % (
-                self.current_dt, order.asset, scaled_quantity, price,
-                consideration, total_commission,
-                consideration + total_commission
+        if settings.PRINT_EVENTS:
+            print(
+                "(%s) - executed order: %s, qty: %s, price: %0.2f, "
+                "consideration: %0.2f, commission: %0.2f, total: %0.2f" % (
+                    self.current_dt, order.asset, scaled_quantity, price,
+                    consideration, total_commission,
+                    consideration + total_commission
+                )
             )
-        )
 
     def submit_order(self, portfolio_id, order):
         """
@@ -632,11 +640,12 @@ class SimulatedBroker(Broker):
                 )
             )
         self.open_orders[portfolio_id].put(order)
-        print(
-            "(%s) - submitted order: %s, qty: %s" % (
-                self.current_dt, order.asset, order.quantity
+        if settings.PRINT_EVENTS:
+            print(
+                "(%s) - submitted order: %s, qty: %s" % (
+                    self.current_dt, order.asset, order.quantity
+                )
             )
-        )
 
     def update(self, dt):
         """

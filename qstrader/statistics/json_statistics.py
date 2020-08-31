@@ -3,6 +3,7 @@ import json
 
 import numpy as np
 
+from qstrader import settings
 import qstrader.statistics.performance as perf
 
 
@@ -384,6 +385,7 @@ class JSONStatistics(object):
         """
         Outputs the statistics dictionary to a JSON file.
         """
-        print('Outputting JSON results to "%s"...' % self.output_filename)
+        if settings.PRINT_EVENTS:
+            print('Outputting JSON results to "%s"...' % self.output_filename)
         with open(self.output_filename, 'w') as outfile:
             json.dump(self.statistics, outfile)

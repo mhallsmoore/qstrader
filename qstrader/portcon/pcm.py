@@ -1,3 +1,4 @@
+from qstrader import settings
 from qstrader.execution.order import Order
 
 
@@ -275,9 +276,10 @@ class PortfolioConstructionModel(object):
         full_weights = self._create_full_asset_weight_vector(
             full_zero_weights, optimised_weights
         )
-        print(
-            "(%s) - target weights: %s" % (dt, full_weights)
-        )
+        if settings.PRINT_EVENTS:
+            print(
+                "(%s) - target weights: %s" % (dt, full_weights)
+            )
 
         # TODO: Improve this with a full statistics logging handler
         if stats is not None:

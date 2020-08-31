@@ -5,6 +5,10 @@ __pycache__
 out
 cover
 
+# environment
+env/
+venv/
+
 # Packages
 *.egg
 *.egg-info
