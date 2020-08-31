@@ -51,7 +51,7 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
             ticker_path, header=0, parse_dates=True,
             index_col=0, names=(
                 "Date", "Open", "High", "Low",
-                "Close", "Volume", "Adj Close"
+                "Close", "Adj Close", "Volume"
             )
         )
         self.tickers_data[ticker]["Ticker"] = ticker
