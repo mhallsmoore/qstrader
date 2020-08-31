@@ -48,11 +48,7 @@ class YahooDailyCsvBarPriceHandler(AbstractBarPriceHandler):
         """
         ticker_path = os.path.join(self.csv_dir, "%s.csv" % ticker)
         self.tickers_data[ticker] = pd.io.parsers.read_csv(
-            ticker_path, header=0, parse_dates=True,
-            index_col=0, names=(
-                "Date", "Open", "High", "Low",
-                "Close", "Adj Close", "Volume"
-            )
+            ticker_path, parse_dates=True, index_col=0
         )
         self.tickers_data[ticker]["Ticker"] = ticker
 
