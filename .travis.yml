@@ -1,26 +1,26 @@
-language: python
+#language: python
 
-python:
-  - "3.6"
-  - "3.7"
-  - "3.8"
-  - "3.9"
+#python:
+#  - "3.6"
+#  - "3.7"
+#  - "3.8"
+#  - "3.9"
 
 services:
   - docker
 
-before_install:
-  - export PYTHONPATH=$PYTHONPATH:$(pwd) 
+#before_install:
+#- export PYTHONPATH=$PYTHONPATH:$(pwd) 
 
 install:
-  - pip install -r requirements/base.txt
-  - pip install -r requirements/tests.txt
+#  - pip install -r requirements/base.txt
+#  - pip install -r requirements/tests.txt
   - docker build -t qstrader:ubuntu-focal ./dockerfiles/ubuntu-focal/
 
 script:
-  - pytest --cov=qstrader/
-  - flake8 --ignore E501,F501,W504 tests qstrader
-  #- docker run -it -v "$PWD":/qstrader-data qstrader:ubuntu-focal
+#  - pytest --cov=qstrader/
+#  - flake8 --ignore E501,F501,W504 tests qstrader
+  - docker run -t qstrader:ubuntu-focal pytest
 
-after_success:
-  - coveralls
+#after_success:
+#- coveralls
