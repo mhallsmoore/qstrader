@@ -1,3 +1,14 @@
+# 0.2.2
+
+* Added link to full documentation at [https://www.quantstart.com/qstrader/](https://www.quantstart.com/qstrader/)
+* Fixed bug where burn-in period was still allowing portfolio rebalances and trade executions
+* Added QSTrader Dockerfiles for various Linux distributions
+* Removed support for Python 3.5 and added support for Python 3.9
+* Increased minimum supported Pandas version to 1.1.5 from 0.25.1
+* Modified end-to-end backtest integration test to check for approximate equality of results to fix differences across Pandas versions
+* Disallowed Matplotlib 3.3.3 temporarily to avoid deprecated functionality from causing errors
+* Event print messages during backtests can now be disabled through a boolean setting
+
 # 0.2.1
 
 * Added VolatilitySignal class to calculate rolling annualised volatility of returns for an asset
