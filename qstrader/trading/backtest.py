@@ -396,10 +396,23 @@ class BacktestTradingSession(TradingSession):
 
             # If we have hit a rebalance time then carry
             # out a full run of the quant trading system
-            if self._is_rebalance_event(dt):
-                if settings.PRINT_EVENTS:
-                    print("(%s) - trading logic and rebalance" % event.ts)
-                self.qts(dt, stats=stats)
+            if self.burn_in_dt is not None:
+                if dt >= self.burn_in_dt:
+                    if self._is_rebalance_event(dt):
+                        if settings.PRINT_EVENTS:
+                            print(
+                                "(%s) - trading logic "
+                                "and rebalance" % event.ts
+                            )
+                        self.qts(dt, stats=stats)
+            else:
+                if self._is_rebalance_event(dt):
+                    if settings.PRINT_EVENTS:
+                        print(
+                            "(%s) - trading logic "
+                            "and rebalance" % event.ts
+                        )
+                    self.qts(dt, stats=stats)
 
             # Out of market hours we want a daily
             # performance update, but only if we
