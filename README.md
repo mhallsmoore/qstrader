@@ -31,6 +31,10 @@ pip install qstrader
 
 Any issues with installation should be reported to the development team as issues [here](https://github.com/mhallsmoore/qstrader/issues).
 
+# Full Documentation
+
+Comprehensive documentation for QSTrader can be found on QuantStart.com at [https://www.quantstart.com/qstrader/](https://www.quantstart.com/qstrader/).
+
 # Quickstart
 
 The QSTrader repository provides some simple example strategies at [/examples](https://github.com/mhallsmoore/qstrader/tree/master/examples).
@@ -67,7 +71,7 @@ If you have any questions about the installation or example usage then please fe
 
 # License Terms
 
-Copyright (c) 2015-2020 QuantStart.com, QuarkGluon Ltd
+Copyright (c) 2015-2021 QuantStart.com, QuarkGluon Ltd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
