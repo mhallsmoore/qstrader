@@ -16,6 +16,8 @@ class JSONStatistics(object):
     ----------
     equity_curve : `pd.DataFrame`
         The equity curve DataFrame indexed by date-time.
+    target_allocations : `pd.DataFrame`
+        The target allocations DataFrame indexed by date-time.
     strategy_id : `str`, optional
         The optional ID string for the strategy to pass to
         the statistics dict.
