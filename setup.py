@@ -29,6 +29,6 @@ setup(
         "matplotlib>=3.3.4",
         "numpy>=1.18.4",
         "pandas>=1.3.3",
-        "seaborn==0.10.1"
+        "seaborn>=0.10.1"
     ]
 )
