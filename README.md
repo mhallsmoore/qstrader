@@ -3,7 +3,7 @@
 | Development   | Details       |
 | ------------- | ------------- |
 | Test Status   | [![Build Status](https://img.shields.io/travis/mhallsmoore/qstrader?label=TravisCI&style=flat-square)](https://travis-ci.org/mhallsmoore/qstrader) [![Coverage Status](https://img.shields.io/coveralls/github/mhallsmoore/qstrader?style=flat-square&label=Coverage)](https://coveralls.io/github/mhallsmoore/qstrader?branch=master) |
-| Version Info  | [![PyPI](https://img.shields.io/pypi/v/qstrader?style=flat-square&label=PyPI&color=blue)](https://pypi.org/project/qstrader) [![PyPI Downloads](https://img.shields.io/pypi/dm/qstrader?style=flat-square&label=PyPI%20Downloads)](https://pypi.org/project/qstrader) ![conda-forge](https://img.shields.io/conda/vn/conda-forge/qstrader) ![conda-forge Downloads](https://img.shields.io/conda/dn/conda-forge/qstrader?label=conda-forge%20Downloads) |
+| Version Info  | [![PyPI](https://img.shields.io/pypi/v/qstrader?style=flat-square&label=PyPI&color=blue)](https://pypi.org/project/qstrader) [![PyPI Downloads](https://img.shields.io/pypi/dm/qstrader?style=flat-square&label=PyPI%20Downloads)](https://pypi.org/project/qstrader) |
 | Compatibility | [![Python Version](https://img.shields.io/pypi/pyversions/qstrader?style=flat-square&label=Python%20Versions)](https://pypi.org/project/qstrader) |
 | License       | ![GitHub](https://img.shields.io/github/license/mhallsmoore/qstrader?style=flat-square&label=License) |
 
@@ -19,11 +19,11 @@ The software is currently under active development and is provided under a permi
 
 Please note that the previous version of QSTrader, which is utilised through the **Advanced Algorithmic Trading** ebook, can be found along with the appropriate installation instructions [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
 
-It has recently been updated to support Python 3.5, 3.6 and 3.7 with up to date package dependencies.
+It has recently been updated to support Python 3.7, 3.8 and 3.9 with up to date package dependencies.
 
 # Installation
 
-Installation requires a Python3 environment. The simplest approach is to download a self-contained scientific Python distribution such as the [Anaconda Individual Edition](https://www.anaconda.com/products/individual#Downloads). You can then install QSTrader into an isolated [virtual environment](https://docs.python.org/3/tutorial/venv.html#virtual-environments-and-packages) using either conda or pip, as shown below.
+Installation requires a Python3 environment. The simplest approach is to download a self-contained scientific Python distribution such as the [Anaconda Individual Edition](https://www.anaconda.com/products/individual#Downloads). You can then install QSTrader into an isolated [virtual environment](https://docs.python.org/3/tutorial/venv.html#virtual-environments-and-packages) using pip as shown below.
 
 Any issues with installation should be reported to the development team as issues [here](https://github.com/mhallsmoore/qstrader/issues).
 
@@ -31,16 +31,17 @@ Any issues with installation should be reported to the development team as issue
 
 [conda](https://docs.conda.io/projects/conda/en/latest/) is a command-line tool that comes with the Anaconda distribution. It allows you to manage virtual environments as well as packages _using the same tool_.
 
-The following command will create a brand new environment called `backtest` and install QSTrader along with its dependencies, all in one go.
+The following command will create a brand new environment called `backtest`.
 
 ```
-conda create -n backtest -c conda-forge qstrader
+conda create -n backtest
 ```
 
-In order to start using QSTrader, you need to activate this new environment.
+In order to start using QSTrader, you need to activate this new environment and install QSTrader using pip.
 
 ```
 conda activate backtest
+pip install qstrader
 ```
 
 ## pip
@@ -55,7 +56,7 @@ pip install qstrader
 
 # Full Documentation
 
-Comprehensive documentation for QSTrader can be found on QuantStart.com at [https://www.quantstart.com/qstrader/](https://www.quantstart.com/qstrader/).
+Comprehensive documentation and beginner tutorials for QSTrader can be found on QuantStart.com at [https://www.quantstart.com/qstrader/](https://www.quantstart.com/qstrader/).
 
 # Quickstart
 
