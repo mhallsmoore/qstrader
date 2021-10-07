@@ -56,7 +56,7 @@ pip install qstrader
 
 # Full Documentation
 
-Comprehensive documentation for QSTrader can be found on QuantStart.com at [https://www.quantstart.com/qstrader/](https://www.quantstart.com/qstrader/).
+Comprehensive documentation and beginner tutorials for QSTrader can be found on QuantStart.com at [https://www.quantstart.com/qstrader/](https://www.quantstart.com/qstrader/).
 
 # Quickstart
 
