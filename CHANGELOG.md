@@ -1,3 +1,9 @@
+# 0.2.3
+
+* Updated the python package requirements to work with matplotlib 3.4, numpy 1.21 and pandas 1.3
+* Removed support for python 3.6
+* Added a Tactical Asset Allocation monthly momentum strategy to the examples
+
 # 0.2.2
 
 * Added link to full documentation at [https://www.quantstart.com/qstrader/](https://www.quantstart.com/qstrader/)
