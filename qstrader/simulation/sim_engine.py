@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 class SimulationEngine(object):
     """
-    Interface to a tradinh event simulation engine.
+    Interface to a trading event simulation engine.
 
     Subclasses are designed to take starting and ending
     timestamps to generate events at a specific frequency.
