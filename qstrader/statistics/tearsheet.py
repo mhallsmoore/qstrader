@@ -314,4 +314,7 @@ class TearsheetStatistics(Statistics):
         # self._plot_txt_time(stats, ax=ax_txt_time)
 
         # Plot the figure
-        plt.show()
+        if filename:
+            plt.savefig(filename)
+        else:
+            plt.show()
