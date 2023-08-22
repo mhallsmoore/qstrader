@@ -1,0 +1,44 @@
+Index: requirements.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>click==7.1.2\r\nmatplotlib==3.2.1\r\nmultipledispatch==0.6.0\r\nmunch==2.5.0\r\nnumpy==1.18.4\r\npandas==1.0.3\r\nPyYAML==5.3.1\r\nscipy==1.4.1\r\nseaborn==0.10.1\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/requirements.txt b/requirements.txt
+--- a/requirements.txt	(revision 3bf4f2245c272d731540bd76c20850c9a2fb2f65)
++++ b/requirements.txt	(date 1692714661797)
+@@ -1,9 +1,24 @@
+-click==7.1.2
+-matplotlib==3.2.1
+-multipledispatch==0.6.0
+-munch==2.5.0
+-numpy==1.18.4
+-pandas==1.0.3
+-PyYAML==5.3.1
+-scipy==1.4.1
+-seaborn==0.10.1
++click>=7.1.2
++matplotlib>=3.2.1
++multipledispatch>=0.6.0
++munch>=2.5.0
++numpy>=1.18.4
++pandas>=1.0.3
++PyYAML>=5.3.1
++scipy>=1.4.1
++seaborn>=0.10.1
++
++# Dev
++black>=19.10b0
++flake8>=3.8.3
++isort>=4.3.21
++mypy>=0.770
++pytest>=5.4.2
++pytest-cov>=2.8.1
++pytest-mock>=3.1.0
++pytest-xdist>=1.31.0
++sphinx>=3.0.3
++sphinx-rtd-theme>=0.4.3
++sphinxcontrib-napoleon>=0.7
++
++
