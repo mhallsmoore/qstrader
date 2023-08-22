@@ -1,0 +1,277 @@
+Index: qstrader/data/daily_bar_csv.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import functools\r\nimport os\r\n\r\nimport numpy as np\r\nimport pandas as pd\r\nimport pytz\r\nfrom qstrader.asset.asset import Asset\r\n\r\nfrom qstrader import settings\r\n\r\n\r\nclass CSVDailyBarDataSource(object):\r\n    \"\"\"\r\n    Encapsulates loading, preparation and querying of CSV files of\r\n    daily 'bar' OHLCV data. The CSV files are converted into a intraday\r\n    timestamped Pandas DataFrame with opening and closing prices.\r\n\r\n    Optionally utilises adjusted closing prices (if available) to\r\n    adjust both the close and open.\r\n\r\n    Parameters\r\n    ----------\r\n    csv_dir : `str`\r\n        The full path to the directory where the CSV is located.\r\n    asset_type : `str`\r\n        The asset type that the price/volume data is for.\r\n        TODO: Unused at this stage and currently hardcoded to Equity.\r\n    adjust_prices : `Boolean`, optional\r\n        Whether to utilise corporate-action adjusted prices for both\r\n        the open and closing prices. Defaults to True.\r\n    csv_symbols : `list`, optional\r\n        An optional list of CSV symbols to restrict the data source to.\r\n        The alternative is to convert all CSVs found within the\r\n        provided directory.\r\n    \"\"\"\r\n\r\n    def __init__(self, csv_dir, asset_type: type[Asset], adjust_prices=True,\r\n                 csv_symbols=None):\r\n        self.csv_dir = csv_dir\r\n        self.asset_type:type[Asset] = asset_type\r\n        self.adjust_prices = adjust_prices\r\n        self.csv_symbols = csv_symbols\r\n\r\n        self.asset_bar_frames = self._load_csvs_into_dfs()\r\n        self.asset_bid_ask_frames = self._convert_bars_into_bid_ask_dfs()\r\n\r\n    def _obtain_asset_csv_files(self):\r\n        \"\"\"\r\n        Obtain the list of all CSV filenames in the CSV directory.\r\n\r\n        Returns\r\n        -------\r\n        `list[str]`\r\n            The list of all CSV filenames.\r\n        \"\"\"\r\n        return [\r\n            file for file in os.listdir(self.csv_dir)\r\n            if file.endswith('.csv')\r\n        ]\r\n\r\n    def _obtain_asset_symbol_from_filename(self, csv_file):\r\n        \"\"\"\r\n        Return the QSTrader symbology for the asset.\r\n\r\n        TODO: Remove hardcoding to Equity asset types.\r\n\r\n        Parameters\r\n        ----------\r\n        csv_file : `str`\r\n            The name of the CSV file.\r\n\r\n        Returns\r\n        -------\r\n        `str`\r\n            The QSTrader symbology of the asset. e.g. 'EQ:SPY'.\r\n        \"\"\"\r\n        return 'EQ:%s' % csv_file.replace('.csv', '')\r\n\r\n    def _load_csv_into_df(self, csv_file):\r\n        \"\"\"\r\n        Loads the CSV file into a Pandas DataFrame with dates parsed,\r\n        sorted on datetime localised to UTC.\r\n\r\n        Parameters\r\n        ----------\r\n        csv_file : `str`\r\n            The name of the CSV file.\r\n\r\n        Returns\r\n        -------\r\n        `pd.DataFrame`\r\n            DataFrame of the CSV file with timestamps localised to UTC.\r\n        \"\"\"\r\n        csv_df = pd.read_csv(\r\n            os.path.join(self.csv_dir, csv_file),\r\n            index_col='Date',\r\n            parse_dates=True\r\n        ).sort_index()\r\n\r\n        # Ensure all timestamps are set to UTC for consistency\r\n        csv_df = csv_df.set_index(csv_df.index.tz_localize(pytz.UTC))\r\n        return csv_df\r\n\r\n    def _load_csvs_into_dfs(self):\r\n        \"\"\"\r\n        Load all CSVs in the CSV directory into Pandas DataFrames.\r\n\r\n        Returns\r\n        -------\r\n        `dict{pd.DataFrame}`\r\n            The asset-symbol keyed dictionary of Pandas DataFrames\r\n            containing the timestamped price/volume data.\r\n        \"\"\"\r\n        if settings.PRINT_EVENTS:\r\n            print(\"Loading CSV files into DataFrames...\")\r\n        if self.csv_symbols is not None:\r\n            # TODO/NOTE: This assumes existence of CSV symbols\r\n            # within the provided directory.\r\n            csv_files = ['%s.csv' % symbol for symbol in self.csv_symbols]\r\n        else:\r\n            csv_files = self._obtain_asset_csv_files()\r\n\r\n        asset_frames = {}\r\n        for csv_file in csv_files:\r\n            asset_symbol = self._obtain_asset_symbol_from_filename(csv_file)\r\n            if settings.PRINT_EVENTS:\r\n                print(\"Loading CSV file for symbol '%s'...\" % asset_symbol)\r\n            csv_df = self._load_csv_into_df(csv_file)\r\n            asset_frames[asset_symbol] = csv_df\r\n        return asset_frames\r\n\r\n    def _convert_bar_frame_into_bid_ask_df(self, bar_df):\r\n        \"\"\"\r\n        Converts the DataFrame from daily OHLCV 'bars' into a DataFrame\r\n        of open and closing price timestamps.\r\n\r\n        Optionally adjusts the open/close prices for corporate actions\r\n        using any provided 'Adjusted Close' column.\r\n\r\n        Parameters\r\n        ----------\r\n        `pd.DataFrame`\r\n            The daily 'bar' OHLCV DataFrame.\r\n\r\n        Returns\r\n        -------\r\n        `pd.DataFrame`\r\n            The individually-timestamped open/closing prices, optionally\r\n            adjusted for corporate actions.\r\n        \"\"\"\r\n        bar_df = bar_df.sort_index()\r\n        if self.adjust_prices:\r\n            if 'Adj Close' not in bar_df.columns:\r\n                raise ValueError(\r\n                    \"Unable to locate Adjusted Close pricing column in CSV \"\r\n                    \"data file. \"\r\n                    \"Prices cannot be adjusted. Exiting.\"\r\n                )\r\n\r\n            # Restrict solely to the open/closing prices\r\n            oc_df = bar_df.loc[:, ['Open', 'Close', 'Adj Close']]\r\n\r\n            # Adjust opening prices\r\n            oc_df['Adj Open'] = (oc_df['Adj Close'] / oc_df['Close']) * oc_df[\r\n                'Open']\r\n            oc_df = oc_df.loc[:, ['Adj Open', 'Adj Close']]\r\n            oc_df.columns = ['Open', 'Close']\r\n        else:\r\n            oc_df = bar_df.loc[:, ['Open', 'Close']]\r\n\r\n        # Convert bars into separate rows for open/close prices\r\n        # appropriately timestamped\r\n        seq_oc_df = oc_df.T.unstack(level=0).reset_index()\r\n        seq_oc_df.columns = ['Date', 'Market', 'Price']\r\n        seq_oc_df.loc[seq_oc_df['Market'] == 'Open', 'Date'] += pd.Timedelta(\r\n            hours=14, minutes=30)\r\n        seq_oc_df.loc[seq_oc_df['Market'] == 'Close', 'Date'] += pd.Timedelta(\r\n            hours=21, minutes=00)\r\n\r\n        # TODO: Unable to distinguish between Bid/Ask, implement later\r\n        dp_df = seq_oc_df[['Date', 'Price']]\r\n        dp_df['Bid'] = dp_df['Price']\r\n        dp_df['Ask'] = dp_df['Price']\r\n        dp_df = dp_df.loc[:, ['Date', 'Bid', 'Ask']].fillna(\r\n            method='ffill').set_index('Date').sort_index()\r\n        return dp_df\r\n\r\n    def _convert_bars_into_bid_ask_dfs(self):\r\n        \"\"\"\r\n        Convert all of the daily OHLCV 'bar' based DataFrames into\r\n        individually-timestamped open/closing price DataFrames.\r\n\r\n        Returns\r\n        -------\r\n        `dict{pd.DataFrame}`\r\n            The converted DataFrames.\r\n        \"\"\"\r\n        if settings.PRINT_EVENTS:\r\n            print(\"Adjusting pricing in CSV files...\")\r\n        asset_bid_ask_frames = {}\r\n        for asset_symbol, bar_df in self.asset_bar_frames.items():\r\n            if settings.PRINT_EVENTS:\r\n                print(\"Adjusting CSV file for symbol '%s'...\" % asset_symbol)\r\n            asset_bid_ask_frames[asset_symbol] = \\\r\n                self._convert_bar_frame_into_bid_ask_df(bar_df)\r\n        return asset_bid_ask_frames\r\n\r\n    @functools.lru_cache(maxsize=1024 * 1024)\r\n    def get_bid(self, dt, asset):\r\n        \"\"\"\r\n        Obtain the bid price of an asset at the provided timestamp.\r\n\r\n        Parameters\r\n        ----------\r\n        dt : `pd.Timestamp`\r\n            When to obtain the bid price for.\r\n        asset : `str`\r\n            The asset symbol to obtain the bid price for.\r\n\r\n        Returns\r\n        -------\r\n        `float`\r\n            The bid price.\r\n        \"\"\"\r\n        bid_ask_df = self.asset_bid_ask_frames[asset]\r\n        try:\r\n            bid = bid_ask_df.iloc[bid_ask_df.index.get_loc(dt, method='pad')][\r\n                'Bid']\r\n        except KeyError:  # Before start date\r\n            return np.NaN\r\n        return bid\r\n\r\n    @functools.lru_cache(maxsize=1024 * 1024)\r\n    def get_ask(self, dt, asset):\r\n        \"\"\"\r\n        Obtain the ask price of an asset at the provided timestamp.\r\n\r\n        Parameters\r\n        ----------\r\n        dt : `pd.Timestamp`\r\n            When to obtain the ask price for.\r\n        asset : `str`\r\n            The asset symbol to obtain the ask price for.\r\n\r\n        Returns\r\n        -------\r\n        `float`\r\n            The ask price.\r\n        \"\"\"\r\n        bid_ask_df = self.asset_bid_ask_frames[asset]\r\n        try:\r\n            ask = bid_ask_df.iloc[bid_ask_df.index.get_loc(dt, method='pad')][\r\n                'Ask']\r\n        except KeyError:  # Before start date\r\n            return np.NaN\r\n        return ask\r\n\r\n    def get_assets_historical_closes(self, start_dt, end_dt, assets):\r\n        \"\"\"\r\n        Obtain a multi-asset historical range of closing prices as a DataFrame,\r\n        indexed by timestamp with asset symbols as columns.\r\n\r\n        Parameters\r\n        ----------\r\n        start_dt : `pd.Timestamp`\r\n            The starting datetime of the range to obtain.\r\n        end_dt : `pd.Timestamp`\r\n            The ending datetime of the range to obtain.\r\n        assets : `list[str]`\r\n            The list of asset symbols to obtain closing prices for.\r\n\r\n        Returns\r\n        -------\r\n        `pd.DataFrame`\r\n            The multi-asset closing prices DataFrame.\r\n        \"\"\"\r\n        close_series = []\r\n        for asset in assets:\r\n            if asset in self.asset_bar_frames.keys():\r\n                asset_close_prices = self.asset_bar_frames[asset][['Close']]\r\n                asset_close_prices.columns = [asset]\r\n                close_series.append(asset_close_prices)\r\n\r\n        prices_df = pd.concat(close_series, axis=1).dropna(how='all')\r\n        prices_df = prices_df.loc[start_dt:end_dt]\r\n        return prices_df\r\n
+===================================================================
+diff --git a/qstrader/data/daily_bar_csv.py b/qstrader/data/daily_bar_csv.py
+--- a/qstrader/data/daily_bar_csv.py	
++++ b/qstrader/data/daily_bar_csv.py	
+@@ -1,5 +1,6 @@
+ import functools
+ import os
++import pathlib
+ 
+ import numpy as np
+ import pandas as pd
+@@ -34,10 +35,11 @@
+         provided directory.
+     """
+ 
+-    def __init__(self, csv_dir, asset_type: type[Asset], adjust_prices=True,
+-                 csv_symbols=None):
++    def __init__(
++        self, csv_dir, asset_type: type[Asset], adjust_prices=True, csv_symbols=None
++    ):
+         self.csv_dir = csv_dir
+-        self.asset_type:type[Asset] = asset_type
++        self.asset_type: type[Asset] = asset_type
+         self.adjust_prices = adjust_prices
+         self.csv_symbols = csv_symbols
+ 
+@@ -53,10 +55,7 @@
+         `list[str]`
+             The list of all CSV filenames.
+         """
+-        return [
+-            file for file in os.listdir(self.csv_dir)
+-            if file.endswith('.csv')
+-        ]
++        return [file for file in os.listdir(self.csv_dir) if file.endswith(".csv")]
+ 
+     def _obtain_asset_symbol_from_filename(self, csv_file):
+         """
+@@ -74,7 +73,7 @@
+         `str`
+             The QSTrader symbology of the asset. e.g. 'EQ:SPY'.
+         """
+-        return 'EQ:%s' % csv_file.replace('.csv', '')
++        return "EQ:%s" % csv_file.replace(".csv", "")
+ 
+     def _load_csv_into_df(self, csv_file):
+         """
+@@ -91,11 +90,9 @@
+         `pd.DataFrame`
+             DataFrame of the CSV file with timestamps localised to UTC.
+         """
+-        csv_df = pd.read_csv(
+-            os.path.join(self.csv_dir, csv_file),
+-            index_col='Date',
+-            parse_dates=True
+-        ).sort_index()
++        # file_path = os.path.join(self.csv_dir, csv_file)
++        file_path = pathlib.Path(self.csv_dir,csv_file)
++        csv_df = pd.read_csv(file_path, index_col="Date", parse_dates=True).sort_index()
+ 
+         # Ensure all timestamps are set to UTC for consistency
+         csv_df = csv_df.set_index(csv_df.index.tz_localize(pytz.UTC))
+@@ -116,7 +113,7 @@
+         if self.csv_symbols is not None:
+             # TODO/NOTE: This assumes existence of CSV symbols
+             # within the provided directory.
+-            csv_files = ['%s.csv' % symbol for symbol in self.csv_symbols]
++            csv_files = ["%s.csv" % symbol for symbol in self.csv_symbols]
+         else:
+             csv_files = self._obtain_asset_csv_files()
+ 
+@@ -150,7 +147,7 @@
+         """
+         bar_df = bar_df.sort_index()
+         if self.adjust_prices:
+-            if 'Adj Close' not in bar_df.columns:
++            if "Adj Close" not in bar_df.columns:
+                 raise ValueError(
+                     "Unable to locate Adjusted Close pricing column in CSV "
+                     "data file. "
+@@ -158,31 +155,36 @@
+                 )
+ 
+             # Restrict solely to the open/closing prices
+-            oc_df = bar_df.loc[:, ['Open', 'Close', 'Adj Close']]
++            oc_df = bar_df.loc[:, ["Open", "Close", "Adj Close"]]
+ 
+             # Adjust opening prices
+-            oc_df['Adj Open'] = (oc_df['Adj Close'] / oc_df['Close']) * oc_df[
+-                'Open']
+-            oc_df = oc_df.loc[:, ['Adj Open', 'Adj Close']]
+-            oc_df.columns = ['Open', 'Close']
++            oc_df["Adj Open"] = (oc_df["Adj Close"] / oc_df["Close"]) * oc_df["Open"]
++            oc_df = oc_df.loc[:, ["Adj Open", "Adj Close"]]
++            oc_df.columns = ["Open", "Close"]
+         else:
+-            oc_df = bar_df.loc[:, ['Open', 'Close']]
++            oc_df = bar_df.loc[:, ["Open", "Close"]]
+ 
+         # Convert bars into separate rows for open/close prices
+         # appropriately timestamped
+         seq_oc_df = oc_df.T.unstack(level=0).reset_index()
+-        seq_oc_df.columns = ['Date', 'Market', 'Price']
+-        seq_oc_df.loc[seq_oc_df['Market'] == 'Open', 'Date'] += pd.Timedelta(
+-            hours=14, minutes=30)
+-        seq_oc_df.loc[seq_oc_df['Market'] == 'Close', 'Date'] += pd.Timedelta(
+-            hours=21, minutes=00)
++        seq_oc_df.columns = ["Date", "Market", "Price"]
++        seq_oc_df.loc[seq_oc_df["Market"] == "Open", "Date"] += pd.Timedelta(
++            hours=14, minutes=30
++        )
++        seq_oc_df.loc[seq_oc_df["Market"] == "Close", "Date"] += pd.Timedelta(
++            hours=21, minutes=00
++        )
+ 
+         # TODO: Unable to distinguish between Bid/Ask, implement later
+-        dp_df = seq_oc_df[['Date', 'Price']]
+-        dp_df['Bid'] = dp_df['Price']
+-        dp_df['Ask'] = dp_df['Price']
+-        dp_df = dp_df.loc[:, ['Date', 'Bid', 'Ask']].fillna(
+-            method='ffill').set_index('Date').sort_index()
++        dp_df = seq_oc_df[["Date", "Price"]]
++        dp_df["Bid"] = dp_df["Price"]
++        dp_df["Ask"] = dp_df["Price"]
++        dp_df = (
++            dp_df.loc[:, ["Date", "Bid", "Ask"]]
++            .fillna(method="ffill")
++            .set_index("Date")
++            .sort_index()
++        )
+         return dp_df
+ 
+     def _convert_bars_into_bid_ask_dfs(self):
+@@ -201,8 +203,9 @@
+         for asset_symbol, bar_df in self.asset_bar_frames.items():
+             if settings.PRINT_EVENTS:
+                 print("Adjusting CSV file for symbol '%s'..." % asset_symbol)
+-            asset_bid_ask_frames[asset_symbol] = \
+-                self._convert_bar_frame_into_bid_ask_df(bar_df)
++            asset_bid_ask_frames[
++                asset_symbol
++            ] = self._convert_bar_frame_into_bid_ask_df(bar_df)
+         return asset_bid_ask_frames
+ 
+     @functools.lru_cache(maxsize=1024 * 1024)
+@@ -224,8 +227,7 @@
+         """
+         bid_ask_df = self.asset_bid_ask_frames[asset]
+         try:
+-            bid = bid_ask_df.iloc[bid_ask_df.index.get_loc(dt, method='pad')][
+-                'Bid']
++            bid = bid_ask_df.iloc[bid_ask_df.index.get_loc(dt, method="pad")]["Bid"]
+         except KeyError:  # Before start date
+             return np.NaN
+         return bid
+@@ -249,8 +251,7 @@
+         """
+         bid_ask_df = self.asset_bid_ask_frames[asset]
+         try:
+-            ask = bid_ask_df.iloc[bid_ask_df.index.get_loc(dt, method='pad')][
+-                'Ask']
++            ask = bid_ask_df.iloc[bid_ask_df.index.get_loc(dt, method="pad")]["Ask"]
+         except KeyError:  # Before start date
+             return np.NaN
+         return ask
+@@ -277,10 +278,10 @@
+         close_series = []
+         for asset in assets:
+             if asset in self.asset_bar_frames.keys():
+-                asset_close_prices = self.asset_bar_frames[asset][['Close']]
++                asset_close_prices = self.asset_bar_frames[asset][["Close"]]
+                 asset_close_prices.columns = [asset]
+                 close_series.append(asset_close_prices)
+ 
+-        prices_df = pd.concat(close_series, axis=1).dropna(how='all')
++        prices_df = pd.concat(close_series, axis=1).dropna(how="all")
+         prices_df = prices_df.loc[start_dt:end_dt]
+         return prices_df
+Index: examples/sixty_forty.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import os\r\n\r\nimport pandas as pd\r\nimport pytz\r\n\r\nfrom qstrader.alpha_model.fixed_signals import FixedSignalsAlphaModel\r\nfrom qstrader.asset.equity import Equity\r\nfrom qstrader.asset.universe.static import StaticUniverse\r\nfrom qstrader.data.backtest_data_handler import BacktestDataHandler\r\nfrom qstrader.data.daily_bar_csv import CSVDailyBarDataSource\r\nfrom qstrader.statistics.tearsheet import TearsheetStatistics\r\nfrom qstrader.trading.backtest import BacktestTradingSession\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    start_dt = pd.Timestamp('2003-09-30 14:30:00', tz=pytz.UTC)\r\n    end_dt = pd.Timestamp('2019-12-31 23:59:00', tz=pytz.UTC)\r\n\r\n    # Construct the symbols and assets necessary for the backtest\r\n    strategy_symbols = ['SPY', 'AGG']\r\n    strategy_assets = ['EQ:%s' % symbol for symbol in strategy_symbols]\r\n    strategy_universe = StaticUniverse(strategy_assets)\r\n\r\n    # To avoid loading all CSV files in the directory, set the\r\n    # data source to load only those provided symbols\r\n    csv_dir = os.environ.get('QSTRADER_CSV_DATA_DIR', '.')\r\n    data_source = CSVDailyBarDataSource(csv_dir, Equity, csv_symbols=strategy_symbols)\r\n    data_handler = BacktestDataHandler(strategy_universe, data_sources=[data_source])\r\n\r\n    # Construct an Alpha Model that simply provides\r\n    # static allocations to a universe of assets\r\n    # In this case 60% SPY ETF, 40% AGG ETF,\r\n    # rebalanced at the end of each month\r\n    strategy_alpha_model = FixedSignalsAlphaModel({'EQ:SPY': 0.6, 'EQ:AGG': 0.4})\r\n    strategy_backtest = BacktestTradingSession(\r\n        start_dt,\r\n        end_dt,\r\n        strategy_universe,\r\n        strategy_alpha_model,\r\n        rebalance='end_of_month',\r\n        long_only=True,\r\n        cash_buffer_percentage=0.01,\r\n        data_handler=data_handler\r\n    )\r\n    strategy_backtest.run()\r\n\r\n    # Construct benchmark assets (buy & hold SPY)\r\n    benchmark_assets = ['EQ:SPY']\r\n    benchmark_universe = StaticUniverse(benchmark_assets)\r\n\r\n    # Construct a benchmark Alpha Model that provides\r\n    # 100% static allocation to the SPY ETF, with no rebalance\r\n    benchmark_alpha_model = FixedSignalsAlphaModel({'EQ:SPY': 1.0})\r\n    benchmark_backtest = BacktestTradingSession(\r\n        start_dt,\r\n        end_dt,\r\n        benchmark_universe,\r\n        benchmark_alpha_model,\r\n        rebalance='buy_and_hold',\r\n        long_only=True,\r\n        cash_buffer_percentage=0.01,\r\n        data_handler=data_handler\r\n    )\r\n    benchmark_backtest.run()\r\n\r\n    # Performance Output\r\n    tearsheet = TearsheetStatistics(\r\n        strategy_equity=strategy_backtest.get_equity_curve(),\r\n        benchmark_equity=benchmark_backtest.get_equity_curve(),\r\n        title='60/40 US Equities/Bonds'\r\n    )\r\n    tearsheet.plot_results()\r\n
+===================================================================
+diff --git a/examples/sixty_forty.py b/examples/sixty_forty.py
+--- a/examples/sixty_forty.py	
++++ b/examples/sixty_forty.py	
+@@ -1,4 +1,4 @@
+-import os
++import pathlib
+ 
+ import pandas as pd
+ import pytz
+@@ -11,55 +11,58 @@
+ from qstrader.statistics.tearsheet import TearsheetStatistics
+ from qstrader.trading.backtest import BacktestTradingSession
+ 
+-
+ if __name__ == "__main__":
+-    start_dt = pd.Timestamp('2003-09-30 14:30:00', tz=pytz.UTC)
+-    end_dt = pd.Timestamp('2019-12-31 23:59:00', tz=pytz.UTC)
++    start_dt = pd.Timestamp("2007-09-30 14:30:00", tz=pytz.UTC)
++    end_dt = pd.Timestamp("2019-12-31 23:59:00", tz=pytz.UTC)
+ 
+     # Construct the symbols and assets necessary for the backtest
+-    strategy_symbols = ['SPY', 'AGG']
+-    strategy_assets = ['EQ:%s' % symbol for symbol in strategy_symbols]
++    strategy_symbols = ["SPY", "AGG"]
++    strategy_assets = ["EQ:%s" % symbol for symbol in strategy_symbols]
+     strategy_universe = StaticUniverse(strategy_assets)
+ 
+     # To avoid loading all CSV files in the directory, set the
+     # data source to load only those provided symbols
+-    csv_dir = os.environ.get('QSTRADER_CSV_DATA_DIR', '.')
+-    data_source = CSVDailyBarDataSource(csv_dir, Equity, csv_symbols=strategy_symbols)
++    # csv_dir: str | Any = os.environ.get('QSTRADER_CSV_DATA_DIR', '.')
++    csv_dir: pathlib.Path = pathlib.Path("..", "data")
++    data_source = CSVDailyBarDataSource(
++        str(csv_dir), Equity, csv_symbols=strategy_symbols
++    )
++
+     data_handler = BacktestDataHandler(strategy_universe, data_sources=[data_source])
+ 
+     # Construct an Alpha Model that simply provides
+     # static allocations to a universe of assets
+     # In this case 60% SPY ETF, 40% AGG ETF,
+     # rebalanced at the end of each month
+-    strategy_alpha_model = FixedSignalsAlphaModel({'EQ:SPY': 0.6, 'EQ:AGG': 0.4})
++    strategy_alpha_model = FixedSignalsAlphaModel({"EQ:SPY": 0.6, "EQ:AGG": 0.4})
+     strategy_backtest = BacktestTradingSession(
+         start_dt,
+         end_dt,
+         strategy_universe,
+         strategy_alpha_model,
+-        rebalance='end_of_month',
++        rebalance="end_of_month",
+         long_only=True,
+         cash_buffer_percentage=0.01,
+-        data_handler=data_handler
++        data_handler=data_handler,
+     )
+     strategy_backtest.run()
+ 
+     # Construct benchmark assets (buy & hold SPY)
+-    benchmark_assets = ['EQ:SPY']
++    benchmark_assets = ["EQ:SPY"]
+     benchmark_universe = StaticUniverse(benchmark_assets)
+ 
+     # Construct a benchmark Alpha Model that provides
+     # 100% static allocation to the SPY ETF, with no rebalance
+-    benchmark_alpha_model = FixedSignalsAlphaModel({'EQ:SPY': 1.0})
++    benchmark_alpha_model = FixedSignalsAlphaModel({"EQ:SPY": 1.0})
+     benchmark_backtest = BacktestTradingSession(
+         start_dt,
+         end_dt,
+         benchmark_universe,
+         benchmark_alpha_model,
+-        rebalance='buy_and_hold',
++        rebalance="buy_and_hold",
+         long_only=True,
+         cash_buffer_percentage=0.01,
+-        data_handler=data_handler
++        data_handler=data_handler,
+     )
+     benchmark_backtest.run()
+ 
+@@ -67,6 +70,6 @@
+     tearsheet = TearsheetStatistics(
+         strategy_equity=strategy_backtest.get_equity_curve(),
+         benchmark_equity=benchmark_backtest.get_equity_curve(),
+-        title='60/40 US Equities/Bonds'
++        title="60/40 US Equities/Bonds",
+     )
+     tearsheet.plot_results()
