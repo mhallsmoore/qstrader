@@ -1,3 +1,9 @@
+# 0.2.4
+
+* Fixed bug involving NaN at Timestamp in sixty_forty example.
+* Removed support for python 3.7 and 3.8
+* Updated the python package requirements to work with matplotlib 3.8, numpy 1.26 and pandas 2.2.0
+
 # 0.2.3
 
 * Updated the python package requirements to work with matplotlib 3.4, numpy 1.21 and pandas 1.3

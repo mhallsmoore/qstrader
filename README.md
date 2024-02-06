@@ -34,14 +34,19 @@ Any issues with installation should be reported to the development team as issue
 The following command will create a brand new environment called `backtest`.
 
 ```
-conda create -n backtest
+conda create -n backtest python
+```
+This will use the conda default Python version. At time of writing this was Python 3.12. QSTrader currently supports Python 3.9, 3.10, 3.11 and 3.12. Optionally you can specify a python version by substituting python==3.9 into the command as follows:
+
+```
+conda create -n backtest python==3.9
 ```
 
 In order to start using QSTrader, you need to activate this new environment and install QSTrader using pip.
 
 ```
 conda activate backtest
-pip install qstrader
+pip3 install qstrader
 ```
 
 ## pip
@@ -51,7 +56,7 @@ Alternatively, you can use [venv](https://docs.python.org/3/tutorial/venv.html#c
 ```
 python -m venv backtest
 source backtest/bin/activate  # Need to activate environment before installing package
-pip install qstrader
+pip3 install qstrader
 ```
 
 # Full Documentation
