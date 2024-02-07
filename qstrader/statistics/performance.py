@@ -9,7 +9,7 @@ def aggregate_returns(returns, convert_to):
     Aggregates returns by day, week, month, or year.
     """
     def cumulate_returns(x):
-        return np.exp(np.log(1 + x).cumsum())[-1] - 1
+        return np.exp(np.log(1 + x).cumsum()).iloc[-1] - 1
 
     if convert_to == 'weekly':
         return returns.groupby(
@@ -38,7 +38,7 @@ def create_cagr(equity, periods=252):
     periods - Daily (252), Hourly (252*6.5), Minutely(252*6.5*60) etc.
     """
     years = len(equity) / float(periods)
-    return (equity[-1] ** (1.0 / years)) - 1.0
+    return (equity.iloc[-1] ** (1.0 / years)) - 1.0
 
 
 def create_sharpe_ratio(returns, periods=252):
@@ -89,7 +89,7 @@ def create_drawdowns(returns):
     # Calculate the drawdown and duration statistics
     perf = pd.DataFrame(index=idx)
     perf["Drawdown"] = (hwm - returns) / hwm
-    perf["Drawdown"].iloc[0] = 0.0
+    perf.loc[perf.index[0], 'Drawdown'] = 0.0
     perf["DurationCheck"] = np.where(perf["Drawdown"] == 0, 0, 1)
     duration = max(
         sum(1 for i in g if i == 1)

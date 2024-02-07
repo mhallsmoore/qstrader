@@ -69,10 +69,7 @@ def test_backtest_sixty_forty(etf_filepath):
     # Pandas 1.1.5 and 1.2.0 very slightly
     for symbol in expected_dict.keys():
         for metric in expected_dict[symbol].keys():
-            assert pytest.approx(
-                portfolio_dict[symbol][metric],
-                expected_dict[symbol][metric]
-            )
+            assert portfolio_dict[symbol][metric] == pytest.approx(expected_dict[symbol][metric])
 
 
 def test_backtest_long_short_leveraged(etf_filepath):
