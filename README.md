@@ -19,7 +19,7 @@ The software is currently under active development and is provided under a permi
 
 Please note that the previous version of QSTrader, which is utilised through the **Advanced Algorithmic Trading** ebook, can be found along with the appropriate installation instructions [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
 
-It has recently been updated to support Python 3.7, 3.8 and 3.9 with up to date package dependencies.
+It has recently been updated to support Python 3.9, 3.10 and 3.11 with up to date package dependencies.
 
 # Installation
 
