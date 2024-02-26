@@ -1,5 +1,5 @@
-Click>=7.0
-matplotlib==3.8.2
-numpy==1.26.4
-pandas==2.2.0
-seaborn==0.13.2
+click>=8.0
+matplotlib>=3.8
+numpy>=1.26
+pandas>=2.2
+seaborn>=0.13

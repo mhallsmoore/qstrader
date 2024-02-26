@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "qstrader"
+version = "0.2.5"
+dependencies = [
+    "click>=8.0",
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "seaborn>=0.13",
+]
+authors = [
+    {name="Michael Halls-Moore", email="support@quantstart.com"}
+]
+maintainers = [
+    {name="Juliette James", email="juliette.james@quantstart.com"}
+]
+description = "QSTrader backtesting simulation engine"
+readme = "README.md"
+requires-python = ">= 3.9"
+keywords = ["backtesting", "systematic trading", "algorithmic trading"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+]
+
+[project.urls]
+Homepage = "https://github.com/mhallsmoore/qstrader"
+Issues = "https://github.com/mhallsmoore/qstrader/issues"
+Documentation = "https://www.quantstart.com/qstrader/"
+Website = "https://www.quantstart.com"
+
+

@@ -22,6 +22,7 @@ var
 sdist
 develop-eggs
 .installed.cfg
+hatch-1.9.3.pkg
 
 # Installer logs
 pip-log.txt
