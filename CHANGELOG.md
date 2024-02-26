@@ -1,3 +1,9 @@
+# 0.2.5
+
+* Moved build-backend system to Hatchling from setuptools
+* Updated the python package requirements to work with click 8.1
+* Updated ReadMe and ChangeLog.
+
 # 0.2.4
 
 * Fixed bug involving NaN at Timestamp in sixty_forty example.

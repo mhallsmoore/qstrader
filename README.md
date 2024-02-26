@@ -19,7 +19,7 @@ The software is currently under active development and is provided under a permi
 
 Please note that the previous version of QSTrader, which is utilised through the **Advanced Algorithmic Trading** ebook, can be found along with the appropriate installation instructions [here](https://github.com/mhallsmoore/qstrader/tree/advanced-algorithmic-trading).
 
-It has recently been updated to support Python 3.9, 3.10 and 3.11 with up to date package dependencies.
+It has recently been updated to support Python 3.9, 3.10, 3.11 and 3.12 with up to date package dependencies.
 
 # Installation
 
@@ -99,7 +99,7 @@ If you have any questions about the installation or example usage then please fe
 
 # License Terms
 
-Copyright (c) 2015-2021 QuantStart.com, QuarkGluon Ltd
+Copyright (c) 2015-2024 QuantStart.com, QuarkGluon Ltd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
