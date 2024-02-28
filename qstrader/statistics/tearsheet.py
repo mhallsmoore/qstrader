@@ -264,6 +264,11 @@ class TearsheetStatistics(Statistics):
     def plot_results(self, filename=None):
         """
         Plot the Tearsheet
+
+        Parameters
+        ==========
+        filename : `str`
+            Option to save the tearsheet output when a filename is specified.
         """
         rc = {
             'lines.linewidth': 1.0,
