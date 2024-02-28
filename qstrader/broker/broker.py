@@ -47,12 +47,6 @@ class Broker(object):
         )
 
     @abstractmethod
-    def get_account_total_non_cash_equity(self):
-        raise NotImplementedError(
-            "Should implement get_account_total_non_cash_equity()"
-        )
-
-    @abstractmethod
     def get_account_total_equity(self):
         raise NotImplementedError(
             "Should implement get_account_total_equity()"
@@ -86,12 +80,6 @@ class Broker(object):
     def get_portfolio_cash_balance(self, portfolio_id):
         raise NotImplementedError(
             "Should implement get_portfolio_cash_balance()"
-        )
-
-    @abstractmethod
-    def get_portfolio_total_non_cash_equity(self, portfolio_id):
-        raise NotImplementedError(
-            "Should implement get_portfolio_total_non_cash_equity()"
         )
 
     @abstractmethod
