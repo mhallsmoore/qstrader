@@ -1,3 +1,9 @@
+# 0.2.6
+
+* Removed get_portfolio_total_non_cash_equity and get_account_total_non_cash_equity from broker/broker.py abstract base class. These methods are not implemented.
+* Added save option to TearsheetStatistics class in statistics/tearsheet.py. The tearsheet output can now be saved to a given filename by passing the optional filename parameter as a string when calling the plot_results function.
+
+
 # 0.2.5
 
 * Moved build-backend system to Hatchling from setuptools
