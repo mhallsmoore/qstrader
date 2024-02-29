@@ -264,9 +264,12 @@ class TearsheetStatistics(Statistics):
     def plot_results(self, filename=None):
         """
         Plot the Tearsheet
+
+        Parameters
+        ==========
+        filename : `str`
+            Option to save the tearsheet output when a filename is specified.
         """
-        if settings.PRINT_EVENTS:
-            print('Plotting the tearsheet...')
         rc = {
             'lines.linewidth': 1.0,
             'axes.facecolor': '0.995',
@@ -313,5 +316,14 @@ class TearsheetStatistics(Statistics):
         # self._plot_txt_trade(stats, ax=ax_txt_trade)
         # self._plot_txt_time(stats, ax=ax_txt_time)
 
+        # Save the figure
+        if filename:
+            if settings.PRINT_EVENTS:
+                print(f"Saving tearsheet to {filename}")
+            fig = plt.gcf()    
+            fig.savefig(filename)
+
         # Plot the figure
+        if settings.PRINT_EVENTS:
+            print('Plotting the tearsheet...')
         plt.show()
