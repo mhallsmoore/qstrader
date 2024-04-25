@@ -83,3 +83,4 @@ class ExecutionHandler(object):
         if self.submit_orders:
             for order in final_orders:
                 self.broker.submit_order(self.broker_portfolio_id, order)
+                self.broker.update(dt)
