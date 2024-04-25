@@ -8,6 +8,8 @@ from qstrader.alpha_model.fixed_signals import FixedSignalsAlphaModel
 from qstrader.asset.universe.static import StaticUniverse
 from qstrader.trading.backtest import BacktestTradingSession
 
+from qstrader import settings
+
 
 def test_backtest_sixty_forty(etf_filepath):
     """
@@ -127,3 +129,31 @@ def test_backtest_long_short_leveraged(etf_filepath):
 
     pd.testing.assert_frame_equal(history_df, expected_df)
     assert portfolio_dict == expected_dict
+
+
+def test_backtest_buy_and_hold(etf_filepath, capsys):
+    """
+    """
+    settings.print_events=True
+    os.environ['QSTRADER_CSV_DATA_DIR'] = etf_filepath
+    assets = ['EQ:GHI']
+    universe = StaticUniverse(assets)
+    alpha_model = FixedSignalsAlphaModel({'EQ:GHI':1.0})
+    
+    start_dt = pd.Timestamp('2015-11-09 14:30:00', tz=pytz.UTC)
+    end_dt = pd.Timestamp('2015-11-10 14:30:00', tz=pytz.UTC)
+
+    backtest = BacktestTradingSession(
+        start_dt,
+        end_dt,
+        universe,
+        alpha_model,
+        rebalance='buy_and_hold',
+        long_only=True,
+        cash_buffer_percentage=0.01,
+    )
+    backtest.run(results=False)
+    
+    expected_execution_text = "(2015-11-09 14:30:00+00:00) - executed order:"
+    captured = capsys.readouterr()
+    assert expected_execution_text in captured.out 
