@@ -133,6 +133,9 @@ def test_backtest_long_short_leveraged(etf_filepath):
 
 def test_backtest_buy_and_hold(etf_filepath, capsys):
     """
+    Ensures a backtest with a buy and hold rebalance calculates
+    the correct dates for execution orders when the start date is not
+    a business day.
     """
     settings.print_events=True
     os.environ['QSTRADER_CSV_DATA_DIR'] = etf_filepath
@@ -140,7 +143,7 @@ def test_backtest_buy_and_hold(etf_filepath, capsys):
     universe = StaticUniverse(assets)
     alpha_model = FixedSignalsAlphaModel({'EQ:GHI':1.0})
     
-    start_dt = pd.Timestamp('2015-11-09 14:30:00', tz=pytz.UTC)
+    start_dt = pd.Timestamp('2015-11-07 14:30:00', tz=pytz.UTC)
     end_dt = pd.Timestamp('2015-11-10 14:30:00', tz=pytz.UTC)
 
     backtest = BacktestTradingSession(
