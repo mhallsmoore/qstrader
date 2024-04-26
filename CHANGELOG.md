@@ -1,3 +1,13 @@
+# 0.2.7
+
+* Updates the execution handler to update final orders ensuring an execution order is created in the event of a single submission without a further rebalance.
+* Updates rebalance_buy_and_hold to check if the start_dt is a business day
+    If start_dt is a business day rebalance_dates =  [start_dt]
+    If start_dt is a weekend rebalance_dates = [next business day]
+* Adds a unit test to check that the buisness day calculation is correct
+* Adds an integration test to check that a backtest using buy_and_hold_rebalance generates execution orders on the correct dates
+
+
 # 0.2.6
 
 * Removed get_portfolio_total_non_cash_equity and get_account_total_non_cash_equity from broker/broker.py abstract base class. These methods are not implemented.
