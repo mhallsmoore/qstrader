@@ -159,4 +159,39 @@ def test_backtest_buy_and_hold(etf_filepath, capsys):
     
     expected_execution_text = "(2015-11-09 14:30:00+00:00) - executed order:"
     captured = capsys.readouterr()
-    assert expected_execution_text in captured.out 
+    assert expected_execution_text in captured.out
+
+
+def test_backtest_target_allocations(etf_filepath,):
+    """
+    """
+    settings.print_events=True
+    os.environ['QSTRADER_CSV_DATA_DIR'] = etf_filepath
+
+    assets = ['EQ:ABC', 'EQ:DEF']
+    universe = StaticUniverse(assets)
+    signal_weights = {'EQ:ABC': 0.6, 'EQ:DEF': 0.4}
+    alpha_model = FixedSignalsAlphaModel(signal_weights)
+
+    start_dt = pd.Timestamp('2019-01-01 00:00:00', tz=pytz.UTC)
+    end_dt = pd.Timestamp('2019-01-31 23:59:00', tz=pytz.UTC)
+    burn_in_dt = pd.Timestamp('2019-01-07 14:30:00', tz=pytz.UTC)
+
+    backtest = BacktestTradingSession(
+        start_dt,
+        end_dt,
+        universe,
+        alpha_model,
+        portfolio_id='000001',
+        rebalance='weekly',
+        rebalance_weekday='WED',
+        long_only=True,
+        cash_buffer_percentage=0.05,
+        burn_in_dt = burn_in_dt
+    )
+    backtest.run(results=False)
+
+    target_allocations = backtest.get_target_allocations()
+    expected_ta = pd.DataFrame(data={'EQ:ABC': 0.6, 'EQ:DEF': 0.4}, index=pd.date_range("20190125", periods=5, freq='B'))
+    actual_ta = target_allocations.tail()
+    assert expected_ta.equals(actual_ta)
