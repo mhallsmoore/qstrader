@@ -1,3 +1,8 @@
+# 0.2.8
+
+* Updates BacktestTradingSession.get_target_allocations() to use burn_in_dt.date() instead of burn_in_dt Timestamp. Previous method compared a Timestamp to a datetime.date.
+* Adds an integration test to check that target allocations match the expected output, including a date index.
+
 # 0.2.7
 
 * Updates the execution handler to update final orders ensuring an execution order is created in the event of a single submission without a further rebalance.
