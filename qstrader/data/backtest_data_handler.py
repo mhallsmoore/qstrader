@@ -17,28 +17,28 @@ class BacktestDataHandler(object):
         """
         """
         # TODO: Check for asset in Universe
-        bid = np.NaN
+        bid = np.nan
         for ds in self.data_sources:
             try:
                 bid = ds.get_bid(dt, asset_symbol)
                 if not np.isnan(bid):
                     return bid
             except Exception:
-                bid = np.NaN
+                bid = np.nan
         return bid
 
     def get_asset_latest_ask_price(self, dt, asset_symbol):
         """
         """
         # TODO: Check for asset in Universe
-        ask = np.NaN
+        ask = np.nan
         for ds in self.data_sources:
             try:
                 ask = ds.get_ask(dt, asset_symbol)
                 if not np.isnan(ask):
                     return ask
             except Exception:
-                ask = np.NaN
+                ask = np.nan
         return ask
 
     def get_asset_latest_bid_ask_price(self, dt, asset_symbol):
@@ -61,7 +61,7 @@ class BacktestDataHandler(object):
             mid = (bid_ask[0] + bid_ask[1]) / 2.0
         except Exception:
             # TODO: Log this
-            mid = np.NaN
+            mid = np.nan
         return mid
 
     def get_assets_historical_range_close_price(

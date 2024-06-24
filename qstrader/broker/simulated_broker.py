@@ -567,7 +567,7 @@ class SimulatedBroker(Broker):
         bid_ask = self.data_handler.get_asset_latest_bid_ask_price(
             dt, order.asset
         )
-        if bid_ask == (np.NaN, np.NaN):
+        if bid_ask == (np.nan, np.nan):
             raise ValueError(price_err_msg)
 
         # Calculate the consideration and total commission
