@@ -13,7 +13,7 @@ from qstrader import settings
 
 class ExchangeMock(object):
     def get_latest_asset_bid_ask(self, asset):
-        return (np.NaN, np.NaN)
+        return (np.nan, np.nan)
 
     def is_open_at_datetime(self, dt):
         return True
@@ -34,10 +34,10 @@ class ExchangeMockPrice(object):
 
 class DataHandlerMock(object):
     def get_asset_latest_bid_ask_price(self, dt, asset):
-        return (np.NaN, np.NaN)
+        return (np.nan, np.nan)
 
     def get_asset_latest_mid_price(self, dt, asset):
-        return np.NaN
+        return np.nan
 
 
 class DataHandlerMockPrice(object):
@@ -570,7 +570,7 @@ def test_submit_order():
     """
     Tests the execute_order method for:
     * Raises ValueError if no portfolio_id
-    * Raises ValueError if bid/ask is (np.NaN, np.NaN)
+    * Raises ValueError if bid/ask is (np.nan, np.nan)
     * Checks that bid/ask are correctly set dependent
     upon order direction
     * Checks that portfolio values are correct after
@@ -589,7 +589,7 @@ def test_submit_order():
     with pytest.raises(KeyError):
         sb.submit_order("1234", order)
 
-    # Raises ValueError if bid/ask is (np.NaN, np.NaN)
+    # Raises ValueError if bid/ask is (np.nan, np.nan)
     exchange_exception = ExchangeMockException()
     sbnp = SimulatedBroker(start_dt, exchange_exception, data_handler)
     sbnp.create_portfolio(portfolio_id=1234, name="My Portfolio #1")

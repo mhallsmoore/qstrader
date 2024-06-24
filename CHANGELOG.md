@@ -1,3 +1,11 @@
+# 0.3.0
+
+* Updates dependencies to use numpy v2.0.0. 
+* Updates simulated_broker.py to change np.NaN to np.nan
+* Updates backtest_data_handler.py to change np.NaN to np.nan
+* Updates daily_bar_csv.py to change np.NaN to np.nan
+* Updates tests
+
 # 0.2.9
 
 * Updates requirements file to use numpy v1.26.4 or lower. This is the last version of QSTrader that supports numpy<2.0.0.

@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "qstrader"
-version = "0.2.9"
+version = "0.3.0"
 dependencies = [
     "click>=8.1",
     "matplotlib>=3.8",
-    "numpy<=1.26.4",
+    "numpy>=2.0.0",
     "pandas>=2.2",
     "seaborn>=0.13",
 ]
