@@ -1,3 +1,7 @@
+# 0.2.9
+
+* Updates requirements file to use numpy v1.26.4 or lower. This is the last version of QSTrader that supports numpy<2.0.0.
+
 # 0.2.8
 
 * Updates BacktestTradingSession.get_target_allocations() to use burn_in_dt.date() instead of burn_in_dt Timestamp. Previous method compared a Timestamp to a datetime.date.
