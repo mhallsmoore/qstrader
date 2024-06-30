@@ -261,7 +261,7 @@ class TearsheetStatistics(Statistics):
         ax.axis([0, 10, 0, 10])
         return ax
 
-    def plot_results(self, filename=None):
+    def plot_results(self, filename=None, plot_kwargs=None):
         """
         Plot the Tearsheet
 
@@ -269,6 +269,8 @@ class TearsheetStatistics(Statistics):
         ==========
         filename : `str`
             Option to save the tearsheet output when a filename is specified.
+        plot_kwargs : `dict`
+            Additional keyword arguments to pass to the `matplotlib` figure.
         """
         rc = {
             'lines.linewidth': 1.0,
@@ -291,7 +293,11 @@ class TearsheetStatistics(Statistics):
         sns.set_palette("deep", desat=.6)
 
         vertical_sections = 5
-        fig = plt.figure(figsize=(16, 12))
+        plot_settings = {'figsize': (16, 12)}
+        if plot_kwargs is not None:
+            plot_settings.update(plot_kwargs)
+        
+        fig = plt.figure(**plot_settings)
         fig.suptitle(self.title, y=0.94, weight='bold')
         gs = gridspec.GridSpec(vertical_sections, 3, wspace=0.25, hspace=0.5)
 
