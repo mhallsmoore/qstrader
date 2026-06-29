@@ -1,3 +1,5 @@
+import inspect
+
 import numpy as np
 
 
@@ -72,9 +74,13 @@ class BacktestDataHandler(object):
         prices_df = None
         for ds in self.data_sources:
             try:
-                prices_df = ds.get_assets_historical_closes(
-                    start_dt, end_dt, asset_symbols, adjusted=adjusted
-                )
+                get_closes = ds.get_assets_historical_closes
+                if "adjusted" in inspect.signature(get_closes).parameters:
+                    prices_df = get_closes(
+                        start_dt, end_dt, asset_symbols, adjusted=adjusted
+                    )
+                else:
+                    prices_df = get_closes(start_dt, end_dt, asset_symbols)
                 if prices_df is not None:
                     return prices_df
             except Exception:
