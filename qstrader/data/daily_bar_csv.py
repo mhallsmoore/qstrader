@@ -147,14 +147,21 @@ class CSVDailyBarDataSource(object):
         """
         bar_df = bar_df.sort_index()
         if self.adjust_prices:
-            if 'Adj Close' not in bar_df.columns:
+            adjusted_close_column = None
+            for candidate in ('Adj Close', 'Adjusted Close'):
+                if candidate in bar_df.columns:
+                    adjusted_close_column = candidate
+                    break
+
+            if adjusted_close_column is None:
                 raise ValueError(
                     "Unable to locate Adjusted Close pricing column in CSV data file. "
                     "Prices cannot be adjusted. Exiting."
                 )
 
             # Restrict solely to the open/closing prices
-            oc_df = bar_df.loc[:, ['Open', 'Close', 'Adj Close']]
+            oc_df = bar_df.loc[:, ['Open', 'Close', adjusted_close_column]].copy()
+            oc_df.rename(columns={adjusted_close_column: 'Adj Close'}, inplace=True)
 
             # Adjust opening prices
             oc_df['Adj Open'] = (oc_df['Adj Close'] / oc_df['Close']) * oc_df['Open']
