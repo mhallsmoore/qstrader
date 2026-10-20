@@ -1,4 +1,5 @@
 """Offline regressions for the release-calendar example."""
+
 from datetime import date
 import importlib.util
 import io
@@ -8,15 +9,22 @@ import unittest
 from unittest.mock import patch
 
 
-path = Path(__file__).resolve().parents[1] / "examples/fxmacrodata_release_calendar_filter.py"
+path = (
+    Path(__file__).resolve().parents[1]
+    / "examples/fxmacrodata_release_calendar_filter.py"
+)
 spec = importlib.util.spec_from_file_location("calendar_filter_sample", path)
 sample = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sample)
 
 
 def event(**updates):
-    row = {"release_date_confirmed": True, "market_tier": 1,
-           "announcement_datetime": 1783497600, "date": "2026-06-01"}
+    row = {
+        "release_date_confirmed": True,
+        "market_tier": 1,
+        "announcement_datetime": 1783497600,
+        "date": "2026-06-01",
+    }
     row.update(updates)
     return row
 
@@ -31,14 +39,22 @@ class CalendarFilterTests(unittest.TestCase):
     def test_invalid_timestamp_does_not_discard_valid_events(self):
         for value in (None, "invalid", float("inf"), True):
             with self.subTest(value=value):
-                self.assertEqual({"2026-07-08"}, sample.build_blackout_dates([
-                    event(announcement_datetime=value), event(),
-                ]))
+                self.assertEqual(
+                    {"2026-07-08"},
+                    sample.build_blackout_dates(
+                        [
+                            event(announcement_datetime=value),
+                            event(),
+                        ]
+                    ),
+                )
 
     def test_invalid_tier_is_skipped_without_misclassification(self):
         for value in (None, "invalid", float("nan"), 1.5, 0, -1, True):
             with self.subTest(value=value):
-                self.assertEqual(set(), sample.build_blackout_dates([event(market_tier=value)]))
+                self.assertEqual(
+                    set(), sample.build_blackout_dates([event(market_tier=value)])
+                )
 
     def test_negative_window_is_rejected_instead_of_disabling_filter(self):
         with self.assertRaises(ValueError):
@@ -57,24 +73,40 @@ class CalendarFilterTests(unittest.TestCase):
     def test_only_explicit_confirmation_is_accepted(self):
         for value in (False, None, "false", "true", 1):
             with self.subTest(value=value):
-                self.assertEqual(set(), sample.build_blackout_dates([
-                    event(release_date_confirmed=value),
-                ]))
+                self.assertEqual(
+                    set(),
+                    sample.build_blackout_dates(
+                        [
+                            event(release_date_confirmed=value),
+                        ]
+                    ),
+                )
 
     def test_tier_threshold_and_string_integer_metadata_are_preserved(self):
         self.assertEqual(set(), sample.build_blackout_dates([event(market_tier=2)]))
-        self.assertEqual({"2026-07-08"}, sample.build_blackout_dates(
-            [event(market_tier="2")], min_market_tier=2,
-        ))
+        self.assertEqual(
+            {"2026-07-08"},
+            sample.build_blackout_dates(
+                [event(market_tier="2")],
+                min_market_tier=2,
+            ),
+        )
 
     def test_reference_period_is_not_used_as_release_date(self):
         self.assertEqual({"2026-07-08"}, sample.build_blackout_dates([event()]))
-        self.assertEqual(set(), sample.build_blackout_dates([event(announcement_datetime=None)]))
+        self.assertEqual(
+            set(), sample.build_blackout_dates([event(announcement_datetime=None)])
+        )
 
     def test_epoch_zero_remains_valid(self):
-        self.assertEqual({"1970-01-01"}, sample.build_blackout_dates([
-            event(announcement_datetime=0),
-        ]))
+        self.assertEqual(
+            {"1970-01-01"},
+            sample.build_blackout_dates(
+                [
+                    event(announcement_datetime=0),
+                ]
+            ),
+        )
 
     def test_date_filter_contract_is_preserved(self):
         calendar = sample.MacroCalendarFilter({"2026-07-08"})
@@ -82,10 +114,16 @@ class CalendarFilterTests(unittest.TestCase):
         self.assertTrue(calendar.is_tradeable(date(2026, 7, 9)))
 
     def test_empty_fetch_and_generic_error_are_preserved(self):
-        with patch.object(sample, "urlopen", return_value=io.StringIO(json.dumps({"data": []}))):
-            self.assertEqual([], sample.fetch_release_events("USD", "2026-07-01", "2026-07-31"))
+        with patch.object(
+            sample, "urlopen", return_value=io.StringIO(json.dumps({"data": []}))
+        ):
+            self.assertEqual(
+                [], sample.fetch_release_events("USD", "2026-07-01", "2026-07-31")
+            )
         payload = {"detail": "fixture-private-value"}
-        with patch.object(sample, "urlopen", return_value=io.StringIO(json.dumps(payload))):
+        with patch.object(
+            sample, "urlopen", return_value=io.StringIO(json.dumps(payload))
+        ):
             with self.assertRaises(ValueError) as raised:
                 sample.fetch_release_events("USD", "2026-07-01", "2026-07-31")
         self.assertNotIn("fixture-private-value", str(raised.exception))
